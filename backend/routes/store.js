@@ -31,7 +31,6 @@ router.get('/', verificarToken, async (req, res) => {
 
     if (error) throw error;
 
-    // Mapeo limpio para entregar los datos idénticos a como los espera el admin.html
     const tiendasFormateadas = (tiendas || []).map(t => ({
       id: t.id,
       codigo: t.codigo,
