@@ -54,10 +54,13 @@ router.post('/login', async (req, res) => {
       { expiresIn: '8h' }
     );
 
-    res.json({ 
-      token, 
-      esAdmin: false, 
+    const requiereCambio = !tienda.password_hash || tienda.password_hash === 'sport123';
+
+    res.json({
+      token,
+      esAdmin: false,
       redirect: 'album.html',
+      requiereCambio,
       tienda: {
         nombre: tienda.nombre,
         codigo: tienda.codigo
