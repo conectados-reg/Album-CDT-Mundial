@@ -76,8 +76,9 @@ router.post('/enviar/:tienda_id', verificarToken, async (req, res) => {
 
     const destinatario = process.env.NOTIFY_OVERRIDE_EMAIL || tienda.email;
 
-    if (!process.env.RESEND_API_KEY) {
-      return res.status(503).json({ error: 'Servicio de email no configurado. Agrega RESEND_API_KEY en Render.' });
+    const apiKey = process.env.BREVO_API_KEY || process.env.RESEND_API_KEY;
+    if (!apiKey) {
+      return res.status(503).json({ error: 'Servicio de email no configurado. Agrega BREVO_API_KEY en Render.' });
     }
 
     const listaHtml = (empleados || [])
@@ -155,23 +156,23 @@ router.post('/enviar/:tienda_id', verificarToken, async (req, res) => {
 </td></tr></table>
 </body></html>`;
 
-    const respEmail = await fetch('https://api.resend.com/emails', {
+    const respEmail = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+        'api-key': apiKey,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        from: 'Álbum Estrellas SLA Corp. <onboarding@resend.dev>',
-        to: [destinatario],
+        sender: { name: 'Álbum Estrellas · SLA Corp.', email: process.env.BREVO_SENDER || 'conectados@sportline.com.pa' },
+        to: [{ email: destinatario }],
         subject: `⭐ ${total} asesor${total !== 1 ? 'es' : ''} desbloquearon su figurita — ${semana_nombre}`,
-        html: htmlBody
+        htmlContent: htmlBody
       })
     });
 
     if (!respEmail.ok) {
       const errData = await respEmail.json();
-      throw new Error(errData.message || 'Error de Resend');
+      throw new Error(errData.message || 'Error de Brevo');
     }
 
     res.json({ ok: true, email: destinatario });
