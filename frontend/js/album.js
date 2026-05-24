@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:3000/api";
+const API_URL = "https://album-cdt-mundial.onrender.com/api";
 
 document.addEventListener('DOMContentLoaded', async () => {
   const session = requireAuth();
