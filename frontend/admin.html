@@ -51,7 +51,7 @@
       background: #dc2626;
     }
     .container {
-      max-width: 1200px;
+      max-width: 1300px;
       margin: 30px auto;
       padding: 0 20px;
     }
@@ -81,19 +81,24 @@
       color: #ffcc00;
       border-bottom: 1px solid #5c7494;
     }
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+    }
     table {
       width: 100%;
       border-collapse: collapse;
       text-align: left;
+      min-width: 900px;
     }
     th, td {
-      padding: 15px 20px;
+      padding: 12px 15px;
       border-bottom: 1px solid #3a506b;
+      font-size: 14px;
     }
     th {
       background-color: #161e35;
       color: #cbd5e1;
-      font-size: 14px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
@@ -139,29 +144,31 @@
   <div class="container">
     <div class="welcome-card">
       <h2>¡Bienvenido al Panel de Control!</h2>
-      <p>Aquí tienes el listado completo de las sucursales registradas en el sistema. Puedes auditar sus accesos, revisar sus contraseñas en vivo y ver el progreso total de sus empleados.</p>
+      <p>Aquí tienes el listado completo de las sucursales bajo el sello de Sportline. Puedes revisar sus correos, auditar contraseñas en tiempo real y monitorear la cantidad de personal por sucursal de forma centralizada.</p>
     </div>
 
     <div class="table-container">
       <div class="table-header">Resumen General de Sucursales</div>
-      <div id="loadingState" class="loading">Cargando datos del servidor...</div>
+      <div id="loadingState" class="loading">Cargando la base de datos corporativa...</div>
       
-      <table id="tablaTiendas" style="display: none;">
-        <thead>
-          <tr>
-            <th>Nombre Sucursal</th>
-            <th>Código ID</th>
-            <th>Correo Electrónico</th>
-            <th>Contraseña Real 👁️</th>
-            <th>Región / Ciudad</th>
-            <th>Total Empleados</th>
-            <th>Estrellas Juntadas</th>
-            <th>Estado</th>
-          </tr>
-        </thead>
-        <tbody id="listaTiendasCuerpo">
-          </tbody>
-      </table>
+      <div class="table-responsive">
+        <table id="tablaTiendas" style="display: none;">
+          <thead>
+            <tr>
+              <th>Nombre Sucursal</th>
+              <th>Código ID</th>
+              <th>Correo Electrónico</th>
+              <th>Contraseña Real 👁️</th>
+              <th>Región / País</th>
+              <th>Ciudad / Zona</th>
+              <th style="text-align: center;">Total Empleados</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="listaTiendasCuerpo">
+            </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -170,7 +177,7 @@
     const token = localStorage.getItem('token');
     const esAdmin = localStorage.getItem('esAdmin');
 
-    // Seguridad básica: Si no es admin o no hay token, regresarlo al Login
+    // Seguridad: Si no es admin o no hay token, regresarlo al Login de inmediato
     if (!token || esAdmin !== 'true') {
       localStorage.clear();
       window.location.href = 'index.html';
@@ -185,7 +192,8 @@
     // Función principal para cargar las tiendas desde Render
     async function cargarTiendasAdmin() {
       try {
-        const response = await fetch(`${API_URL}/tiendas`, {
+        // 🔍 OPTIMIZADO: Agregada la barra diagonal "/" al final para evitar errores de enrutamiento
+        const response = await fetch(`${API_URL}/tiendas/`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -196,5 +204,48 @@
         const data = await response.json();
 
         if (!response.ok) {
-          alert('Error al cargar los datos: ' + (data.error || 'Acceso denegado.'));
-          return
+          document.getElementById('loadingState').innerHTML = `<span style="color:#ff4d4d;">❌ Error: ${data.error || 'Acceso denegado.'}</span>`;
+          return;
+        }
+
+        const tbody = document.getElementById('listaTiendasCuerpo');
+        tbody.innerHTML = '';
+
+        if (!data.tiendas || data.tiendas.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 20px;">No hay tiendas registradas aún en el sistema.</td></tr>';
+        } else {
+          data.tiendas.forEach(t => {
+            tbody.innerHTML += `
+              <tr>
+                <td><strong>${t.nombre}</strong></td>
+                <td><small style="color:#94a3b8">${t.codigo}</small></td>
+                <td>${t.email || '<em style="color:#64748b">Sin correo</em>'}</td>
+                <td><span class="txt-clave">${t.clave || '------'}</span></td>
+                <td>${t.region || 'General'}</td>
+                <td>${t.ciudad || 'General'}</td>
+                <td style="text-align: center; font-weight: bold; color: #ffcc00;">👥 ${t.total_empleados || 0}</td>
+                <td>
+                  <span class="status-badge ${t.activa ? 'status-activa' : 'status-inactiva'}">
+                    ${t.activa ? 'Activa' : 'Inactiva'}
+                  </span>
+                </td>
+              </tr>
+            `;
+          });
+        }
+
+        // Intercambiar estado de carga por la tabla real
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('tablaTiendas').style.display = 'table';
+
+      } catch (error) {
+        console.error(error);
+        document.getElementById('loadingState').innerHTML = '<span style="color:#ff4d4d;">❌ Error al conectar con el servidor. Por favor, refresca la página con F5.</span>';
+      }
+    }
+
+    // Ejecutar la carga apenas abra la página
+    window.onload = cargarTiendasAdmin;
+  </script>
+</body>
+</html>
