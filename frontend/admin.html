@@ -5,121 +5,137 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Álbum Estrellas - Panel de Administración</title>
   <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background-color: #0b1329;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      color: white;
-    }
-    header {
-      background-color: #1c2541;
-      padding: 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 2px solid #ffcc00;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    }
-    header h1 {
-      margin: 0;
-      font-size: 24px;
-      color: #ffcc00;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-    .admin-badge {
-      background: #ffaa00;
-      color: #0b1329;
-      padding: 5px 10px;
-      border-radius: 4px;
-      font-weight: bold;
-      font-size: 12px;
-      margin-left: 10px;
-    }
-    .btn-logout {
-      background: #ef4444;
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .btn-logout:hover {
-      background: #dc2626;
-    }
-    .container {
-      max-width: 1300px;
-      margin: 30px auto;
-      padding: 0 20px;
-    }
-    .welcome-card {
-      background: #1c2541;
-      padding: 20px;
-      border-radius: 10px;
-      border: 1px solid #3a506b;
-      margin-bottom: 30px;
-    }
-    .welcome-card h2 {
-      margin-top: 0;
-      color: #ffcc00;
-    }
-    .table-container {
-      background: #1c2541;
-      border-radius: 10px;
-      border: 1px solid #3a506b;
-      overflow: hidden;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-    }
-    .table-header {
-      background: #3a506b;
-      padding: 15px 20px;
-      font-weight: bold;
-      font-size: 18px;
-      color: #ffcc00;
-      border-bottom: 1px solid #5c7494;
-    }
-    .table-responsive {
-      width: 100%;
-      overflow-x: auto;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: left;
-      min-width: 900px;
-    }
-    th, td {
-      padding: 12px 15px;
-      border-bottom: 1px solid #3a506b;
-      font-size: 14px;
-    }
-    th {
-      background-color: #161e35;
-      color: #cbd5e1;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    tr:hover {
-      background-color: #232f52;
-    }
-    .txt-clave {
-      color: #ffcc00;
-      font-family: 'Courier New', Courier, monospace;
-      font-weight: bold;
-      background: #0b1329;
-      padding: 4px 8px;
-      border-radius: 4px;
-      border: 1px solid #3a506b;
-    }
-    .status-badge {
-      display: inline-block;
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: bold;
-    }
+    body { margin: 0; padding: 0; background-color: #0b1329; font-family: 'Segoe UI', sans-serif; color: white; }
+    header { background-color: #1c2541; padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ffcc00; }
+    header h1 { margin: 0; font-size: 24px; color: #ffcc00; text-transform: uppercase; }
+    .admin-badge { background: #ffaa00; color: #0b1329; padding: 5px 10px; border-radius: 4px; font-weight: bold; font-size: 12px; margin-left: 10px; }
+    .btn-logout { background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    .container { max-width: 1300px; margin: 30px auto; padding: 0 20px; }
+    .welcome-card { background: #1c2541; padding: 20px; border-radius: 10px; border: 1px solid #3a506b; margin-bottom: 30px; }
+    .welcome-card h2 { margin-top: 0; color: #ffcc00; }
+    .table-container { background: #1c2541; border-radius: 10px; border: 1px solid #3a506b; overflow: hidden; }
+    .table-header { background: #3a506b; padding: 15px 20px; font-weight: bold; font-size: 18px; color: #ffcc00; }
+    .table-responsive { width: 100%; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; min-width: 900px; }
+    th, td { padding: 12px 15px; border-bottom: 1px solid #3a506b; font-size: 14px; }
+    th { background-color: #161e35; color: #cbd5e1; text-transform: uppercase; }
+    tr:hover { background-color: #232f52; }
+    .txt-clave { color: #ffcc00; font-family: monospace; font-weight: bold; background: #0b1329; padding: 4px 8px; border-radius: 4px; }
+    .status-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
     .status-activa { background: #10b981; color: #064e3b; }
-    .status-inactiva { background: #ef4444; color: #
+    .status-inactiva { background: #ef4444; color: #7f1d1d; }
+    .loading { text-align: center; padding: 40px; font-size: 18px; color: #cbd5e1; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div style="display: flex; align-items: center;">
+      <h1>Álbum Estrellas</h1>
+      <span class="admin-badge">PANEL ADMIN</span>
+    </div>
+    <button class="btn-logout" id="btnLogout">CERRAR SESIÓN</button>
+  </header>
+
+  <div class="container">
+    <div class="welcome-card">
+      <h2>¡Bienvenido al Panel de Control Corporativo!</h2>
+      <p>Monitoreo a gran escala de las sucursales Sportline. Consulta correos, audita contraseñas en vivo y revisa las planillas de personal.</p>
+    </div>
+
+    <div class="table-container">
+      <div class="table-header">Resumen General de Sucursales</div>
+      <div id="loadingState" class="loading">Cargando base de datos de Sportline...</div>
+      
+      <div class="table-responsive">
+        <table id="tablaTiendas" style="display: none;">
+          <thead>
+            <tr>
+              <th>Nombre Sucursal</th>
+              <th>Código ID</th>
+              <th>Correo Electrónico</th>
+              <th>Contraseña Real 👁️</th>
+              <th>Región / País</th>
+              <th>Ciudad / Zona</th>
+              <th style="text-align: center;">Total Empleados</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="listaTiendasCuerpo"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "https://album-cdt-mundial.onrender.com/api";
+    const token = localStorage.getItem('token');
+    const esAdmin = localStorage.getItem('esAdmin');
+
+    if (!token || esAdmin !== 'true') {
+      localStorage.clear();
+      window.location.href = 'index.html';
+    }
+
+    document.getElementById('btnLogout').onclick = () => {
+      localStorage.clear();
+      window.location.href = 'index.html';
+    };
+
+    async function cargarTiendasAdmin() {
+      try {
+        // 🔍 ENLACE CORRECTO: Apunta al módulo /stores/ real en producción
+        const response = await fetch(`${API_URL}/stores/`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          document.getElementById('loadingState').innerHTML = `<span style="color:#ff4d4d;">❌ Error: ${data.error || 'Acceso denegado.'}</span>`;
+          return;
+        }
+
+        const tbody = document.getElementById('listaTiendasCuerpo');
+        tbody.innerHTML = '';
+
+        if (!data.tiendas || data.tiendas.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:20px;">No hay sucursales registradas.</td></tr>';
+        } else {
+          data.tiendas.forEach(t => {
+            tbody.innerHTML += `
+              <tr>
+                <td><strong>${t.nombre}</strong></td>
+                <td><small style="color:#94a3b8">${t.codigo}</small></td>
+                <td>${t.email}</td>
+                <td><span class="txt-clave">${t.clave || '------'}</span></td>
+                <td>${t.region}</td>
+                <td>${t.ciudad}</td>
+                <td style="text-align: center; font-weight: bold; color: #ffcc00;">👥 ${t.total_empleados}</td>
+                <td>
+                  <span class="status-badge ${t.activa ? 'status-activa' : 'status-inactiva'}">
+                    ${t.activa ? 'Activa' : 'Inactiva'}
+                  </span>
+                </td>
+              </tr>
+            `;
+          });
+        }
+
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('tablaTiendas').style.display = 'table';
+
+      } catch (error) {
+        console.error(error);
+        document.getElementById('loadingState').innerHTML = '<span style="color:#ff4d4d;">❌ Error de conexión. Refresca con Ctrl + F5.</span>';
+      }
+    }
+
+    window.onload = cargarTiendasAdmin;
+  </script>
+</body>
+</html>
