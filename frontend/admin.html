@@ -3,67 +3,53 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Álbum Estrellas - Panel de Administración</title>
+  <title>Álbum Estrellas - Panel Admin</title>
   <style>
-    body { margin: 0; padding: 0; background-color: #0b1329; font-family: 'Segoe UI', sans-serif; color: white; }
+    body { margin: 0; padding: 0; background-color: #0b1329; font-family: sans-serif; color: white; }
     header { background-color: #1c2541; padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ffcc00; }
-    header h1 { margin: 0; font-size: 24px; color: #ffcc00; text-transform: uppercase; }
-    .admin-badge { background: #ffaa00; color: #0b1329; padding: 5px 10px; border-radius: 4px; font-weight: bold; font-size: 12px; margin-left: 10px; }
+    header h1 { margin: 0; font-size: 24px; color: #ffcc00; }
     .btn-logout { background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; }
-    .container { max-width: 1300px; margin: 30px auto; padding: 0 20px; }
-    .welcome-card { background: #1c2541; padding: 20px; border-radius: 10px; border: 1px solid #3a506b; margin-bottom: 30px; }
-    .welcome-card h2 { margin-top: 0; color: #ffcc00; }
-    .table-container { background: #1c2541; border-radius: 10px; border: 1px solid #3a506b; overflow: hidden; }
-    .table-header { background: #3a506b; padding: 15px 20px; font-weight: bold; font-size: 18px; color: #ffcc00; }
-    .table-responsive { width: 100%; overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; text-align: left; min-width: 900px; }
-    th, td { padding: 12px 15px; border-bottom: 1px solid #3a506b; font-size: 14px; }
-    th { background-color: #161e35; color: #cbd5e1; text-transform: uppercase; }
-    tr:hover { background-color: #232f52; }
+    .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+    .card { background: #1c2541; padding: 20px; border-radius: 10px; margin-bottom: 30px; border: 1px solid #3a506b; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 12px; border-bottom: 1px solid #3a506b; text-align: left; }
+    th { background: #161e35; color: #cbd5e1; text-transform: uppercase; font-size: 13px; }
     .txt-clave { color: #ffcc00; font-family: monospace; font-weight: bold; background: #0b1329; padding: 4px 8px; border-radius: 4px; }
-    .status-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
-    .status-activa { background: #10b981; color: #064e3b; }
-    .status-inactiva { background: #ef4444; color: #7f1d1d; }
-    .loading { text-align: center; padding: 40px; font-size: 18px; color: #cbd5e1; }
+    .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+    .badge-v { background: #10b981; color: #064e3b; }
   </style>
 </head>
 <body>
 
   <header>
-    <div style="display: flex; align-items: center;">
-      <h1>Álbum Estrellas</h1>
-      <span class="admin-badge">PANEL ADMIN</span>
-    </div>
+    <h1>Álbum Estrellas - Panel General de Tiendas</h1>
     <button class="btn-logout" id="btnLogout">CERRAR SESIÓN</button>
   </header>
 
   <div class="container">
-    <div class="welcome-card">
-      <h2>¡Bienvenido al Panel de Control Corporativo!</h2>
-      <p>Monitoreo a gran escala de las sucursales Sportline. Consulta correos, audita contraseñas en vivo y revisa las planillas de personal.</p>
+    <div class="card">
+      <h2>Monitoreo Corporativo en Tiempo Real (Sportline)</h2>
+      <p>Control centralizado de contraseñas, correos electrónicos y auditoría de personal.</p>
     </div>
 
-    <div class="table-container">
-      <div class="table-header">Resumen General de Sucursales</div>
-      <div id="loadingState" class="loading">Cargando base de datos de Sportline...</div>
+    <div class="card" style="overflow-x: auto;">
+      <div id="loadingState" style="text-align: center; padding: 20px;">Cargando la base de datos de Sportline...</div>
       
-      <div class="table-responsive">
-        <table id="tablaTiendas" style="display: none;">
-          <thead>
-            <tr>
-              <th>Nombre Sucursal</th>
-              <th>Código ID</th>
-              <th>Correo Electrónico</th>
-              <th>Contraseña Real 👁️</th>
-              <th>Región / País</th>
-              <th>Ciudad / Zona</th>
-              <th style="text-align: center;">Total Empleados</th>
-              <th>Estado</th>
-            </tr>
-          </thead>
-          <tbody id="listaTiendasCuerpo"></tbody>
-        </table>
-      </div>
+      <table id="tablaTiendas" style="display: none;">
+        <thead>
+          <tr>
+            <th>Nombre Sucursal</th>
+            <th>Código ID</th>
+            <th>Correo Electrónico</th>
+            <th>Contraseña Real 👁️</th>
+            <th>Región</th>
+            <th>Ciudad</th>
+            <th>Total Empleados</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody id="listaTiendasCuerpo"></tbody>
+      </table>
     </div>
   </div>
 
@@ -84,8 +70,8 @@
 
     async function cargarTiendasAdmin() {
       try {
-        // 🔍 ENLACE CORRECTO: Apunta al módulo /stores/ real en producción
-        const response = await fetch(`${API_URL}/stores/`, {
+        // 🔍 ENLACE PERFECTO EN ESPAÑOL REAPUNTADO A TU SERVIDOR:
+        const response = await fetch(`${API_URL}/tiendas/`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -96,7 +82,7 @@
         const data = await response.json();
 
         if (!response.ok) {
-          document.getElementById('loadingState').innerHTML = `<span style="color:#ff4d4d;">❌ Error: ${data.error || 'Acceso denegado.'}</span>`;
+          document.getElementById('loadingState').innerHTML = "Error al leer datos del servidor.";
           return;
         }
 
@@ -104,23 +90,19 @@
         tbody.innerHTML = '';
 
         if (!data.tiendas || data.tiendas.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:20px;">No hay sucursales registradas.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No hay tiendas en el sistema.</td></tr>';
         } else {
           data.tiendas.forEach(t => {
             tbody.innerHTML += `
               <tr>
                 <td><strong>${t.nombre}</strong></td>
                 <td><small style="color:#94a3b8">${t.codigo}</small></td>
-                <td>${t.email}</td>
+                <td>${t.email || 'Sin correo'}</td>
                 <td><span class="txt-clave">${t.clave || '------'}</span></td>
-                <td>${t.region}</td>
-                <td>${t.ciudad}</td>
-                <td style="text-align: center; font-weight: bold; color: #ffcc00;">👥 ${t.total_empleados}</td>
-                <td>
-                  <span class="status-badge ${t.activa ? 'status-activa' : 'status-inactiva'}">
-                    ${t.activa ? 'Activa' : 'Inactiva'}
-                  </span>
-                </td>
+                <td>${t.region || 'General'}</td>
+                <td>${t.ciudad || 'General'}</td>
+                <td style="color:#ffcc00; font-weight:bold;">👥 ${t.total_empleados || 0}</td>
+                <td><span class="badge badge-v">Activa</span></td>
               </tr>
             `;
           });
@@ -131,7 +113,7 @@
 
       } catch (error) {
         console.error(error);
-        document.getElementById('loadingState').innerHTML = '<span style="color:#ff4d4d;">❌ Error de conexión. Refresca con Ctrl + F5.</span>';
+        document.getElementById('loadingState').innerHTML = "❌ Error de conexión. Refresca la página.";
       }
     }
 
