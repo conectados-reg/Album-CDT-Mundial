@@ -42,8 +42,11 @@ router.post('/ventas', verificarSyncKey, async (req, res) => {
       .eq('codigo', tienda_codigo.trim().toUpperCase())
       .maybeSingle();
 
-    if (tErr || !tienda) {
-      return res.status(404).json({ error: `Tienda "${tienda_codigo}" no encontrada.` });
+    if (tErr) {
+      return res.status(500).json({ error: `Error DB al buscar tienda: ${tErr.message}`, codigo: tienda_codigo });
+    }
+    if (!tienda) {
+      return res.status(404).json({ error: `Tienda "${tienda_codigo}" no encontrada.`, buscado: tienda_codigo.trim().toUpperCase() });
     }
 
     // 2. Buscar semana por número
