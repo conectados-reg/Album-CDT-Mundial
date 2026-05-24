@@ -13,10 +13,9 @@
       --p-orange: #F7A800;
       --p-red:    #E8231A;
       --p-gold:   #f0c030;
+      --p-green:  #00c853;
     }
-
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
       background: linear-gradient(160deg, #010a1e 0%, #021233 60%, #010c24 100%);
       min-height: 100vh;
@@ -25,283 +24,147 @@
       overflow-x: hidden;
     }
 
-    /* ── NAVBAR ─────────────────────────────────────────────── */
+    /* ── NAVBAR ── */
     nav {
-      position: sticky;
-      top: 0;
-      z-index: 500;
+      position: sticky; top: 0; z-index: 500;
       background: linear-gradient(90deg, #000d2e 0%, #001a55 50%, #000d2e 100%);
       border-bottom: 3px solid var(--p-orange);
       box-shadow: 0 4px 24px rgba(0,0,0,.6);
       padding: .6rem 1.5rem;
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      flex-wrap: wrap;
+      display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
     }
-    .nav-brand {
-      display: flex;
-      align-items: center;
-      gap: .6rem;
-      flex: 1;
-    }
-    .nav-icon {
-      font-size: 1.6rem;
-      filter: drop-shadow(0 0 8px rgba(247,168,0,.6));
-    }
-    .nav-title {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.5rem;
-      letter-spacing: .12em;
-      color: #fff;
-      line-height: 1;
-    }
+    .nav-brand { display: flex; align-items: center; gap: .6rem; flex: 1; }
+    .nav-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: .12em; color: #fff; line-height: 1; }
     .nav-title span { color: var(--p-orange); }
-    .nav-store {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: .7rem;
-      letter-spacing: .15em;
-      color: rgba(255,255,255,.45);
-      text-transform: uppercase;
-    }
+    .nav-store { font-family: 'Barlow Condensed', sans-serif; font-size: .7rem; letter-spacing: .15em; color: rgba(255,255,255,.45); text-transform: uppercase; }
     .btn-salir {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: .72rem;
-      font-weight: 700;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      background: rgba(232,35,26,.15);
-      color: #ff6b6b;
-      border: 1.5px solid rgba(232,35,26,.5);
-      border-radius: 20px;
-      padding: .35rem 1rem;
-      cursor: pointer;
-      transition: all .2s;
+      font-family: 'Barlow Condensed', sans-serif; font-size: .72rem; font-weight: 700;
+      letter-spacing: .12em; text-transform: uppercase;
+      background: rgba(232,35,26,.15); color: #ff6b6b; border: 1.5px solid rgba(232,35,26,.5);
+      border-radius: 20px; padding: .35rem 1rem; cursor: pointer; transition: all .2s;
     }
-    .btn-salir:hover {
-      background: var(--p-red);
-      color: #fff;
-      border-color: var(--p-red);
-      box-shadow: 0 0 16px rgba(232,35,26,.5);
-    }
+    .btn-salir:hover { background: var(--p-red); color: #fff; border-color: var(--p-red); }
 
-    /* ── HERO STATS ─────────────────────────────────────────── */
+    /* ── HERO STATS ── */
     .hero-stats {
-      max-width: 900px;
-      margin: 2.5rem auto 2rem;
-      padding: 0 1.5rem;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1rem;
+      max-width: 900px; margin: 2rem auto 1.5rem; padding: 0 1.5rem;
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;
     }
     .stat-card {
       background: linear-gradient(135deg, rgba(0,70,173,.2), rgba(0,30,90,.3));
-      border: 1.5px solid rgba(247,168,0,.25);
-      border-radius: 14px;
-      padding: 1.2rem 1rem;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
+      border: 1.5px solid rgba(247,168,0,.25); border-radius: 14px;
+      padding: 1.2rem 1rem; text-align: center; position: relative; overflow: hidden;
     }
     .stat-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 3px;
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
       background: linear-gradient(90deg, transparent, var(--p-orange), transparent);
     }
-    .stat-n {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 3rem;
-      color: var(--p-orange);
-      line-height: 1;
-      text-shadow: 0 0 20px rgba(247,168,0,.4);
-    }
-    .stat-l {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: .7rem;
-      letter-spacing: .15em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,.4);
-      margin-top: .3rem;
-    }
+    .stat-n { font-family: 'Bebas Neue', sans-serif; font-size: 3rem; color: var(--p-orange); line-height: 1; text-shadow: 0 0 20px rgba(247,168,0,.4); }
+    .stat-l { font-family: 'Barlow Condensed', sans-serif; font-size: .7rem; letter-spacing: .15em; text-transform: uppercase; color: rgba(255,255,255,.4); margin-top: .3rem; }
 
-    /* ── SECTION TITLE ──────────────────────────────────────── */
-    .section-wrapper {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 1.5rem 4rem;
-    }
+    /* ── ALBUM ── */
+    .section-wrapper { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem 4rem; }
     .section-title-bar {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      margin-bottom: 2rem;
-      padding-bottom: .8rem;
-      border-bottom: 2px solid rgba(247,168,0,.2);
+      display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;
+      padding-bottom: .8rem; border-bottom: 2px solid rgba(247,168,0,.2);
     }
-    .section-title-bar h2 {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.8rem;
-      letter-spacing: .1em;
-      color: #fff;
-    }
+    .section-title-bar h2 { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: .1em; color: #fff; }
     .section-badge {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: .68rem;
-      font-weight: 700;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-      background: rgba(247,168,0,.15);
-      color: var(--p-orange);
-      border: 1px solid rgba(247,168,0,.3);
-      border-radius: 20px;
-      padding: .2rem .7rem;
+      font-family: 'Barlow Condensed', sans-serif; font-size: .68rem; font-weight: 700;
+      letter-spacing: .1em; text-transform: uppercase; background: rgba(247,168,0,.15);
+      color: var(--p-orange); border: 1px solid rgba(247,168,0,.3); border-radius: 20px; padding: .2rem .7rem;
+    }
+    .hint-badge {
+      font-family: 'Barlow Condensed', sans-serif; font-size: .68rem; letter-spacing: .06em;
+      color: rgba(255,255,255,.3); border: 1px solid rgba(255,255,255,.08);
+      border-radius: 20px; padding: .2rem .7rem; margin-left: auto;
     }
 
-    /* ── STICKER GRID ───────────────────────────────────────── */
-    .album-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 1.2rem;
-    }
+    /* ── STICKER GRID ── */
+    .album-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.2rem; }
 
-    /* ── STICKER CARD ───────────────────────────────────────── */
+    /* ── STICKER CARD ── */
     .sticker-card {
       background: linear-gradient(160deg, #0d1e4a 0%, #091535 100%);
-      border: 1.5px solid rgba(255,255,255,.08);
-      border-radius: 14px;
-      overflow: hidden;
-      cursor: pointer;
-      position: relative;
-      transition: transform .25s, box-shadow .25s, border-color .25s;
-      aspect-ratio: 9/13;
-      display: flex;
-      flex-direction: column;
+      border: 1.5px solid rgba(255,255,255,.08); border-radius: 14px; overflow: hidden;
+      position: relative; transition: transform .25s, box-shadow .25s, border-color .25s;
+      aspect-ratio: 9/13; display: flex; flex-direction: column;
     }
-    .sticker-card:hover {
-      transform: translateY(-6px) scale(1.03);
-      border-color: var(--p-orange);
-      box-shadow: 0 12px 40px rgba(247,168,0,.35), 0 0 0 1px rgba(247,168,0,.2);
-      z-index: 10;
+    .sticker-card.unlocked { cursor: pointer; }
+    .sticker-card.unlocked:hover {
+      transform: translateY(-6px) scale(1.03); border-color: var(--p-orange);
+      box-shadow: 0 12px 40px rgba(247,168,0,.35), 0 0 0 1px rgba(247,168,0,.2); z-index: 10;
     }
-
-    /* Top color band */
-    .card-band {
-      height: 8px;
-      background: linear-gradient(90deg, var(--p-blue), #0069d9);
-      flex-shrink: 0;
-    }
-    .sticker-card.gold .card-band {
-      background: linear-gradient(90deg, #7a5500, var(--p-gold));
-    }
-
-    /* Card number */
-    .card-num {
-      position: absolute;
-      top: 14px;
-      left: 10px;
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: .7rem;
-      color: rgba(255,255,255,.35);
-      letter-spacing: .05em;
-    }
-
-    /* Icon / photo area */
-    .card-photo {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 1rem;
-    }
-    .card-icon {
-      font-size: 4rem;
-      filter: drop-shadow(0 4px 12px rgba(0,0,0,.5));
-      transition: transform .25s, filter .25s;
-    }
-    .sticker-card:hover .card-icon {
-      transform: scale(1.1);
-      filter: drop-shadow(0 0 16px rgba(247,168,0,.5));
-    }
-
-    /* Card footer info */
-    .card-footer {
-      background: rgba(0,0,0,.35);
-      border-top: 1px solid rgba(255,255,255,.06);
-      padding: .55rem .7rem;
-    }
-    .card-code {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: .62rem;
-      color: var(--p-orange);
-      letter-spacing: .1em;
-      margin-bottom: .15rem;
-    }
-    .card-name {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: .8rem;
-      font-weight: 700;
-      color: #fff;
-      line-height: 1.2;
-      letter-spacing: .02em;
-    }
-
-    /* ── LOCKED STATE ───────────────────────────────────────── */
-    .sticker-card.locked {
-      opacity: .35;
-      filter: grayscale(1);
-      cursor: not-allowed;
-    }
-    .sticker-card.locked:hover {
-      transform: translateY(-3px);
-      border-color: rgba(255,255,255,.2);
-      box-shadow: 0 6px 20px rgba(0,0,0,.4);
-      opacity: .45;
-      filter: grayscale(.7);
-    }
-    .lock-badge {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%,-60%);
-      font-size: 1.8rem;
-      opacity: .7;
-      display: none;
-      pointer-events: none;
-    }
+    .sticker-card.locked { opacity: .35; filter: grayscale(1); cursor: default; }
+    .sticker-card.gold .card-band { background: linear-gradient(90deg, #7a5500, var(--p-gold)); }
+    .card-band { height: 8px; background: linear-gradient(90deg, var(--p-blue), #0069d9); flex-shrink: 0; }
+    .card-num { position: absolute; top: 14px; left: 10px; font-family: 'Bebas Neue', sans-serif; font-size: .7rem; color: rgba(255,255,255,.35); letter-spacing: .05em; }
+    .card-photo { flex: 1; display: flex; align-items: center; justify-content: center; padding: 1rem; position: relative; }
+    .card-icon { font-size: 4rem; filter: drop-shadow(0 4px 12px rgba(0,0,0,.5)); transition: transform .25s, filter .25s; }
+    .sticker-card.unlocked:hover .card-icon { transform: scale(1.1); filter: drop-shadow(0 0 16px rgba(247,168,0,.5)); }
+    .card-footer { background: rgba(0,0,0,.35); border-top: 1px solid rgba(255,255,255,.06); padding: .55rem .7rem; }
+    .card-code { font-family: 'Bebas Neue', sans-serif; font-size: .62rem; color: var(--p-orange); letter-spacing: .1em; margin-bottom: .15rem; }
+    .card-name { font-family: 'Barlow Condensed', sans-serif; font-size: .8rem; font-weight: 700; color: #fff; line-height: 1.2; letter-spacing: .02em; }
+    .lock-badge { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-60%); font-size: 1.8rem; opacity: .7; display: none; pointer-events: none; }
     .locked .lock-badge { display: block; }
-
-    /* ── WATERMARK ──────────────────────────────────────────── */
-    .card-watermark {
-      position: absolute;
-      bottom: 38px;
-      right: 8px;
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 3.5rem;
-      color: rgba(255,255,255,.04);
-      letter-spacing: .05em;
-      pointer-events: none;
-      user-select: none;
+    .card-watermark { position: absolute; bottom: 38px; right: 8px; font-family: 'Bebas Neue', sans-serif; font-size: 3.5rem; color: rgba(255,255,255,.04); pointer-events: none; user-select: none; }
+    .upload-overlay {
+      position: absolute; inset: 0; background: rgba(0,0,0,.72);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity .2s;
+      font-family: 'Barlow Condensed', sans-serif; font-size: .8rem; letter-spacing: .06em;
+      color: var(--p-orange); text-transform: uppercase; gap: .4rem;
     }
+    .sticker-card.unlocked:hover .upload-overlay { opacity: 1; }
+    .upload-overlay .upload-icon { font-size: 2rem; }
 
-    /* ── FOOTER ─────────────────────────────────────────────── */
-    footer {
-      text-align: center;
-      padding: 1.5rem;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: .7rem;
-      letter-spacing: .12em;
-      color: rgba(255,255,255,.2);
-      text-transform: uppercase;
-      border-top: 1px solid rgba(255,255,255,.05);
+    /* ── MODAL FOTO ── */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.82); z-index: 9000;
+      display: flex; align-items: center; justify-content: center; padding: 1rem;
     }
+    .modal-box {
+      background: linear-gradient(160deg, #0d1e4a 0%, #091535 100%);
+      border: 1.5px solid rgba(247,168,0,.35); border-radius: 18px;
+      padding: 2rem; max-width: 420px; width: 100%; position: relative;
+    }
+    .modal-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: .1em; color: var(--p-orange); margin-bottom: .25rem; }
+    .modal-sub { font-family: 'Barlow Condensed', sans-serif; font-size: .8rem; color: rgba(255,255,255,.45); margin-bottom: 1.4rem; }
+    .modal-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: rgba(255,255,255,.4); font-size: 1.2rem; cursor: pointer; padding: .2rem; }
+    .foto-preview { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid rgba(247,168,0,.4); display: block; margin: 0 auto 1.2rem; }
+    .foto-drop-zone {
+      border: 2px dashed rgba(247,168,0,.3); border-radius: 12px; padding: 2rem 1rem;
+      text-align: center; cursor: pointer; transition: all .2s; margin-bottom: 1rem;
+    }
+    .foto-drop-zone:hover { border-color: var(--p-orange); background: rgba(247,168,0,.05); }
+    .foto-drop-zone p { font-family: 'Barlow Condensed', sans-serif; font-size: .82rem; letter-spacing: .05em; color: rgba(255,255,255,.4); }
+    .btn-primary {
+      font-family: 'Bebas Neue', sans-serif; font-size: 1rem; letter-spacing: .15em;
+      background: linear-gradient(90deg, #e09500, var(--p-orange), #e09500); background-size: 200%;
+      color: #000; border: none; border-radius: 10px; padding: .7rem 1.5rem;
+      cursor: pointer; transition: background-position .4s, box-shadow .3s;
+      box-shadow: 0 4px 20px rgba(247,168,0,.3); width: 100%;
+    }
+    .btn-primary:hover { background-position: right; box-shadow: 0 6px 28px rgba(247,168,0,.5); }
+    .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+    .alert { border-radius: 10px; padding: .8rem 1rem; margin-bottom: 1rem; font-family: 'Barlow Condensed', sans-serif; font-size: .82rem; letter-spacing: .04em; display: none; }
+    .alert-success { background: rgba(0,200,83,.08); border: 1px solid rgba(0,200,83,.3); color: #69f0ae; }
+    .alert-error { background: rgba(232,35,26,.1); border: 1px solid rgba(232,35,26,.4); color: #ff8080; }
+
+    /* ── LOADING ── */
+    .loading-msg { text-align: center; padding: 3rem; font-family: 'Barlow Condensed', sans-serif; font-size: .9rem; color: rgba(255,255,255,.3); grid-column: 1/-1; }
+    .spin { display: inline-block; animation: spinAnim 1.2s linear infinite; }
+    @keyframes spinAnim { to { transform: rotate(360deg); } }
+
+    /* ── FOOTER ── */
+    footer { text-align: center; padding: 1.5rem; font-family: 'Barlow Condensed', sans-serif; font-size: .7rem; letter-spacing: .12em; color: rgba(255,255,255,.2); text-transform: uppercase; border-top: 1px solid rgba(255,255,255,.05); }
 
     @media (max-width: 600px) {
-      .hero-stats { grid-template-columns: repeat(3,1fr); gap: .6rem; }
+      .hero-stats { gap: .6rem; }
       .stat-n { font-size: 2rem; }
       .album-grid { grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); gap: .8rem; }
       nav { padding: .5rem 1rem; }
+      .hint-badge { display: none; }
     }
   </style>
 </head>
@@ -310,56 +173,67 @@
   <!-- NAVBAR -->
   <nav>
     <div class="nav-brand">
-      <img src="https://i.postimg.cc/hv6YBVfc/logo-sla.png" alt="Sportline" style="height:38px;width:auto;filter:drop-shadow(0 0 8px rgba(247,168,0,.5));" onerror="this.outerHTML='<span class=\'nav-icon\'>⭐</span>'">
+      <img src="https://i.postimg.cc/hv6YBVfc/logo-sla.png" alt="Sportline" style="height:38px;width:auto;filter:drop-shadow(0 0 8px rgba(247,168,0,.5));" onerror="this.outerHTML='<span style=\'font-size:1.6rem;\'>⭐</span>'">
       <div>
         <div class="nav-title">ÁLBUM <span>ESTRELLAS</span></div>
-        <div class="nav-store" id="lblTienda">Cargando sucursal...</div>
+        <div class="nav-store" id="lblTienda">Cargando...</div>
       </div>
     </div>
-    <a href="cambiar-clave.html" style="
-      font-family:'Barlow Condensed',sans-serif;font-size:.7rem;font-weight:700;
-      letter-spacing:.1em;text-transform:uppercase;text-decoration:none;
-      background:rgba(0,70,173,.15);color:rgba(255,255,255,.5);
-      border:1.5px solid rgba(0,70,173,.3);border-radius:20px;
-      padding:.35rem .9rem;transition:all .2s;"
-      onmouseover="this.style.background='rgba(0,70,173,.35)';this.style.color='#fff'"
-      onmouseout="this.style.background='rgba(0,70,173,.15)';this.style.color='rgba(255,255,255,.5)'">
-      🔄 Cambiar Clave
-    </a>
+    <a href="cambiar-clave.html" style="font-family:'Barlow Condensed',sans-serif;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;background:rgba(0,70,173,.15);color:rgba(255,255,255,.5);border:1.5px solid rgba(0,70,173,.3);border-radius:20px;padding:.35rem .9rem;transition:all .2s;" onmouseover="this.style.background='rgba(0,70,173,.35)';this.style.color='#fff'" onmouseout="this.style.background='rgba(0,70,173,.15)';this.style.color='rgba(255,255,255,.5)'">🔄 Cambiar Clave</a>
     <button class="btn-salir" onclick="cerrarSesion()">✕ Cerrar Sesión</button>
   </nav>
 
-  <!-- HERO STATS -->
+  <!-- STATS -->
   <div class="hero-stats">
     <div class="stat-card">
-      <div class="stat-n" id="valDesbloqueadas">5</div>
+      <div class="stat-n" id="valDesbloqueadas">—</div>
       <div class="stat-l">Estrellas Ganadas</div>
     </div>
     <div class="stat-card">
-      <div class="stat-n" id="valMeta">100%</div>
-      <div class="stat-l">Cumplimiento de Meta</div>
+      <div class="stat-n" id="valMeta">—</div>
+      <div class="stat-l">Cumplimiento</div>
     </div>
     <div class="stat-card">
-      <div class="stat-n">S8</div>
-      <div class="stat-l">Periodo de Medición</div>
+      <div class="stat-n" id="valSemana">—</div>
+      <div class="stat-l">Semana Activa</div>
     </div>
   </div>
 
-  <!-- ALBUM -->
+  <!-- ÁLBUM GRID -->
   <div class="section-wrapper">
     <div class="section-title-bar">
       <h2>⭐ TUS ESTRELLAS</h2>
-      <span class="section-badge" id="badge-count">8 estrellas</span>
+      <span class="section-badge" id="badgeCount">Cargando...</span>
+      <span class="hint-badge">📷 Haz clic en una casilla desbloqueada para subir la foto</span>
     </div>
-    <div class="album-grid" id="wrapperAlbum"></div>
+    <div class="album-grid" id="wrapperAlbum">
+      <div class="loading-msg"><span class="spin">⚙️</span> Cargando álbum...</div>
+    </div>
   </div>
 
   <footer>Álbum Estrellas · Sportline · Mundial 2026</footer>
 
-  <!-- REPRODUCTOR FLOTANTE — Solo Audio · Canción Oficial FIFA Mundial 2026 -->
+  <!-- MODAL: Subir Foto -->
+  <div id="modalFoto" class="modal-overlay" style="display:none;">
+    <div class="modal-box">
+      <button class="modal-close" onclick="cerrarModal()">✕</button>
+      <div class="modal-title">📷 Subir Foto</div>
+      <div class="modal-sub" id="modalNombre">—</div>
+      <img id="fotoPreview" class="foto-preview" src="" alt="Vista previa" style="display:none;">
+      <div class="foto-drop-zone" onclick="document.getElementById('fileInput').click()">
+        <div style="font-size:2.5rem;margin-bottom:.5rem;">📷</div>
+        <p>Haz clic para seleccionar una foto</p>
+        <p style="font-size:.7rem;margin-top:.3rem;opacity:.6;">JPG o PNG · Máx. 5 MB</p>
+      </div>
+      <input type="file" id="fileInput" accept="image/*" style="display:none;" onchange="previsualizarFoto(event)">
+      <div id="alertFoto" class="alert alert-error"></div>
+      <button class="btn-primary" id="btnSubir" onclick="subirFoto()" style="display:none;">⬆️ Subir al Álbum</button>
+    </div>
+  </div>
+
+  <!-- REPRODUCTOR FLOTANTE -->
   <div style="position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;text-align:right;">
-    <div id="ytBox" style="display:none;margin-bottom:.6rem;border-radius:14px;overflow:hidden;
-         box-shadow:0 12px 40px rgba(0,0,0,.8);border:1.5px solid rgba(247,168,0,.4);background:#000d2e;width:290px;">
+    <div id="ytBox" style="display:none;margin-bottom:.6rem;border-radius:14px;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.8);border:1.5px solid rgba(247,168,0,.4);background:#000d2e;width:290px;">
       <div style="padding:.55rem 1rem;display:flex;align-items:center;gap:.6rem;">
         <span style="font-size:1.1rem;">🎵</span>
         <div>
@@ -368,164 +242,175 @@
         </div>
         <button onclick="toggleMusica()" style="margin-left:auto;background:none;border:none;color:rgba(255,255,255,.4);cursor:pointer;font-size:.8rem;padding:0;">✕</button>
       </div>
-      <!-- Solo se muestra la barra de controles, el video queda oculto -->
       <div style="overflow:hidden;height:36px;position:relative;">
-        <iframe id="ytIframe" width="290" height="200"
-          src="about:blank"
-          data-src="https://www.youtube.com/embed/X9CsK_nuqdE?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3"
-          allow="autoplay; encrypted-media"
-          style="border:none;position:absolute;bottom:0;left:0;">
-        </iframe>
+        <iframe id="ytIframe" width="290" height="200" src="about:blank" data-src="https://www.youtube.com/embed/X9CsK_nuqdE?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3" allow="autoplay; encrypted-media" style="border:none;position:absolute;bottom:0;left:0;"></iframe>
       </div>
     </div>
-    <button id="musicBtn" onclick="toggleMusica()" title="Canción Oficial Mundial 2026"
-      style="width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#001f5e,#0046AD);
-      border:2px solid rgba(247,168,0,.6);color:#F7A800;font-size:1.4rem;cursor:pointer;
-      box-shadow:0 4px 24px rgba(0,70,173,.6);transition:all .25s;outline:none;
-      animation:musicGlow 2.5s infinite;">🎵</button>
+    <button id="musicBtn" onclick="toggleMusica()" title="Canción Oficial Mundial 2026" style="width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#001f5e,#0046AD);border:2px solid rgba(247,168,0,.6);color:#F7A800;font-size:1.4rem;cursor:pointer;box-shadow:0 4px 24px rgba(0,70,173,.6);transition:all .25s;outline:none;animation:musicGlow 2.5s infinite;">🎵</button>
   </div>
   <style>
-    @keyframes musicGlow {
-      0%,100% { box-shadow:0 4px 24px rgba(0,70,173,.6),0 0 0 0 rgba(247,168,0,.4); }
-      50%      { box-shadow:0 4px 24px rgba(0,70,173,.6),0 0 0 10px rgba(247,168,0,.0); }
-    }
+    @keyframes musicGlow { 0%,100%{box-shadow:0 4px 24px rgba(0,70,173,.6),0 0 0 0 rgba(247,168,0,.4);}50%{box-shadow:0 4px 24px rgba(0,70,173,.6),0 0 0 10px rgba(247,168,0,0);} }
   </style>
-  <script>
-    function toggleMusica() {
-      var box   = document.getElementById('ytBox');
-      var btn   = document.getElementById('musicBtn');
-      var frame = document.getElementById('ytIframe');
-      if (box.style.display === 'none') {
-        if (frame.src === 'about:blank') frame.src = frame.dataset.src;
-        box.style.display = 'block';
-        btn.style.display = 'none';
-      } else {
-        box.style.display = 'none';
-        btn.style.display = 'flex';
-        frame.src = 'about:blank';
-      }
-    }
-  </script>
 
   <script>
-    const API_URL  = "https://album-cdt-mundial.onrender.com/api";
-    const token    = localStorage.getItem('token');
-
+    const API_URL = 'https://album-cdt-mundial.onrender.com/api';
+    const token   = localStorage.getItem('token');
     if (!token) window.location.href = 'index.html';
 
-    function cerrarSesion() {
-      localStorage.clear();
-      window.location.href = 'index.html';
+    let empIdFoto = null, fotoBase64 = null, fotoTipo = null;
+
+    function cerrarSesion() { localStorage.clear(); window.location.href = 'index.html'; }
+
+    function toggleMusica() {
+      const box = document.getElementById('ytBox'), btn = document.getElementById('musicBtn'), frame = document.getElementById('ytIframe');
+      if (box.style.display === 'none') { if (frame.src === 'about:blank') frame.src = frame.dataset.src; box.style.display = 'block'; btn.style.display = 'none'; }
+      else { box.style.display = 'none'; frame.src = 'about:blank'; btn.style.display = 'flex'; }
     }
 
-    // Emoji de figurita según el cargo del empleado
     function iconoPorCargo(cargo) {
       const c = (cargo || '').toLowerCase();
       if (c.includes('gerente') || c.includes('director')) return '👑';
-      if (c.includes('supervisor'))  return '🎯';
+      if (c.includes('supervisor')) return '🎯';
       if (c.includes('cajero') || c.includes('caja')) return '💳';
       if (c.includes('bodega') || c.includes('almac')) return '📦';
-      if (c.includes('visual'))      return '🎨';
+      if (c.includes('visual')) return '🎨';
       return '⭐';
     }
 
-    function renderizarAlbum(empleados, semana) {
+    function renderAlbum(empleados, semana) {
       const wrapper = document.getElementById('wrapperAlbum');
       wrapper.innerHTML = '';
 
       if (!empleados.length) {
-        wrapper.innerHTML = `
-          <div style="grid-column:1/-1;text-align:center;padding:3rem 1rem;
-               font-family:'Barlow Condensed',sans-serif;font-size:.9rem;
-               letter-spacing:.06em;color:rgba(255,255,255,.35);">
-            📋 No hay empleados asignados a tu sucursal para ${semana ? semana.nombre : 'esta semana'}.<br>
-            <span style="font-size:.75rem;opacity:.6;">Contacta al administrador para registrar el equipo.</span>
-          </div>`;
+        wrapper.innerHTML = `<div class="loading-msg">📋 No hay asesores registrados en tu sucursal esta semana.<br><span style="font-size:.75rem;opacity:.6;">Contacta al administrador.</span></div>`;
         return;
       }
 
       const desbloqueados = empleados.filter(e => e.desbloqueado).length;
       document.getElementById('valDesbloqueadas').textContent = desbloqueados;
-      document.getElementById('badge-count').textContent = `${empleados.length} figuritas`;
+      document.getElementById('valMeta').textContent = Math.round((desbloqueados / empleados.length) * 100) + '%';
+      document.getElementById('valSemana').textContent = semana ? 'S' + semana.numero : '—';
+      document.getElementById('badgeCount').textContent = empleados.length + ' figuritas';
 
       empleados.forEach(emp => {
         const icono = iconoPorCargo(emp.cargo);
-        const esGold = emp.desbloqueado;
         const imgTag = emp.foto_url
-          ? `<img src="${emp.foto_url}" alt="${emp.nombre}"
-                  style="width:80px;height:80px;border-radius:50%;object-fit:cover;
-                         border:2px solid rgba(247,168,0,.4);"
-                  onerror="this.outerHTML='<span class=\\'card-icon\\'>${icono}</span>'">`
+          ? `<img src="${emp.foto_url}" alt="${emp.nombre}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:2px solid rgba(247,168,0,.5);" onerror="this.outerHTML='<span class=\\'card-icon\\'>${icono}</span>'">`
           : `<span class="card-icon">${icono}</span>`;
 
-        wrapper.innerHTML += `
-          <div class="sticker-card ${emp.desbloqueado ? '' : 'locked'} ${esGold ? 'gold' : ''}">
-            <div class="card-band"></div>
-            <div class="card-num">#${String(emp.numero).padStart(3,'0')}</div>
-            <div class="card-watermark">SL</div>
-            <div class="lock-badge">🔒</div>
-            <div class="card-photo">${imgTag}</div>
-            <div class="card-footer">
-              <div class="card-code">${emp.cargo || 'Asesor de Ventas'}</div>
-              <div class="card-name">${emp.nombre}</div>
-            </div>
+        const overlay = emp.desbloqueado
+          ? `<div class="upload-overlay"><span class="upload-icon">📷</span><span>${emp.foto_url ? 'Cambiar Foto' : 'Subir Foto'}</span></div>`
+          : '';
+
+        const card = document.createElement('div');
+        card.className = `sticker-card ${emp.desbloqueado ? 'unlocked gold' : 'locked'}`;
+        if (emp.desbloqueado) card.onclick = () => abrirModal(emp.id, emp.nombre);
+        card.innerHTML = `
+          <div class="card-band"></div>
+          <div class="card-num">#${String(emp.numero).padStart(3, '0')}</div>
+          <div class="card-watermark">SL</div>
+          <div class="lock-badge">🔒</div>
+          <div class="card-photo">${imgTag}${overlay}</div>
+          <div class="card-footer">
+            <div class="card-code">${emp.cargo || 'Asesor de Ventas'}</div>
+            <div class="card-name">${emp.nombre}</div>
           </div>`;
+        wrapper.appendChild(card);
       });
     }
 
-    async function inicializarAlbum() {
-      const nombreTienda = localStorage.getItem('nombreTienda') || 'SPORTLINE SUCURSAL';
-      document.getElementById('lblTienda').textContent = nombreTienda;
-
+    async function cargarAlbum() {
+      document.getElementById('lblTienda').textContent = localStorage.getItem('nombreTienda') || 'SPORTLINE';
       try {
-        const res = await fetch(`${API_URL}/album/`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-
-        if (res.status === 401) {
-          localStorage.clear();
-          window.location.href = 'index.html';
-          return;
-        }
-
-        if (!res.ok) throw new Error('API error');
-
+        const res = await fetch(`${API_URL}/album/`, { headers: { 'Authorization': `Bearer ${token}` } });
+        if (res.status === 401) { localStorage.clear(); window.location.href = 'index.html'; return; }
+        if (!res.ok) throw new Error();
         const data = await res.json();
-
-        // Actualizar stats con datos reales
-        const semanaLabel = data.semana ? data.semana.nombre : 'S—';
-        document.getElementById('valDesbloqueadas').textContent = data.desbloqueados ?? 0;
-        document.getElementById('valMeta').textContent =
-          data.total > 0 ? `${Math.round((data.desbloqueados / data.total) * 100)}%` : '—';
-        document.querySelector('.stat-n:last-of-type, #semanaLabel') && null;
-        // Actualiza el tercer stat card con la semana real
-        const statCards = document.querySelectorAll('.stat-n');
-        if (statCards[2]) statCards[2].textContent = data.semana ? `S${data.semana.numero}` : 'S—';
-
-        renderizarAlbum(data.empleados || [], data.semana);
-
+        renderAlbum(data.empleados || [], data.semana);
       } catch {
-        // Fallback visual mientras el backend está en frío (Render free tier)
-        console.warn('Backend no disponible, mostrando demo.');
-        document.querySelector('.stat-n:nth-child(1)') && null;
-
-        const demo = [
-          { numero:1, nombre:'Ana García',      cargo:'Gerente de Tienda',    desbloqueado:true,  foto_url:null },
-          { numero:2, nombre:'Carlos López',    cargo:'Asesor de Ventas',     desbloqueado:true,  foto_url:null },
-          { numero:3, nombre:'María Rodríguez', cargo:'Supervisora',          desbloqueado:true,  foto_url:null },
-          { numero:4, nombre:'José Martínez',   cargo:'Asesor de Ventas',     desbloqueado:false, foto_url:null },
-          { numero:5, nombre:'Laura Pérez',     cargo:'Cajera',               desbloqueado:false, foto_url:null },
-          { numero:6, nombre:'Diego Torres',    cargo:'Visual Merchandiser',  desbloqueado:false, foto_url:null },
-        ];
-
-        document.getElementById('valDesbloqueadas').textContent = 3;
-        document.getElementById('valMeta').textContent = '50%';
-        document.getElementById('badge-count').textContent = `${demo.length} figuritas (demo)`;
-        renderizarAlbum(demo, { nombre: 'Semana 2 — Demo' });
+        renderAlbum([
+          { id: 'd1', numero: 1, nombre: 'Ana García',      cargo: 'Gerente',          desbloqueado: true,  foto_url: null },
+          { id: 'd2', numero: 2, nombre: 'Carlos López',    cargo: 'Asesor de Ventas', desbloqueado: true,  foto_url: null },
+          { id: 'd3', numero: 3, nombre: 'María Rodríguez', cargo: 'Supervisora',      desbloqueado: false, foto_url: null },
+        ], { numero: 1 });
+        document.getElementById('badgeCount').textContent = '3 figuritas (demo)';
       }
     }
 
-    window.onload = inicializarAlbum;
+    /* ── MODAL FOTO ── */
+    function abrirModal(empId, nombre) {
+      empIdFoto = empId; fotoBase64 = null; fotoTipo = null;
+      document.getElementById('modalNombre').textContent = nombre;
+      document.getElementById('fotoPreview').style.display = 'none';
+      document.getElementById('btnSubir').style.display = 'none';
+      document.getElementById('alertFoto').style.display = 'none';
+      document.getElementById('fileInput').value = '';
+      document.getElementById('modalFoto').style.display = 'flex';
+    }
+
+    function cerrarModal() { document.getElementById('modalFoto').style.display = 'none'; }
+
+    document.getElementById('modalFoto').addEventListener('click', function(e) {
+      if (e.target === this) cerrarModal();
+    });
+
+    function previsualizarFoto(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      if (file.size > 5 * 1024 * 1024) { mostrarAlerta('La foto no puede superar 5 MB.'); return; }
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const max = 500;
+          let w = img.width, h = img.height;
+          if (w > h && w > max) { h = h * (max / w); w = max; }
+          else if (h > max) { w = w * (max / h); h = max; }
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+          fotoBase64 = dataUrl.split(',')[1];
+          fotoTipo = 'image/jpeg';
+          const preview = document.getElementById('fotoPreview');
+          preview.src = dataUrl;
+          preview.style.display = 'block';
+          document.getElementById('btnSubir').style.display = 'block';
+          document.getElementById('alertFoto').style.display = 'none';
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function subirFoto() {
+      if (!fotoBase64 || !empIdFoto) return;
+      const btn = document.getElementById('btnSubir');
+      btn.textContent = 'Subiendo...'; btn.disabled = true;
+      try {
+        const res = await fetch(`${API_URL}/album/foto`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ empleado_id: empIdFoto, foto_base64: fotoBase64, tipo: fotoTipo })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        mostrarAlerta('¡Foto subida con éxito! ⭐', true);
+        setTimeout(() => { cerrarModal(); cargarAlbum(); }, 1600);
+      } catch (err) {
+        mostrarAlerta(err.message || 'Error al subir la foto.');
+        btn.textContent = '⬆️ Subir al Álbum'; btn.disabled = false;
+      }
+    }
+
+    function mostrarAlerta(msg, ok = false) {
+      const el = document.getElementById('alertFoto');
+      el.textContent = msg;
+      el.className = 'alert ' + (ok ? 'alert-success' : 'alert-error');
+      el.style.display = 'block';
+    }
+
+    window.onload = cargarAlbum;
   </script>
 </body>
 </html>
