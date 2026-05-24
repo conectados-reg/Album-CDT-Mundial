@@ -236,11 +236,6 @@
     <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
   </audio>
   <div style="position:fixed;bottom:1.5rem;left:1.5rem;z-index:9999;">
-    <div id="ytBox" style="display:none;margin-bottom:.6rem;background:rgba(0,13,46,.92);border:1.5px solid rgba(247,168,0,.4);border-radius:24px;padding:.45rem 1rem;align-items:center;gap:.7rem;backdrop-filter:blur(10px);">
-      <span style="font-size:.9rem;">🎵</span>
-      <span style="font-family:'Barlow Condensed',sans-serif;font-size:.75rem;letter-spacing:.1em;color:rgba(255,255,255,.75);">FIFA MUNDIAL 2026</span>
-      <button onclick="toggleMusica()" style="background:none;border:none;color:rgba(255,255,255,.4);cursor:pointer;font-size:.85rem;padding:0;line-height:1;margin-left:.3rem;">✕</button>
-    </div>
     <button id="musicBtn" onclick="toggleMusica()" title="Canción Oficial Mundial 2026" style="width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#001f5e,#0046AD);border:2px solid rgba(247,168,0,.6);color:#F7A800;font-size:1.4rem;cursor:pointer;box-shadow:0 4px 24px rgba(0,70,173,.6);transition:all .25s;outline:none;animation:musicGlow 2.5s infinite;">🎵</button>
   </div>
   <style>
@@ -257,18 +252,14 @@
     function cerrarSesion() { localStorage.clear(); window.location.href = 'index.html'; }
 
     function toggleMusica() {
-      const box   = document.getElementById('ytBox');
       const btn   = document.getElementById('musicBtn');
       const audio = document.getElementById('audioMusica');
-      if (box.style.display !== 'flex') {
+      if (audio.paused) {
         audio.play();
-        box.style.display = 'flex';
-        btn.style.display = 'none';
+        btn.textContent = '⏸';
       } else {
         audio.pause();
-        audio.currentTime = 0;
-        box.style.display = 'none';
-        btn.style.display = 'flex';
+        btn.textContent = '🎵';
       }
     }
 
