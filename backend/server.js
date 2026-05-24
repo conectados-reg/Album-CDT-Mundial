@@ -12,17 +12,19 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 
 // Diagnóstico inicial
 app.get('/', (req, res) => {
   res.send('¡Servidor del Álbum Sportline operando con éxito! 🚀');
 });
 
-// ENRUTAMIENTO CORREGIDO (Usa rutas locales estándar de Node)
 app.use('/api/auth', require('./routes/auth.js'));
 app.use('/api/tiendas', require('./routes/stores.js'));
 app.use('/api/album', require('./routes/album.js'));
+app.use('/api/empleados', require('./routes/empleados.js'));
+app.use('/api/ventas', require('./routes/ventas.js'));
+app.use('/api/notificaciones', require('./routes/notificaciones.js'));
 
 // Control de rutas globales no encontradas
 app.use((req, res) => {
