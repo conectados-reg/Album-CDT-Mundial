@@ -87,36 +87,83 @@ router.post('/enviar/:tienda_id', verificarToken, async (req, res) => {
     });
 
     const listaHtml = (empleados || [])
-      .map(e => `<li style="margin:.4em 0;"><strong>${e.nombre}</strong> <span style="color:#666;">— ${e.cargo}</span></li>`)
-      .join('');
+      .map(e => `
+        <tr>
+          <td style="padding:.6em .8em;border-bottom:1px solid #f0f0f0;">
+            <span style="font-size:1.1em;">⭐</span>
+          </td>
+          <td style="padding:.6em .8em;border-bottom:1px solid #f0f0f0;">
+            <strong style="color:#000d2e;font-size:.95em;">${e.nombre}</strong><br>
+            <span style="color:#888;font-size:.8em;">${e.cargo}</span>
+          </td>
+          <td style="padding:.6em .8em;border-bottom:1px solid #f0f0f0;text-align:right;">
+            <span style="background:#e8f5e9;color:#2e7d32;font-weight:bold;font-size:.85em;padding:.2em .6em;border-radius:12px;">✓ 100%</span>
+          </td>
+        </tr>`).join('');
 
     const frontendUrl = process.env.FRONTEND_URL || 'https://album-cdt-mundial.onrender.com';
+    const total = empleados?.length || 0;
 
     await transporter.sendMail({
-      from: `"Álbum Estrellas Sportline" <${process.env.SMTP_USER}>`,
+      from: `"Álbum Estrellas · SLA Corp." <${process.env.SMTP_USER}>`,
       to: tienda.email,
-      subject: `⭐ Semana ${semana_numero}: ¡${empleados?.length || 0} asesor(es) desbloquearon su espacio!`,
-      html: `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:2em 1em;">
-<table width="600" style="background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.1);">
-<tr><td style="background:linear-gradient(90deg,#000d2e,#001a55);padding:2em;text-align:center;">
-  <p style="color:#F7A800;font-size:2.5em;margin:0;">⭐</p>
-  <h1 style="color:#fff;margin:.3em 0 .1em;font-size:1.6em;">ÁLBUM ESTRELLAS</h1>
-  <p style="color:rgba(255,255,255,.5);margin:0;font-size:.85em;">SPORTLINE · FIFA MUNDIAL 2026</p>
-</td></tr>
-<tr><td style="padding:2em;">
-  <h2 style="color:#0046AD;margin-top:0;">¡Felicitaciones, ${tienda.nombre}!</h2>
-  <p style="color:#333;line-height:1.6;">En <strong>${semana_nombre}</strong>, los siguientes asesores alcanzaron el <span style="color:#F7A800;font-weight:bold;">100% de su meta de ventas</span>:</p>
-  <ul style="background:#f8f8f8;border-left:4px solid #F7A800;padding:1em 1em 1em 2em;border-radius:4px;">${listaHtml}</ul>
-  <p style="color:#333;line-height:1.6;">Su espacio en el <strong>Álbum Estrellas</strong> está <span style="color:#00c853;font-weight:bold;">DESBLOQUEADO</span>. Ingresen al sistema para subir la foto de celebración.</p>
-  <div style="text-align:center;margin:2em 0;">
-    <a href="${frontendUrl}/album.html" style="display:inline-block;padding:1em 2em;background:#F7A800;color:#000;text-decoration:none;border-radius:8px;font-weight:bold;font-size:1.1em;">📷 Ir al Álbum</a>
-  </div>
-</td></tr>
-<tr><td style="background:#f0f0f0;padding:1em;text-align:center;">
-  <p style="color:#999;font-size:.75em;margin:0;">Sportline Corp · Álbum Estrellas · FIFA Mundial 2026</p>
-</td></tr>
-</table></td></tr></table></body></html>`
+      subject: `⭐ ${total} asesor${total !== 1 ? 'es' : ''} desbloquearon su figurita — ${semana_nombre}`,
+      html: `<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f0f2f5;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f2f5;">
+<tr><td align="center" style="padding:2.5em 1em;">
+
+  <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.12);">
+
+    <!-- HEADER -->
+    <tr><td style="background:linear-gradient(135deg,#000d2e 0%,#001a55 60%,#0046AD 100%);padding:2.5em 2em;text-align:center;">
+      <div style="font-size:3em;margin-bottom:.3em;">🏆</div>
+      <h1 style="color:#F7A800;font-size:1.8em;margin:0 0 .2em;letter-spacing:.08em;font-family:Georgia,serif;">¡MISIÓN CUMPLIDA!</h1>
+      <p style="color:rgba(255,255,255,.7);margin:0;font-size:.9em;letter-spacing:.06em;">ÁLBUM ESTRELLAS · SLA CORP. · FIFA MUNDIAL 2026</p>
+    </td></tr>
+
+    <!-- SALUDO -->
+    <tr><td style="padding:2em 2em 1em;">
+      <h2 style="color:#000d2e;margin:0 0 .5em;font-size:1.2em;">¡Felicitaciones, ${tienda.nombre}! 🎉</h2>
+      <p style="color:#444;line-height:1.7;margin:0;">En <strong>${semana_nombre}</strong>, ${total === 1 ? 'el siguiente asesor alcanzó' : `los siguientes <strong>${total} asesores</strong> alcanzaron`} el <strong style="color:#F7A800;">100% de su meta de ventas</strong> y desbloquearon su espacio en el Álbum Estrellas:</p>
+    </td></tr>
+
+    <!-- TABLA DE ESTRELLAS -->
+    <tr><td style="padding:0 2em 1.5em;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="border:1.5px solid #F7A800;border-radius:10px;overflow:hidden;">
+        <tr style="background:#000d2e;">
+          <td colspan="3" style="padding:.6em 1em;font-size:.7em;letter-spacing:.12em;color:#F7A800;font-weight:bold;">ASESORES AL 100% · ${semana_nombre?.toUpperCase()}</td>
+        </tr>
+        ${listaHtml}
+      </table>
+    </td></tr>
+
+    <!-- MENSAJE -->
+    <tr><td style="padding:0 2em 1.5em;">
+      <div style="background:#fffde7;border-left:4px solid #F7A800;padding:1em 1.2em;border-radius:4px;">
+        <p style="margin:0;color:#5d4037;font-size:.9em;line-height:1.6;">
+          📷 Su espacio en el álbum está <strong>desbloqueado</strong>. Ingresen al sistema y suban su foto — ¡su figurita Panini los espera!
+        </p>
+      </div>
+    </td></tr>
+
+    <!-- BOTÓN CTA -->
+    <tr><td style="padding:0 2em 2.5em;text-align:center;">
+      <a href="${frontendUrl}/album.html" style="display:inline-block;padding:.9em 2.5em;background:linear-gradient(135deg,#F7A800,#e69500);color:#000d2e;text-decoration:none;border-radius:30px;font-weight:bold;font-size:1em;letter-spacing:.04em;box-shadow:0 4px 16px rgba(247,168,0,.4);">
+        ⭐ Subir mi Foto al Álbum
+      </a>
+    </td></tr>
+
+    <!-- FOOTER -->
+    <tr><td style="background:#f8f8f8;border-top:1px solid #eee;padding:1.2em 2em;text-align:center;">
+      <p style="color:#aaa;font-size:.72em;margin:0;">SLA Corp. · Álbum Estrellas · FIFA Mundial 2026<br>
+      <span style="font-size:.9em;">Este correo fue enviado automáticamente — no responder.</span></p>
+    </td></tr>
+
+  </table>
+</td></tr></table>
+</body></html>`
     });
 
     res.json({ ok: true, email: tienda.email });

@@ -41,6 +41,17 @@ router.get('/', verificarToken, async (req, res) => {
 
     if (error) throw error;
 
+    const empIds = (empleados || []).map(e => e.id);
+    const { data: resultados } = empIds.length
+      ? await supabase.from('resultados_ventas')
+          .select('empleado_id, porcentaje_cumplido')
+          .eq('semana_id', semana.id)
+          .in('empleado_id', empIds)
+      : { data: [] };
+
+    const pctMap = {};
+    for (const r of (resultados || [])) pctMap[r.empleado_id] = r.porcentaje_cumplido;
+
     const resultado = (empleados || []).map((emp, idx) => {
       const espacio = (emp.espacios_album || []).find(e => e.semana_id === semana.id);
       return {
@@ -50,6 +61,7 @@ router.get('/', verificarToken, async (req, res) => {
         cargo: emp.cargo || 'Asesor de Ventas',
         foto_url: emp.foto_url || null,
         desbloqueado: espacio?.desbloqueado || false,
+        porcentaje: pctMap[emp.id] ?? null,
       };
     });
 

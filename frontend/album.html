@@ -36,7 +36,7 @@
     .nav-brand { display: flex; align-items: center; gap: .6rem; flex: 1; }
     .nav-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: .12em; color: #fff; line-height: 1; }
     .nav-title span { color: var(--p-orange); }
-    .nav-store { font-family: 'Barlow Condensed', sans-serif; font-size: .7rem; letter-spacing: .15em; color: rgba(255,255,255,.45); text-transform: uppercase; }
+    .nav-store { font-family: 'Barlow Condensed', sans-serif; font-size: 1rem; font-weight: 700; letter-spacing: .12em; color: rgba(255,255,255,.85); text-transform: uppercase; }
     .btn-salir {
       font-family: 'Barlow Condensed', sans-serif; font-size: .72rem; font-weight: 700;
       letter-spacing: .12em; text-transform: uppercase;
@@ -211,7 +211,7 @@
     </div>
   </div>
 
-  <footer>Álbum Estrellas · Sportline · Mundial 2026</footer>
+  <footer>Álbum Estrellas · SLA Corp. · Mundial 2026</footer>
 
   <!-- MODAL: Subir Foto -->
   <div id="modalFoto" class="modal-overlay" style="display:none;">
@@ -310,6 +310,7 @@
           <div class="card-footer">
             <div class="card-code">${emp.cargo || 'Asesor de Ventas'}</div>
             <div class="card-name">${emp.nombre}</div>
+            ${emp.porcentaje !== null ? `<div style="font-family:'Bebas Neue',sans-serif;font-size:.8rem;letter-spacing:.08em;color:${emp.desbloqueado ? 'var(--p-green)' : 'rgba(255,255,255,.35)'};margin-top:.2rem;">${emp.porcentaje}% cumplimiento</div>` : ''}
           </div>`;
         wrapper.appendChild(card);
       });
