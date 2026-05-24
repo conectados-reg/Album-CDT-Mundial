@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Álbum Estrellas — Sportline</title>
+  <title>Álbum Estrellas — Panel Admin</title>
   <link rel="icon" type="image/png" href="https://i.postimg.cc/hv6YBVfc/logo-sla.png">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
   <style>
@@ -12,405 +12,987 @@
       --p-blue:   #0046AD;
       --p-orange: #F7A800;
       --p-red:    #E8231A;
-      --p-gold:   #f0c030;
       --p-green:  #00c853;
     }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
       background: linear-gradient(160deg, #010a1e 0%, #021233 60%, #010c24 100%);
       min-height: 100vh;
       font-family: 'Barlow', sans-serif;
       color: #fff;
-      overflow-x: hidden;
     }
 
-    /* ── NAVBAR ── */
-    nav {
-      position: sticky; top: 0; z-index: 500;
+    /* ── NAVBAR ─────────────────────────────────────────────── */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 500;
       background: linear-gradient(90deg, #000d2e 0%, #001a55 50%, #000d2e 100%);
       border-bottom: 3px solid var(--p-orange);
       box-shadow: 0 4px 24px rgba(0,0,0,.6);
-      padding: .6rem 1.5rem;
-      display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+      padding: .65rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
     }
-    .nav-brand { display: flex; align-items: center; gap: .6rem; flex: 1; }
-    .nav-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: .12em; color: #fff; line-height: 1; }
-    .nav-title span { color: var(--p-orange); }
-    .nav-store { font-family: 'Barlow Condensed', sans-serif; font-size: .7rem; letter-spacing: .15em; color: rgba(255,255,255,.45); text-transform: uppercase; }
-    .btn-salir {
-      font-family: 'Barlow Condensed', sans-serif; font-size: .72rem; font-weight: 700;
-      letter-spacing: .12em; text-transform: uppercase;
-      background: rgba(232,35,26,.15); color: #ff6b6b; border: 1.5px solid rgba(232,35,26,.5);
-      border-radius: 20px; padding: .35rem 1rem; cursor: pointer; transition: all .2s;
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      flex: 1;
     }
-    .btn-salir:hover { background: var(--p-red); color: #fff; border-color: var(--p-red); }
+    .header-icon { font-size: 1.5rem; filter: drop-shadow(0 0 8px rgba(247,168,0,.5)); }
+    .header-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.4rem;
+      letter-spacing: .12em;
+      color: #fff;
+      line-height: 1;
+    }
+    .header-title span { color: var(--p-orange); }
+    .header-sub {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .65rem;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.35);
+      margin-top: .15rem;
+    }
+    .btn-logout {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      background: rgba(232,35,26,.12);
+      color: #ff6b6b;
+      border: 1.5px solid rgba(232,35,26,.4);
+      border-radius: 20px;
+      padding: .35rem 1rem;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .btn-logout:hover { background: var(--p-red); color: #fff; border-color: var(--p-red); box-shadow: 0 0 16px rgba(232,35,26,.4); }
 
-    /* ── HERO STATS ── */
-    .hero-stats {
-      max-width: 900px; margin: 2rem auto 1.5rem; padding: 0 1.5rem;
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;
+    /* ── TABS ───────────────────────────────────────────────── */
+    .tabs-bar {
+      background: rgba(0,10,35,.6);
+      border-bottom: 1px solid rgba(255,255,255,.07);
+      display: flex;
+      gap: .25rem;
+      padding: .6rem 1.5rem 0;
+      position: sticky;
+      top: 64px;
+      z-index: 400;
+      overflow-x: auto;
     }
-    .stat-card {
-      background: linear-gradient(135deg, rgba(0,70,173,.2), rgba(0,30,90,.3));
-      border: 1.5px solid rgba(247,168,0,.25); border-radius: 14px;
-      padding: 1.2rem 1rem; text-align: center; position: relative; overflow: hidden;
+    .tab-btn {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .78rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      background: transparent;
+      color: rgba(255,255,255,.4);
+      border: none;
+      border-bottom: 3px solid transparent;
+      padding: .55rem 1.1rem;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all .2s;
     }
-    .stat-card::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    .tab-btn:hover { color: rgba(255,255,255,.75); }
+    .tab-btn.active {
+      color: var(--p-orange);
+      border-bottom-color: var(--p-orange);
+    }
+
+    /* ── CONTAINER ──────────────────────────────────────────── */
+    .container {
+      max-width: 1300px;
+      margin: 2rem auto;
+      padding: 0 1.5rem 4rem;
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── INFO CARD ──────────────────────────────────────────── */
+    .info-card {
+      background: linear-gradient(135deg, rgba(0,70,173,.15), rgba(0,30,90,.2));
+      border: 1.5px solid rgba(247,168,0,.2);
+      border-radius: 14px;
+      padding: 1.2rem 1.5rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .info-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
       background: linear-gradient(90deg, transparent, var(--p-orange), transparent);
     }
-    .stat-n { font-family: 'Bebas Neue', sans-serif; font-size: 3rem; color: var(--p-orange); line-height: 1; text-shadow: 0 0 20px rgba(247,168,0,.4); }
-    .stat-l { font-family: 'Barlow Condensed', sans-serif; font-size: .7rem; letter-spacing: .15em; text-transform: uppercase; color: rgba(255,255,255,.4); margin-top: .3rem; }
-
-    /* ── ALBUM ── */
-    .section-wrapper { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem 4rem; }
-    .section-title-bar {
-      display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;
-      padding-bottom: .8rem; border-bottom: 2px solid rgba(247,168,0,.2);
+    .info-card-icon { font-size: 2rem; flex-shrink: 0; filter: drop-shadow(0 0 8px rgba(247,168,0,.4)); }
+    .info-card-text h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.2rem;
+      letter-spacing: .08em;
+      color: var(--p-orange);
+      margin-bottom: .2rem;
     }
-    .section-title-bar h2 { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: .1em; color: #fff; }
-    .section-badge {
-      font-family: 'Barlow Condensed', sans-serif; font-size: .68rem; font-weight: 700;
-      letter-spacing: .1em; text-transform: uppercase; background: rgba(247,168,0,.15);
-      color: var(--p-orange); border: 1px solid rgba(247,168,0,.3); border-radius: 20px; padding: .2rem .7rem;
-    }
-    .hint-badge {
-      font-family: 'Barlow Condensed', sans-serif; font-size: .68rem; letter-spacing: .06em;
-      color: rgba(255,255,255,.3); border: 1px solid rgba(255,255,255,.08);
-      border-radius: 20px; padding: .2rem .7rem; margin-left: auto;
+    .info-card-text p {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .8rem;
+      letter-spacing: .04em;
+      color: rgba(255,255,255,.4);
     }
 
-    /* ── STICKER GRID ── */
-    .album-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.2rem; }
-
-    /* ── STICKER CARD ── */
-    .sticker-card {
+    /* ── TABLE CARD ─────────────────────────────────────────── */
+    .table-card {
       background: linear-gradient(160deg, #0d1e4a 0%, #091535 100%);
-      border: 1.5px solid rgba(255,255,255,.08); border-radius: 14px; overflow: hidden;
-      position: relative; transition: transform .25s, box-shadow .25s, border-color .25s;
-      aspect-ratio: 9/13; display: flex; flex-direction: column;
+      border: 1.5px solid rgba(255,255,255,.07);
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 1.5rem;
     }
-    .sticker-card.unlocked { cursor: pointer; }
-    .sticker-card.unlocked:hover {
-      transform: translateY(-6px) scale(1.03); border-color: var(--p-orange);
-      box-shadow: 0 12px 40px rgba(247,168,0,.35), 0 0 0 1px rgba(247,168,0,.2); z-index: 10;
+    .table-card-header {
+      padding: .9rem 1.4rem;
+      background: rgba(0,30,80,.4);
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      display: flex;
+      align-items: center;
+      gap: .8rem;
+      flex-wrap: wrap;
     }
-    .sticker-card.locked { opacity: .35; filter: grayscale(1); cursor: default; }
-    .sticker-card.gold .card-band { background: linear-gradient(90deg, #7a5500, var(--p-gold)); }
-    .card-band { height: 8px; background: linear-gradient(90deg, var(--p-blue), #0069d9); flex-shrink: 0; }
-    .card-num { position: absolute; top: 14px; left: 10px; font-family: 'Bebas Neue', sans-serif; font-size: .7rem; color: rgba(255,255,255,.35); letter-spacing: .05em; }
-    .card-photo { flex: 1; display: flex; align-items: center; justify-content: center; padding: 1rem; position: relative; }
-    .card-icon { font-size: 4rem; filter: drop-shadow(0 4px 12px rgba(0,0,0,.5)); transition: transform .25s, filter .25s; }
-    .sticker-card.unlocked:hover .card-icon { transform: scale(1.1); filter: drop-shadow(0 0 16px rgba(247,168,0,.5)); }
-    .card-footer { background: rgba(0,0,0,.35); border-top: 1px solid rgba(255,255,255,.06); padding: .55rem .7rem; }
-    .card-code { font-family: 'Bebas Neue', sans-serif; font-size: .62rem; color: var(--p-orange); letter-spacing: .1em; margin-bottom: .15rem; }
-    .card-name { font-family: 'Barlow Condensed', sans-serif; font-size: .8rem; font-weight: 700; color: #fff; line-height: 1.2; letter-spacing: .02em; }
-    .lock-badge { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-60%); font-size: 1.8rem; opacity: .7; display: none; pointer-events: none; }
-    .locked .lock-badge { display: block; }
-    .card-watermark { position: absolute; bottom: 38px; right: 8px; font-family: 'Bebas Neue', sans-serif; font-size: 3.5rem; color: rgba(255,255,255,.04); pointer-events: none; user-select: none; }
-    .upload-overlay {
-      position: absolute; inset: 0; background: rgba(0,0,0,.72);
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      opacity: 0; transition: opacity .2s;
-      font-family: 'Barlow Condensed', sans-serif; font-size: .8rem; letter-spacing: .06em;
-      color: var(--p-orange); text-transform: uppercase; gap: .4rem;
+    .table-card-header h3 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1rem;
+      letter-spacing: .1em;
+      color: #fff;
+      flex: 1;
     }
-    .sticker-card.unlocked:hover .upload-overlay { opacity: 1; }
-    .upload-overlay .upload-icon { font-size: 2rem; }
+    .table-count {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .7rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      background: rgba(247,168,0,.12);
+      color: var(--p-orange);
+      border: 1px solid rgba(247,168,0,.25);
+      border-radius: 20px;
+      padding: .18rem .7rem;
+    }
+    .table-wrapper { overflow-x: auto; }
 
-    /* ── MODAL FOTO ── */
-    .modal-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,.82); z-index: 9000;
-      display: flex; align-items: center; justify-content: center; padding: 1rem;
+    /* ── TABLE ──────────────────────────────────────────────── */
+    table { width: 100%; border-collapse: collapse; font-size: .83rem; }
+    thead tr { background: rgba(0,0,0,.3); }
+    th {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .65rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.4);
+      padding: .65rem 1rem;
+      text-align: left;
+      white-space: nowrap;
+      border-bottom: 1px solid rgba(255,255,255,.06);
     }
-    .modal-box {
-      background: linear-gradient(160deg, #0d1e4a 0%, #091535 100%);
-      border: 1.5px solid rgba(247,168,0,.35); border-radius: 18px;
-      padding: 2rem; max-width: 420px; width: 100%; position: relative;
+    td {
+      padding: .6rem 1rem;
+      border-bottom: 1px solid rgba(255,255,255,.04);
+      vertical-align: middle;
+      color: rgba(255,255,255,.85);
+      white-space: nowrap;
     }
-    .modal-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: .1em; color: var(--p-orange); margin-bottom: .25rem; }
-    .modal-sub { font-family: 'Barlow Condensed', sans-serif; font-size: .8rem; color: rgba(255,255,255,.45); margin-bottom: 1.4rem; }
-    .modal-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: rgba(255,255,255,.4); font-size: 1.2rem; cursor: pointer; padding: .2rem; }
-    .foto-preview { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid rgba(247,168,0,.4); display: block; margin: 0 auto 1.2rem; }
-    .foto-drop-zone {
-      border: 2px dashed rgba(247,168,0,.3); border-radius: 12px; padding: 2rem 1rem;
-      text-align: center; cursor: pointer; transition: all .2s; margin-bottom: 1rem;
-    }
-    .foto-drop-zone:hover { border-color: var(--p-orange); background: rgba(247,168,0,.05); }
-    .foto-drop-zone p { font-family: 'Barlow Condensed', sans-serif; font-size: .82rem; letter-spacing: .05em; color: rgba(255,255,255,.4); }
-    .btn-primary {
-      font-family: 'Bebas Neue', sans-serif; font-size: 1rem; letter-spacing: .15em;
-      background: linear-gradient(90deg, #e09500, var(--p-orange), #e09500); background-size: 200%;
-      color: #000; border: none; border-radius: 10px; padding: .7rem 1.5rem;
-      cursor: pointer; transition: background-position .4s, box-shadow .3s;
-      box-shadow: 0 4px 20px rgba(247,168,0,.3); width: 100%;
-    }
-    .btn-primary:hover { background-position: right; box-shadow: 0 6px 28px rgba(247,168,0,.5); }
-    .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
-    .alert { border-radius: 10px; padding: .8rem 1rem; margin-bottom: 1rem; font-family: 'Barlow Condensed', sans-serif; font-size: .82rem; letter-spacing: .04em; display: none; }
-    .alert-success { background: rgba(0,200,83,.08); border: 1px solid rgba(0,200,83,.3); color: #69f0ae; }
-    .alert-error { background: rgba(232,35,26,.1); border: 1px solid rgba(232,35,26,.4); color: #ff8080; }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: rgba(255,255,255,.03); }
 
-    /* ── LOADING ── */
-    .loading-msg { text-align: center; padding: 3rem; font-family: 'Barlow Condensed', sans-serif; font-size: .9rem; color: rgba(255,255,255,.3); grid-column: 1/-1; }
-    .spin { display: inline-block; animation: spinAnim 1.2s linear infinite; }
-    @keyframes spinAnim { to { transform: rotate(360deg); } }
+    .td-nombre strong {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .9rem;
+      font-weight: 700;
+      letter-spacing: .02em;
+      color: #fff;
+    }
+    .td-codigo {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .75rem;
+      color: rgba(255,255,255,.3);
+      letter-spacing: .05em;
+    }
+    .td-email {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .78rem;
+      color: rgba(255,255,255,.5);
+    }
+    .txt-clave {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .8rem;
+      font-weight: 700;
+      letter-spacing: .06em;
+      color: var(--p-orange);
+      background: rgba(247,168,0,.1);
+      border: 1px solid rgba(247,168,0,.2);
+      border-radius: 6px;
+      padding: .2rem .55rem;
+    }
+    .td-empleados {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.1rem;
+      color: var(--p-orange);
+      text-align: center;
+    }
+    .badge-activa {
+      display: inline-flex;
+      align-items: center;
+      gap: .3rem;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .7rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      background: rgba(0,200,83,.12);
+      color: #00c853;
+      border: 1px solid rgba(0,200,83,.3);
+      border-radius: 20px;
+      padding: .2rem .65rem;
+    }
+    .badge-activa::before {
+      content: '';
+      width: 5px; height: 5px;
+      background: #00c853;
+      border-radius: 50%;
+      animation: blink 1.5s infinite;
+    }
+    @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
 
-    /* ── FOOTER ── */
-    footer { text-align: center; padding: 1.5rem; font-family: 'Barlow Condensed', sans-serif; font-size: .7rem; letter-spacing: .12em; color: rgba(255,255,255,.2); text-transform: uppercase; border-top: 1px solid rgba(255,255,255,.05); }
+    /* ── EXPAND ROW ─────────────────────────────────────────── */
+    .row-tienda { cursor: pointer; }
+    .row-tienda:hover td { background: rgba(0,70,173,.12) !important; }
+    .row-tienda td:first-child::before {
+      content: '▶ ';
+      font-size: .6rem;
+      color: rgba(255,255,255,.3);
+      transition: transform .2s;
+      display: inline-block;
+    }
+    .row-tienda.expanded td:first-child::before {
+      transform: rotate(90deg);
+    }
+    .row-empleados td {
+      background: rgba(0,0,0,.25) !important;
+      padding: 0 !important;
+    }
+    .empleados-inner {
+      padding: .6rem 1rem .8rem 2.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: .4rem;
+    }
+    .emp-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .75rem;
+      background: rgba(0,70,173,.15);
+      border: 1px solid rgba(0,70,173,.3);
+      border-radius: 20px;
+      padding: .25rem .7rem;
+      color: rgba(255,255,255,.75);
+    }
+    .emp-chip span { color: rgba(255,255,255,.35); font-size: .68rem; }
+    .emp-loading {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .75rem;
+      color: rgba(255,255,255,.3);
+      padding: .8rem 2.5rem;
+    }
+    .btn-ver {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .68rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      background: rgba(0,70,173,.2);
+      color: rgba(255,255,255,.6);
+      border: 1px solid rgba(0,70,173,.35);
+      border-radius: 20px;
+      padding: .2rem .65rem;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .btn-ver:hover { background: var(--p-blue); color: #fff; }
 
-    @media (max-width: 600px) {
-      .hero-stats { gap: .6rem; }
-      .stat-n { font-size: 2rem; }
-      .album-grid { grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); gap: .8rem; }
-      nav { padding: .5rem 1rem; }
-      .hint-badge { display: none; }
+    /* ── WEEK SELECTOR ──────────────────────────────────────── */
+    .week-selector {
+      display: flex;
+      gap: .5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+    .week-btn {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1rem;
+      letter-spacing: .08em;
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.5);
+      border: 1.5px solid rgba(255,255,255,.1);
+      border-radius: 10px;
+      padding: .5rem 1.1rem;
+      cursor: pointer;
+      transition: all .2s;
+      min-width: 72px;
+      text-align: center;
+    }
+    .week-btn:hover { background: rgba(247,168,0,.1); color: var(--p-orange); border-color: rgba(247,168,0,.3); }
+    .week-btn.active {
+      background: rgba(247,168,0,.18);
+      color: var(--p-orange);
+      border-color: var(--p-orange);
+      box-shadow: 0 0 16px rgba(247,168,0,.2);
+    }
+    .week-info {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .8rem;
+      color: rgba(255,255,255,.3);
+      margin-bottom: 1rem;
+      letter-spacing: .05em;
+    }
+
+    /* ── PERFORMANCE TABLE ──────────────────────────────────── */
+    .pct-bar-wrap {
+      width: 90px;
+      height: 6px;
+      background: rgba(255,255,255,.08);
+      border-radius: 3px;
+      overflow: hidden;
+      display: inline-block;
+      vertical-align: middle;
+      margin-left: .4rem;
+    }
+    .pct-bar { height: 100%; border-radius: 3px; background: var(--p-green); transition: width .4s; }
+    .td-pct {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.05rem;
+      white-space: nowrap;
+    }
+    .td-pct.full { color: var(--p-green); }
+    .td-pct.partial { color: var(--p-orange); }
+    .td-pct.none { color: rgba(255,255,255,.3); }
+
+    /* ── NOTIFICATION CARDS ─────────────────────────────────── */
+    .notif-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1rem;
+    }
+    .notif-card {
+      background: linear-gradient(160deg, #0d1e4a, #091535);
+      border: 1.5px solid rgba(255,255,255,.07);
+      border-radius: 14px;
+      overflow: hidden;
+      transition: border-color .2s;
+    }
+    .notif-card:hover { border-color: rgba(247,168,0,.3); }
+    .notif-card-head {
+      padding: .85rem 1.1rem;
+      background: rgba(0,30,80,.4);
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+    }
+    .notif-card-head h4 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .9rem;
+      font-weight: 700;
+      letter-spacing: .04em;
+      color: #fff;
+      flex: 1;
+    }
+    .notif-card-head .count-badge {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: .95rem;
+      background: rgba(0,200,83,.15);
+      color: var(--p-green);
+      border: 1px solid rgba(0,200,83,.3);
+      border-radius: 20px;
+      padding: .1rem .55rem;
+    }
+    .notif-card-body { padding: .7rem 1.1rem; }
+    .notif-emp-list {
+      list-style: none;
+      margin-bottom: .8rem;
+    }
+    .notif-emp-list li {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .78rem;
+      color: rgba(255,255,255,.6);
+      padding: .18rem 0;
+      border-bottom: 1px solid rgba(255,255,255,.04);
+      display: flex;
+      gap: .5rem;
+    }
+    .notif-emp-list li strong { color: rgba(255,255,255,.85); }
+    .notif-email {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .72rem;
+      color: rgba(255,255,255,.3);
+      margin-bottom: .8rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .btn-send {
+      width: 100%;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .78rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      background: linear-gradient(90deg, #F7A800, #e09500);
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      padding: .6rem 1rem;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .btn-send:hover { filter: brightness(1.1); box-shadow: 0 4px 16px rgba(247,168,0,.35); }
+    .btn-send:disabled { background: rgba(255,255,255,.08); color: rgba(255,255,255,.2); cursor: not-allowed; filter: none; box-shadow: none; }
+    .btn-send.sent { background: linear-gradient(90deg, #00c853, #00a844); color: #fff; }
+
+    /* ── LOADING / EMPTY ────────────────────────────────────── */
+    .state-msg {
+      text-align: center;
+      padding: 3rem 1rem;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .9rem;
+      letter-spacing: .08em;
+      color: rgba(255,255,255,.3);
+    }
+    .state-msg .spin {
+      display: inline-block;
+      font-size: 1.5rem;
+      animation: spin 1.2s linear infinite;
+      margin-bottom: .5rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── SEMANA BADGE ───────────────────────────────────────── */
+    .semana-badge {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      background: rgba(0,70,173,.2);
+      color: rgba(255,255,255,.6);
+      border: 1px solid rgba(0,70,173,.3);
+      border-radius: 20px;
+      padding: .15rem .6rem;
+    }
+
+    /* ── TOAST ──────────────────────────────────────────────── */
+    #toast {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #1a2f60;
+      color: #fff;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .85rem;
+      letter-spacing: .05em;
+      padding: .7rem 1.4rem;
+      border-radius: 30px;
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow: 0 8px 32px rgba(0,0,0,.5);
+      z-index: 9999;
+      transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+      white-space: nowrap;
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 700px) {
+      header { padding: .5rem 1rem; }
+      .info-card { flex-direction: column; align-items: flex-start; }
+      .container { padding: 0 1rem 3rem; }
+      .notif-grid { grid-template-columns: 1fr; }
+      .tabs-bar { padding: .6rem 1rem 0; }
     }
   </style>
 </head>
 <body>
 
   <!-- NAVBAR -->
-  <nav>
-    <div class="nav-brand">
-      <img src="https://i.postimg.cc/hv6YBVfc/logo-sla.png" alt="Sportline" style="height:38px;width:auto;filter:drop-shadow(0 0 8px rgba(247,168,0,.5));" onerror="this.outerHTML='<span style=\'font-size:1.6rem;\'>⭐</span>'">
+  <header>
+    <div class="header-brand">
+      <span class="header-icon">📊</span>
       <div>
-        <div class="nav-title">ÁLBUM <span>ESTRELLAS</span></div>
-        <div class="nav-store" id="lblTienda">Cargando...</div>
+        <div class="header-title">PANEL <span>ADMIN</span></div>
+        <div class="header-sub">Álbum Estrellas · Sportline Corp</div>
       </div>
     </div>
-    <a href="cambiar-clave.html" style="font-family:'Barlow Condensed',sans-serif;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;background:rgba(0,70,173,.15);color:rgba(255,255,255,.5);border:1.5px solid rgba(0,70,173,.3);border-radius:20px;padding:.35rem .9rem;transition:all .2s;" onmouseover="this.style.background='rgba(0,70,173,.35)';this.style.color='#fff'" onmouseout="this.style.background='rgba(0,70,173,.15)';this.style.color='rgba(255,255,255,.5)'">🔄 Cambiar Clave</a>
-    <button class="btn-salir" onclick="cerrarSesion()">✕ Cerrar Sesión</button>
-  </nav>
+    <button class="btn-logout" id="btnLogout">✕ Cerrar Sesión</button>
+  </header>
 
-  <!-- STATS -->
-  <div class="hero-stats">
-    <div class="stat-card">
-      <div class="stat-n" id="valDesbloqueadas">—</div>
-      <div class="stat-l">Estrellas Ganadas</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-n" id="valMeta">—</div>
-      <div class="stat-l">Cumplimiento</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-n" id="valSemana">—</div>
-      <div class="stat-l">Semana Activa</div>
-    </div>
+  <!-- TABS BAR -->
+  <div class="tabs-bar">
+    <button class="tab-btn active" data-tab="sucursales">🏬 Sucursales</button>
+    <button class="tab-btn" data-tab="rendimiento">📊 Rendimiento Semanal</button>
+    <button class="tab-btn" data-tab="notificaciones">📧 Notificaciones</button>
   </div>
 
-  <!-- ÁLBUM GRID -->
-  <div class="section-wrapper">
-    <div class="section-title-bar">
-      <h2>⭐ TUS ESTRELLAS</h2>
-      <span class="section-badge" id="badgeCount">Cargando...</span>
-      <span class="hint-badge">📷 Haz clic en una casilla desbloqueada para subir la foto</span>
-    </div>
-    <div class="album-grid" id="wrapperAlbum">
-      <div class="loading-msg"><span class="spin">⚙️</span> Cargando álbum...</div>
-    </div>
-  </div>
+  <!-- CONTENT -->
+  <div class="container">
 
-  <footer>Álbum Estrellas · Sportline · Mundial 2026</footer>
-
-  <!-- MODAL: Subir Foto -->
-  <div id="modalFoto" class="modal-overlay" style="display:none;">
-    <div class="modal-box">
-      <button class="modal-close" onclick="cerrarModal()">✕</button>
-      <div class="modal-title">📷 Subir Foto</div>
-      <div class="modal-sub" id="modalNombre">—</div>
-      <img id="fotoPreview" class="foto-preview" src="" alt="Vista previa" style="display:none;">
-      <div class="foto-drop-zone" onclick="document.getElementById('fileInput').click()">
-        <div style="font-size:2.5rem;margin-bottom:.5rem;">📷</div>
-        <p>Haz clic para seleccionar una foto</p>
-        <p style="font-size:.7rem;margin-top:.3rem;opacity:.6;">JPG o PNG · Máx. 5 MB</p>
-      </div>
-      <input type="file" id="fileInput" accept="image/*" style="display:none;" onchange="previsualizarFoto(event)">
-      <div id="alertFoto" class="alert alert-error"></div>
-      <button class="btn-primary" id="btnSubir" onclick="subirFoto()" style="display:none;">⬆️ Subir al Álbum</button>
-    </div>
-  </div>
-
-  <!-- REPRODUCTOR FLOTANTE -->
-  <div style="position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;text-align:right;">
-    <div id="ytBox" style="display:none;margin-bottom:.6rem;border-radius:14px;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.8);border:1.5px solid rgba(247,168,0,.4);background:#000d2e;width:290px;">
-      <div style="padding:.55rem 1rem;display:flex;align-items:center;gap:.6rem;">
-        <span style="font-size:1.1rem;">🎵</span>
-        <div>
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:.85rem;letter-spacing:.1em;color:#F7A800;">CANCIÓN OFICIAL</div>
-          <div style="font-family:'Barlow Condensed',sans-serif;font-size:.65rem;letter-spacing:.08em;color:rgba(255,255,255,.4);">FIFA MUNDIAL 2026</div>
+    <!-- ═══════════════════════════════ TAB 1: SUCURSALES ══════════════════════════════════ -->
+    <div class="tab-panel active" id="tab-sucursales">
+      <div class="info-card">
+        <span class="info-card-icon">🏬</span>
+        <div class="info-card-text">
+          <h2>Monitoreo Corporativo en Tiempo Real</h2>
+          <p>Haz clic en una tienda para ver su plantilla de empleados activos · Sportline</p>
         </div>
-        <button onclick="toggleMusica()" style="margin-left:auto;background:none;border:none;color:rgba(255,255,255,.4);cursor:pointer;font-size:.8rem;padding:0;">✕</button>
       </div>
-      <div style="overflow:hidden;height:36px;position:relative;">
-        <iframe id="ytIframe" width="290" height="200" src="about:blank" data-src="https://www.youtube.com/embed/X9CsK_nuqdE?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3" allow="autoplay; encrypted-media" style="border:none;position:absolute;bottom:0;left:0;"></iframe>
+
+      <div class="table-card">
+        <div class="table-card-header">
+          <h3>⭐ Sucursales Registradas</h3>
+          <span class="table-count" id="badge-count">Cargando...</span>
+        </div>
+        <div class="table-wrapper">
+          <div id="loadingState" class="state-msg">
+            <div class="spin">⚙️</div><br>Cargando la base de datos de Sportline...
+          </div>
+          <table id="tablaTiendas" style="display:none;">
+            <thead>
+              <tr>
+                <th>Sucursal</th>
+                <th>Código ID</th>
+                <th>Correo electrónico</th>
+                <th>Contraseña 👁</th>
+                <th>Región</th>
+                <th>Ciudad</th>
+                <th style="text-align:center">Empleados</th>
+                <th>Estado</th>
+                <th>Plantilla</th>
+              </tr>
+            </thead>
+            <tbody id="listaTiendasCuerpo"></tbody>
+          </table>
+        </div>
       </div>
     </div>
-    <button id="musicBtn" onclick="toggleMusica()" title="Canción Oficial Mundial 2026" style="width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#001f5e,#0046AD);border:2px solid rgba(247,168,0,.6);color:#F7A800;font-size:1.4rem;cursor:pointer;box-shadow:0 4px 24px rgba(0,70,173,.6);transition:all .25s;outline:none;animation:musicGlow 2.5s infinite;">🎵</button>
+
+    <!-- ═══════════════════════════════ TAB 2: RENDIMIENTO ════════════════════════════════ -->
+    <div class="tab-panel" id="tab-rendimiento">
+      <div class="info-card">
+        <span class="info-card-icon">📊</span>
+        <div class="info-card-text">
+          <h2>Rendimiento Semanal por Tienda</h2>
+          <p>Selecciona una semana para ver cuántos asesores cumplieron el 100% de su meta de ventas</p>
+        </div>
+      </div>
+
+      <div class="week-selector" id="weekSelector"></div>
+      <div class="week-info" id="weekInfo"></div>
+
+      <div class="table-card">
+        <div class="table-card-header">
+          <h3 id="rendTitle">📈 Resultados — Selecciona una semana</h3>
+          <span class="table-count" id="rendBadge">—</span>
+        </div>
+        <div class="table-wrapper">
+          <div id="rendLoading" class="state-msg">Selecciona una semana arriba para ver los resultados.</div>
+          <table id="tablaRendimiento" style="display:none;">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Sucursal</th>
+                <th>Región</th>
+                <th style="text-align:center">Total Reportados</th>
+                <th style="text-align:center">Al 100%</th>
+                <th>Cumplimiento</th>
+              </tr>
+            </thead>
+            <tbody id="rendCuerpo"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════ TAB 3: NOTIFICACIONES ════════════════════════════ -->
+    <div class="tab-panel" id="tab-notificaciones">
+      <div class="info-card">
+        <span class="info-card-icon">📧</span>
+        <div class="info-card-text">
+          <h2>Notificaciones de Desbloqueo</h2>
+          <p>Tiendas con asesores que cumplieron el 100% esta semana · Envía la notificación por email</p>
+        </div>
+      </div>
+
+      <div id="notifSemanaInfo" class="week-info" style="margin-bottom:1rem;"></div>
+
+      <div id="notifLoading" class="state-msg">
+        <div class="spin">⚙️</div><br>Cargando tiendas con logros esta semana...
+      </div>
+      <div id="notifEmpty" class="state-msg" style="display:none;">
+        🎯 No hay tiendas con asesores al 100% en la semana activa aún.
+      </div>
+      <div id="notifGrid" class="notif-grid" style="display:none;"></div>
+    </div>
+
   </div>
-  <style>
-    @keyframes musicGlow { 0%,100%{box-shadow:0 4px 24px rgba(0,70,173,.6),0 0 0 0 rgba(247,168,0,.4);}50%{box-shadow:0 4px 24px rgba(0,70,173,.6),0 0 0 10px rgba(247,168,0,0);} }
-  </style>
+
+  <div id="toast"></div>
 
   <script>
     const API_URL = 'https://album-cdt-mundial.onrender.com/api';
     const token   = localStorage.getItem('token');
-    if (!token) window.location.href = 'index.html';
+    const esAdmin = localStorage.getItem('esAdmin');
 
-    let empIdFoto = null, fotoBase64 = null, fotoTipo = null;
-
-    function cerrarSesion() { localStorage.clear(); window.location.href = 'index.html'; }
-
-    function toggleMusica() {
-      const box = document.getElementById('ytBox'), btn = document.getElementById('musicBtn'), frame = document.getElementById('ytIframe');
-      if (box.style.display === 'none') { if (frame.src === 'about:blank') frame.src = frame.dataset.src; box.style.display = 'block'; btn.style.display = 'none'; }
-      else { box.style.display = 'none'; frame.src = 'about:blank'; btn.style.display = 'flex'; }
+    if (!token || esAdmin !== 'true') {
+      localStorage.clear();
+      window.location.href = 'index.html';
     }
 
-    function iconoPorCargo(cargo) {
-      const c = (cargo || '').toLowerCase();
-      if (c.includes('gerente') || c.includes('director')) return '👑';
-      if (c.includes('supervisor')) return '🎯';
-      if (c.includes('cajero') || c.includes('caja')) return '💳';
-      if (c.includes('bodega') || c.includes('almac')) return '📦';
-      if (c.includes('visual')) return '🎨';
-      return '⭐';
+    document.getElementById('btnLogout').onclick = () => {
+      localStorage.clear();
+      window.location.href = 'index.html';
+    };
+
+    /* ── TOAST ────────────────────────────────────────────── */
+    function showToast(msg, ms = 2800) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), ms);
     }
 
-    function renderAlbum(empleados, semana) {
-      const wrapper = document.getElementById('wrapperAlbum');
-      wrapper.innerHTML = '';
+    /* ── TABS ─────────────────────────────────────────────── */
+    let notifLoaded = false;
 
-      if (!empleados.length) {
-        wrapper.innerHTML = `<div class="loading-msg">📋 No hay asesores registrados en tu sucursal esta semana.<br><span style="font-size:.75rem;opacity:.6;">Contacta al administrador.</span></div>`;
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        const panelId = 'tab-' + btn.dataset.tab;
+        document.getElementById(panelId).classList.add('active');
+
+        if (btn.dataset.tab === 'notificaciones' && !notifLoaded) {
+          notifLoaded = true;
+          cargarNotificaciones();
+        }
+      });
+    });
+
+    /* ════════════════════════════════════════════════════════
+       TAB 1 — SUCURSALES
+    ════════════════════════════════════════════════════════ */
+    const empCache = {};
+
+    async function cargarTiendasAdmin() {
+      try {
+        const res = await fetch(`${API_URL}/tiendas/`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          document.getElementById('loadingState').innerHTML = '❌ Error al leer datos del servidor.';
+          return;
+        }
+
+        const tbody = document.getElementById('listaTiendasCuerpo');
+        tbody.innerHTML = '';
+
+        if (!data.tiendas || data.tiendas.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:rgba(255,255,255,.3);padding:2rem;">No hay tiendas registradas.</td></tr>';
+        } else {
+          data.tiendas.forEach(t => {
+            const rowId = `tienda-${t.id}`;
+            const empRowId = `emp-row-${t.id}`;
+
+            tbody.innerHTML += `
+              <tr class="row-tienda" id="${rowId}" data-id="${t.id}" data-cargado="false">
+                <td class="td-nombre"><strong>${t.nombre}</strong></td>
+                <td class="td-codigo">${t.codigo}</td>
+                <td class="td-email">${t.email || '—'}</td>
+                <td><span class="txt-clave">${t.clave || '------'}</span></td>
+                <td style="color:rgba(255,255,255,.55);font-family:'Barlow Condensed',sans-serif;">${t.region || 'General'}</td>
+                <td style="color:rgba(255,255,255,.55);font-family:'Barlow Condensed',sans-serif;">${t.ciudad || 'General'}</td>
+                <td class="td-empleados">👥 ${t.total_empleados || 0}</td>
+                <td><span class="badge-activa">Activa</span></td>
+                <td><button class="btn-ver" onclick="toggleEmpleados(event,'${t.id}',${data.tiendas.indexOf(t)})">Ver equipo</button></td>
+              </tr>
+              <tr class="row-empleados" id="${empRowId}" style="display:none;">
+                <td colspan="9">
+                  <div class="empleados-inner" id="inner-${t.id}">
+                    <span class="emp-loading">Cargando...</span>
+                  </div>
+                </td>
+              </tr>`;
+          });
+          document.getElementById('badge-count').textContent = `${data.tiendas.length} sucursales`;
+        }
+
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('tablaTiendas').style.display = 'table';
+
+      } catch (err) {
+        console.error(err);
+        document.getElementById('loadingState').innerHTML = '❌ Error de conexión. Refresca la página.';
+      }
+    }
+
+    async function toggleEmpleados(event, tiendaId) {
+      event.stopPropagation();
+      const empRow = document.getElementById(`emp-row-${tiendaId}`);
+      const mainRow = document.getElementById(`tienda-${tiendaId}`);
+      const isVisible = empRow.style.display !== 'none';
+
+      if (isVisible) {
+        empRow.style.display = 'none';
+        mainRow.classList.remove('expanded');
         return;
       }
 
-      const desbloqueados = empleados.filter(e => e.desbloqueado).length;
-      document.getElementById('valDesbloqueadas').textContent = desbloqueados;
-      document.getElementById('valMeta').textContent = Math.round((desbloqueados / empleados.length) * 100) + '%';
-      document.getElementById('valSemana').textContent = semana ? 'S' + semana.numero : '—';
-      document.getElementById('badgeCount').textContent = empleados.length + ' figuritas';
+      empRow.style.display = 'table-row';
+      mainRow.classList.add('expanded');
 
-      empleados.forEach(emp => {
-        const icono = iconoPorCargo(emp.cargo);
-        const imgTag = emp.foto_url
-          ? `<img src="${emp.foto_url}" alt="${emp.nombre}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:2px solid rgba(247,168,0,.5);" onerror="this.outerHTML='<span class=\\'card-icon\\'>${icono}</span>'">`
-          : `<span class="card-icon">${icono}</span>`;
+      if (empCache[tiendaId]) {
+        renderEmpleados(tiendaId, empCache[tiendaId]);
+        return;
+      }
 
-        const overlay = emp.desbloqueado
-          ? `<div class="upload-overlay"><span class="upload-icon">📷</span><span>${emp.foto_url ? 'Cambiar Foto' : 'Subir Foto'}</span></div>`
-          : '';
+      try {
+        const res = await fetch(`${API_URL}/empleados/admin/${tiendaId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        empCache[tiendaId] = data.empleados || [];
+        renderEmpleados(tiendaId, empCache[tiendaId]);
+      } catch (err) {
+        document.getElementById(`inner-${tiendaId}`).innerHTML = '<span class="emp-loading">❌ Error al cargar empleados.</span>';
+      }
+    }
 
-        const card = document.createElement('div');
-        card.className = `sticker-card ${emp.desbloqueado ? 'unlocked gold' : 'locked'}`;
-        if (emp.desbloqueado) card.onclick = () => abrirModal(emp.id, emp.nombre);
-        card.innerHTML = `
-          <div class="card-band"></div>
-          <div class="card-num">#${String(emp.numero).padStart(3, '0')}</div>
-          <div class="card-watermark">SL</div>
-          <div class="lock-badge">🔒</div>
-          <div class="card-photo">${imgTag}${overlay}</div>
-          <div class="card-footer">
-            <div class="card-code">${emp.cargo || 'Asesor de Ventas'}</div>
-            <div class="card-name">${emp.nombre}</div>
-          </div>`;
-        wrapper.appendChild(card);
+    function renderEmpleados(tiendaId, empleados) {
+      const inner = document.getElementById(`inner-${tiendaId}`);
+      if (!empleados.length) {
+        inner.innerHTML = '<span class="emp-loading">Sin empleados registrados.</span>';
+        return;
+      }
+      inner.innerHTML = empleados.map(e => `
+        <div class="emp-chip">
+          👤 ${e.nombre} <span>· ${e.cargo || 'Asesor'}</span>
+        </div>`).join('');
+    }
+
+    /* ════════════════════════════════════════════════════════
+       TAB 2 — RENDIMIENTO SEMANAL
+    ════════════════════════════════════════════════════════ */
+    const semanas = [
+      { numero: 1, nombre: 'Semana 1', fechas: '9–15 Jun 2026' },
+      { numero: 2, nombre: 'Semana 2', fechas: '16–22 Jun 2026' },
+      { numero: 3, nombre: 'Semana 3', fechas: '23–29 Jun 2026' },
+      { numero: 4, nombre: 'Semana 4', fechas: '30 Jun–6 Jul 2026' },
+      { numero: 5, nombre: 'Semana 5', fechas: '7–13 Jul 2026' },
+      { numero: 6, nombre: 'Semana 6', fechas: '14–19 Jul 2026' },
+    ];
+
+    let semanaActiva = null;
+
+    function buildWeekSelector() {
+      const wrap = document.getElementById('weekSelector');
+      semanas.forEach(s => {
+        const btn = document.createElement('button');
+        btn.className = 'week-btn';
+        btn.dataset.num = s.numero;
+        btn.innerHTML = `S${s.numero}<br><small style="font-family:'Barlow Condensed',sans-serif;font-size:.6rem;opacity:.6;">${s.fechas}</small>`;
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.week-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          semanaActiva = s;
+          document.getElementById('weekInfo').textContent = `Mostrando resultados de ${s.nombre} · ${s.fechas}`;
+          cargarRendimiento(s.numero);
+        });
+        wrap.appendChild(btn);
       });
     }
 
-    async function cargarAlbum() {
-      document.getElementById('lblTienda').textContent = localStorage.getItem('nombreTienda') || 'SPORTLINE';
+    async function cargarRendimiento(numeroSemana) {
+      const loadEl = document.getElementById('rendLoading');
+      const tableEl = document.getElementById('tablaRendimiento');
+      const tbody = document.getElementById('rendCuerpo');
+      const badge = document.getElementById('rendBadge');
+      const title = document.getElementById('rendTitle');
+
+      loadEl.innerHTML = '<div class="spin">⚙️</div><br>Cargando resultados...';
+      loadEl.style.display = 'block';
+      tableEl.style.display = 'none';
+
       try {
-        const res = await fetch(`${API_URL}/album/`, { headers: { 'Authorization': `Bearer ${token}` } });
-        if (res.status === 401) { localStorage.clear(); window.location.href = 'index.html'; return; }
-        if (!res.ok) throw new Error();
-        const data = await res.json();
-        renderAlbum(data.empleados || [], data.semana);
-      } catch {
-        renderAlbum([
-          { id: 'd1', numero: 1, nombre: 'Ana García',      cargo: 'Gerente',          desbloqueado: true,  foto_url: null },
-          { id: 'd2', numero: 2, nombre: 'Carlos López',    cargo: 'Asesor de Ventas', desbloqueado: true,  foto_url: null },
-          { id: 'd3', numero: 3, nombre: 'María Rodríguez', cargo: 'Supervisora',      desbloqueado: false, foto_url: null },
-        ], { numero: 1 });
-        document.getElementById('badgeCount').textContent = '3 figuritas (demo)';
-      }
-    }
-
-    /* ── MODAL FOTO ── */
-    function abrirModal(empId, nombre) {
-      empIdFoto = empId; fotoBase64 = null; fotoTipo = null;
-      document.getElementById('modalNombre').textContent = nombre;
-      document.getElementById('fotoPreview').style.display = 'none';
-      document.getElementById('btnSubir').style.display = 'none';
-      document.getElementById('alertFoto').style.display = 'none';
-      document.getElementById('fileInput').value = '';
-      document.getElementById('modalFoto').style.display = 'flex';
-    }
-
-    function cerrarModal() { document.getElementById('modalFoto').style.display = 'none'; }
-
-    document.getElementById('modalFoto').addEventListener('click', function(e) {
-      if (e.target === this) cerrarModal();
-    });
-
-    function previsualizarFoto(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      if (file.size > 5 * 1024 * 1024) { mostrarAlerta('La foto no puede superar 5 MB.'); return; }
-      const reader = new FileReader();
-      reader.onload = e => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const max = 500;
-          let w = img.width, h = img.height;
-          if (w > h && w > max) { h = h * (max / w); w = max; }
-          else if (h > max) { w = w * (max / h); h = max; }
-          canvas.width = w; canvas.height = h;
-          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
-          fotoBase64 = dataUrl.split(',')[1];
-          fotoTipo = 'image/jpeg';
-          const preview = document.getElementById('fotoPreview');
-          preview.src = dataUrl;
-          preview.style.display = 'block';
-          document.getElementById('btnSubir').style.display = 'block';
-          document.getElementById('alertFoto').style.display = 'none';
-        };
-        img.src = e.target.result;
-      };
-      reader.readAsDataURL(file);
-    }
-
-    async function subirFoto() {
-      if (!fotoBase64 || !empIdFoto) return;
-      const btn = document.getElementById('btnSubir');
-      btn.textContent = 'Subiendo...'; btn.disabled = true;
-      try {
-        const res = await fetch(`${API_URL}/album/foto`, {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ empleado_id: empIdFoto, foto_base64: fotoBase64, tipo: fotoTipo })
+        const res = await fetch(`${API_URL}/ventas/admin/semana/${numeroSemana}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error);
-        mostrarAlerta('¡Foto subida con éxito! ⭐', true);
-        setTimeout(() => { cerrarModal(); cargarAlbum(); }, 1600);
+
+        if (!res.ok) {
+          loadEl.innerHTML = `❌ Error: ${data.error || 'No se pudo cargar.'}`;
+          return;
+        }
+
+        const tiendas = data.tiendas || [];
+        title.textContent = `📈 Semana ${numeroSemana} — ${tiendas.length} tiendas con datos`;
+        badge.textContent = `${tiendas.reduce((a,t) => a + (t.cumplio || 0), 0)} al 100%`;
+
+        if (!tiendas.length) {
+          loadEl.innerHTML = '📭 No hay datos registrados para esta semana.';
+          return;
+        }
+
+        tbody.innerHTML = tiendas.map((t, i) => {
+          const pct = t.total > 0 ? Math.round((t.cumplio / t.total) * 100) : 0;
+          const cls = pct === 100 ? 'full' : pct > 0 ? 'partial' : 'none';
+          return `<tr>
+            <td class="td-codigo">${i + 1}</td>
+            <td class="td-nombre"><strong>${t.nombre}</strong></td>
+            <td style="color:rgba(255,255,255,.5);font-family:'Barlow Condensed',sans-serif;">${t.region || '—'}</td>
+            <td style="text-align:center;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:rgba(255,255,255,.6);">${t.total}</td>
+            <td style="text-align:center;font-family:'Bebas Neue',sans-serif;font-size:1.2rem;" class="td-pct ${cls}">⭐ ${t.cumplio}</td>
+            <td>
+              <span class="td-pct ${cls}" style="font-size:.85rem;">${pct}%</span>
+              <span class="pct-bar-wrap"><span class="pct-bar" style="width:${pct}%;background:${pct===100?'var(--p-green)':pct>0?'var(--p-orange)':'rgba(255,255,255,.15)'}"></span></span>
+            </td>
+          </tr>`;
+        }).join('');
+
+        loadEl.style.display = 'none';
+        tableEl.style.display = 'table';
+
       } catch (err) {
-        mostrarAlerta(err.message || 'Error al subir la foto.');
-        btn.textContent = '⬆️ Subir al Álbum'; btn.disabled = false;
+        loadEl.innerHTML = '❌ Error de conexión.';
       }
     }
 
-    function mostrarAlerta(msg, ok = false) {
-      const el = document.getElementById('alertFoto');
-      el.textContent = msg;
-      el.className = 'alert ' + (ok ? 'alert-success' : 'alert-error');
-      el.style.display = 'block';
+    /* ════════════════════════════════════════════════════════
+       TAB 3 — NOTIFICACIONES
+    ════════════════════════════════════════════════════════ */
+    async function cargarNotificaciones() {
+      const loadEl = document.getElementById('notifLoading');
+      const emptyEl = document.getElementById('notifEmpty');
+      const gridEl = document.getElementById('notifGrid');
+      const infoEl = document.getElementById('notifSemanaInfo');
+
+      loadEl.style.display = 'block';
+      emptyEl.style.display = 'none';
+      gridEl.style.display = 'none';
+
+      try {
+        const res = await fetch(`${API_URL}/notificaciones/pendientes`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          loadEl.innerHTML = `❌ Error: ${data.error || 'No se pudo cargar.'}`;
+          return;
+        }
+
+        loadEl.style.display = 'none';
+
+        if (data.semana) {
+          infoEl.textContent = `Semana activa: ${data.semana.nombre || 'Semana ' + data.semana.numero}`;
+        }
+
+        const tiendas = data.tiendas || [];
+
+        if (!tiendas.length) {
+          emptyEl.style.display = 'block';
+          return;
+        }
+
+        gridEl.innerHTML = tiendas.map(t => {
+          const empHtml = (t.empleados || []).map(e =>
+            `<li><strong>${e.nombre}</strong> <span>· ${e.cargo || 'Asesor'}</span></li>`
+          ).join('');
+
+          return `<div class="notif-card" id="card-${t.tienda_id}">
+            <div class="notif-card-head">
+              <h4>🏬 ${t.nombre}</h4>
+              <span class="count-badge">⭐ ${t.empleados.length}</span>
+            </div>
+            <div class="notif-card-body">
+              <div class="notif-email">📧 ${t.email || 'Sin email registrado'}</div>
+              <ul class="notif-emp-list">${empHtml}</ul>
+              <button class="btn-send" id="btn-${t.tienda_id}"
+                onclick="enviarNotificacion('${t.tienda_id}', ${JSON.stringify(t.empleados).replace(/"/g, '&quot;')}, '${(data.semana?.nombre || 'Semana').replace(/'/g,"\\'")}', ${data.semana?.numero || 0})">
+                📧 Enviar Notificación
+              </button>
+            </div>
+          </div>`;
+        }).join('');
+
+        gridEl.style.display = 'grid';
+
+      } catch (err) {
+        loadEl.innerHTML = '❌ Error de conexión.';
+      }
     }
 
-    window.onload = cargarAlbum;
+    async function enviarNotificacion(tiendaId, empleados, semanaNombre, semanaNumero) {
+      const btn = document.getElementById(`btn-${tiendaId}`);
+      btn.disabled = true;
+      btn.textContent = '⏳ Enviando...';
+
+      try {
+        const res = await fetch(`${API_URL}/notificaciones/enviar/${tiendaId}`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ empleados, semana_nombre: semanaNombre, semana_numero: semanaNumero })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          btn.classList.add('sent');
+          btn.textContent = '✅ Notificación Enviada';
+          showToast(`✅ Email enviado a ${data.email}`);
+        } else {
+          btn.disabled = false;
+          btn.textContent = '📧 Enviar Notificación';
+          showToast(`❌ ${data.error || 'Error al enviar.'}`);
+        }
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = '📧 Enviar Notificación';
+        showToast('❌ Error de conexión.');
+      }
+    }
+
+    /* ── INIT ─────────────────────────────────────────────── */
+    window.onload = () => {
+      cargarTiendasAdmin();
+      buildWeekSelector();
+    };
   </script>
 </body>
 </html>
