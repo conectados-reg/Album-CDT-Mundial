@@ -586,17 +586,17 @@
         if (!res.ok) { loadEl.innerHTML = `❌ ${data.error || 'Error.'}`; return; }
         const tiendas = data.tiendas || [];
         document.getElementById('rendTitle').textContent = `📈 Semana ${n} — ${tiendas.length} tiendas`;
-        document.getElementById('rendBadge').textContent = `${tiendas.reduce((a,t) => a+(t.cumplio||0),0)} al 100%`;
+        document.getElementById('rendBadge').textContent = `${tiendas.reduce((a,t) => a+(t.cumplieron||0),0)} al 100%`;
         if (!tiendas.length) { loadEl.innerHTML = '📭 Sin datos para esta semana.'; return; }
         tbody.innerHTML = tiendas.map((t,i) => {
-          const pct = t.total > 0 ? Math.round((t.cumplio/t.total)*100) : 0;
+          const pct = t.total > 0 ? Math.round((t.cumplieron/t.total)*100) : 0;
           const cls = pct===100?'full':pct>0?'partial':'none';
           return `<tr>
             <td class="td-codigo">${i+1}</td>
             <td class="td-nombre"><strong>${t.nombre}</strong></td>
             <td style="color:rgba(255,255,255,.5);font-family:'Barlow Condensed',sans-serif;">${t.region||'—'}</td>
             <td style="text-align:center;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:rgba(255,255,255,.6);">${t.total}</td>
-            <td style="text-align:center;" class="td-pct ${cls}">⭐ ${t.cumplio}</td>
+            <td style="text-align:center;" class="td-pct ${cls}">⭐ ${t.cumplieron}</td>
             <td><span class="td-pct ${cls}" style="font-size:.85rem;">${pct}%</span>
               <span class="pct-bar-wrap"><span class="pct-bar" style="width:${pct}%;background:${pct===100?'var(--p-green)':pct>0?'var(--p-orange)':'rgba(255,255,255,.15)'}"></span></span>
             </td></tr>`;

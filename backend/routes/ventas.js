@@ -120,33 +120,46 @@ router.get('/admin/semana/:numero', verificarToken, async (req, res) => {
       .eq('numero', parseInt(req.params.numero)).single();
     if (!semana) return res.status(404).json({ error: 'Semana no encontrada.' });
 
-    const { data, error } = await supabase
+    const { data: resultados, error: rErr } = await supabase
       .from('resultados_ventas')
-      .select('porcentaje_cumplido, cumplio_meta, empleados(nombre, cargo, tiendas(id, nombre, region, ciudad))')
+      .select('empleado_id, porcentaje_cumplido, cumplio_meta')
       .eq('semana_id', semana.id);
-    if (error) throw error;
+    if (rErr) throw rErr;
+    if (!resultados?.length) return res.json({ semana, tiendas: [] });
+
+    const empIds = resultados.map(r => r.empleado_id);
+    const { data: empleados, error: eErr } = await supabase
+      .from('empleados').select('id, nombre, cargo, tienda_id').in('id', empIds);
+    if (eErr) throw eErr;
+
+    const tiendaIds = [...new Set((empleados || []).map(e => e.tienda_id))];
+    const { data: tiendas, error: tErr } = await supabase
+      .from('tiendas').select('id, nombre, region, ciudad').in('id', tiendaIds);
+    if (tErr) throw tErr;
+
+    const tiendaMap = {};
+    for (const t of (tiendas || [])) tiendaMap[t.id] = t;
+    const empMap = {};
+    for (const e of (empleados || [])) empMap[e.id] = e;
 
     const porTienda = {};
-    for (const r of (data || [])) {
-      const t = r.empleados?.tiendas;
+    for (const r of resultados) {
+      const emp = empMap[r.empleado_id];
+      if (!emp) continue;
+      const t = tiendaMap[emp.tienda_id];
       if (!t) continue;
       if (!porTienda[t.id]) {
         porTienda[t.id] = { tienda_id: t.id, nombre: t.nombre, region: t.region, ciudad: t.ciudad, total: 0, cumplieron: 0, empleados: [] };
       }
       porTienda[t.id].total++;
       if (r.cumplio_meta) porTienda[t.id].cumplieron++;
-      porTienda[t.id].empleados.push({
-        nombre: r.empleados.nombre,
-        cargo: r.empleados.cargo,
-        porcentaje: r.porcentaje_cumplido,
-        cumplio_meta: r.cumplio_meta
-      });
+      porTienda[t.id].empleados.push({ nombre: emp.nombre, cargo: emp.cargo, porcentaje: r.porcentaje_cumplido, cumplio_meta: r.cumplio_meta });
     }
 
     res.json({ semana, tiendas: Object.values(porTienda) });
   } catch (err) {
     console.error('[Ventas Admin]', err.message);
-    res.status(500).json({ error: 'Error al obtener reporte.' });
+    res.status(500).json({ error: 'Error al obtener reporte: ' + err.message });
   }
 });
 

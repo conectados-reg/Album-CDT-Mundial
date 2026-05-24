@@ -24,21 +24,39 @@ router.get('/pendientes', verificarToken, async (req, res) => {
       .from('semanas').select('id, numero, nombre').eq('activa', true).single();
     if (!semana) return res.json({ tiendas: [], semana: null });
 
-    const { data, error } = await supabase
+    const { data: resultados, error: rErr } = await supabase
       .from('resultados_ventas')
-      .select('empleados(nombre, cargo, tiendas(id, nombre, email))')
+      .select('empleado_id')
       .eq('semana_id', semana.id)
       .eq('cumplio_meta', true);
-    if (error) throw error;
+    if (rErr) throw rErr;
+    if (!resultados?.length) return res.json({ tiendas: [], semana });
+
+    const empIds = resultados.map(r => r.empleado_id);
+    const { data: empleados, error: eErr } = await supabase
+      .from('empleados').select('id, nombre, cargo, tienda_id').in('id', empIds);
+    if (eErr) throw eErr;
+
+    const tiendaIds = [...new Set((empleados || []).map(e => e.tienda_id))];
+    const { data: tiendas, error: tErr } = await supabase
+      .from('tiendas').select('id, nombre, email').in('id', tiendaIds);
+    if (tErr) throw tErr;
+
+    const tiendaMap = {};
+    for (const t of (tiendas || [])) tiendaMap[t.id] = t;
+    const empMap = {};
+    for (const e of (empleados || [])) empMap[e.id] = e;
 
     const porTienda = {};
-    for (const r of (data || [])) {
-      const t = r.empleados?.tiendas;
+    for (const r of resultados) {
+      const emp = empMap[r.empleado_id];
+      if (!emp) continue;
+      const t = tiendaMap[emp.tienda_id];
       if (!t) continue;
       if (!porTienda[t.id]) {
         porTienda[t.id] = { tienda_id: t.id, nombre: t.nombre, email: t.email || '', empleados: [] };
       }
-      porTienda[t.id].empleados.push({ nombre: r.empleados.nombre, cargo: r.empleados.cargo });
+      porTienda[t.id].empleados.push({ nombre: emp.nombre, cargo: emp.cargo });
     }
 
     res.json({ tiendas: Object.values(porTienda), semana });
