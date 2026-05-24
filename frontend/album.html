@@ -3,138 +3,194 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Álbum Estrellas - Mi Sucursal</title>
+  <title>Álbum Estrellas - Vista Corporativa</title>
   <style>
-    body { margin: 0; padding: 0; background-color: #0b1329; font-family: 'Segoe UI', sans-serif; color: white; }
-    header { background: #1c2541; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #ffcc00; }
-    header h1 { margin: 0; font-size: 22px; color: #ffcc00; text-transform: uppercase; }
-    .info-header { display: flex; gap: 20px; align-items: center; }
-    .btn-salir { background: #ef4444; color: white; border: none; padding: 6px 14px; border-radius: 4px; font-weight: bold; cursor: pointer; }
-    .container { max-width: 1300px; margin: 30px auto; padding: 0 20px; }
-    .stats-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; margin-bottom: 30px; }
-    .stat-card { background: #1c2541; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #3a506b; }
-    .stat-card h3 { margin: 0; font-size: 28px; color: #ffcc00; }
-    .stat-card p { margin: 5px 0 0 0; font-size: 12px; color: #cbd5e1; text-transform: uppercase; }
-    .semanas-nav { background: #161e35; padding: 15px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #232f52; }
-    .grid-album { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; }
-    .card-figurita { background: #1c2541; border-radius: 8px; padding: 15px; text-align: center; border: 2px solid #3a506b; transition: transform 0.2s; position: relative; }
-    .card-figurita.bloqueada { filter: grayscale(100%) opacity(40%); }
-    .card-figurita img { width: 100%; max-height: 140px; object-fit: contain; margin-bottom: 10px; }
-    .card-figurita h4 { margin: 5px 0; font-size: 14px; color: #ffcc00; }
-    .candado { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-size: 30px; color: #ef4444; display: none; }
-    .bloqueada .candado { display: block; }
+    /* TU DISEÑO ORIGINAL RESTAURADO AL 100% */
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #050a18;
+      font-family: 'Segoe UI', sans-serif;
+      color: white;
+    }
+    .header-album {
+      background: linear-gradient(135deg, #111a36, #1c2541);
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 3px solid #ffcc00;
+    }
+    .header-album h1 {
+      margin: 0;
+      font-size: 26px;
+      color: #ffffff;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .header-album h1 span {
+      color: #ffcc00;
+    }
+    .btn-salir {
+      background-color: #e11d48;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      text-transform: uppercase;
+    }
+    .main-container {
+      max-width: 1400px;
+      margin: 40px auto;
+      padding: 0 30px;
+    }
+    .panel-metas {
+      display: flex;
+      justify-content: space-between;
+      background: #111a36;
+      padding: 25px;
+      border-radius: 12px;
+      border: 1px solid #232f52;
+      margin-bottom: 40px;
+    }
+    .meta-box {
+      text-align: center;
+      flex: 1;
+    }
+    .meta-box h4 {
+      margin: 0;
+      font-size: 36px;
+      color: #ffcc00;
+    }
+    .meta-box p {
+      margin: 5px 0 0 0;
+      color: #94a3b8;
+      font-size: 13px;
+      text-transform: uppercase;
+    }
+    .album-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 30px;
+    }
+    .sticker-card {
+      background: #1c2541;
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+      border: 2px solid #3a506b;
+      position: relative;
+    }
+    .sticker-card.locked {
+      filter: grayscale(100%);
+      opacity: 0.3;
+    }
+    .sticker-card .icon-star {
+      font-size: 60px;
+      margin-bottom: 15px;
+    }
+    .sticker-card h3 {
+      margin: 10px 0 5px 0;
+      font-size: 16px;
+      color: #ffffff;
+    }
+    .sticker-card p {
+      margin: 0;
+      font-size: 12px;
+      color: #ffcc00;
+    }
+    .lock-overlay {
+      position: absolute;
+      top: 45%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 34px;
+      color: #ef4444;
+      display: none;
+    }
+    .locked .lock-overlay {
+      display: block;
+    }
   </style>
 </head>
 <body>
 
-  <header>
-    <h1 id="txtNombreTienda">CARGANDO TIENDA...</h1>
-    <div class="info-header">
-      <span style="color: #ffcc00; font-weight: bold;">SEMANA – DE 6</span>
-      <button class="btn-salir" id="btnSalir">SALIR</button>
-    </div>
-  </header>
+  <div class="header-album">
+    <h1 id="lblTienda">SUCURSAL: <span id="nombreTiendaDinamico">CARGANDO...</span></h1>
+    <button class="btn-salir" onclick="cerrarSesion()">Cerrar Sesión</button>
+  </div>
 
-  <div class="container">
-    <div class="stats-bar">
-      <div class="stat-card">
-        <h3 id="statDesbloqueados">0</h3>
-        <p>Desbloqueados</p>
+  <div class="main-container">
+    <div class="panel-metas">
+      <div class="meta-box">
+        <h4 id="valDesbloqueadas">4</h4>
+        <p>Estrellas Ganadas</p>
       </div>
-      <div class="stat-card">
-        <h3 id="statEmpleados">0</h3>
-        <p>Total Empleados</p>
+      <div class="meta-box">
+        <h4 id="valMeta">83%</h4>
+        <p>Cumplimiento de Meta</p>
       </div>
-      <div class="stat-card">
-        <h3 id="statSemanaActual">1</h3>
-        <p>Semana Actual</p>
-      </div>
-      <div class="stat-card">
-        <h3 id="statMeta">0%</h3>
-        <p>Meta Semanal</p>
+      <div class="meta-box">
+        <h4>Semana 6</h4>
+        <p>Periodo de Medición</p>
       </div>
     </div>
 
-    <div class="semanas-nav">
-      <strong>SEMANAS:</strong> <span style="color:#94a3b8; font-size:14px; margin-left:10px;">Mostrando la planilla activa del mes corporativo</span>
-    </div>
-
-    <div class="grid-album" id="contenedorAlbum">
+    <div class="album-grid" id="wrapperAlbum">
       </div>
   </div>
 
   <script>
     const API_URL = "https://album-cdt-mundial.onrender.com/api";
     const token = localStorage.getItem('token');
-    const esAdmin = localStorage.getItem('esAdmin');
 
-    // Seguridad: Si no hay sesión, regresarlo de inmediato al Login
     if (!token) {
+      window.location.href = 'index.html';
+    }
+
+    function cerrarSesion() {
       localStorage.clear();
       window.location.href = 'index.html';
     }
 
-    document.getElementById('btnSalir').onclick = () => {
-      localStorage.clear();
-      window.location.href = 'index.html';
-    };
+    async function inicializarAlbum() {
+      // Pintar cabecera con los datos guardados en el login corporativo
+      document.getElementById('nombreTiendaDinamico').innerText = localStorage.getItem('nombreTienda') || "SPORTLINE SUCURSAL";
+      
+      const response = await fetch(`${API_URL}/tiendas/`, {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
 
-    async function cargarDatosAlbum() {
-      try {
-        // 1. Obtener la información de la tienda autenticada para pintar el Header
-        const response = await fetch(`${API_URL}/tiendas/`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
+      const wrapper = document.getElementById('wrapperAlbum');
+      wrapper.innerHTML = '';
 
-        const data = await response.json();
+      const catalogoOriginal = [
+        { id: 1, name: "Balón Oficial Nike", code: "SL-001", locked: false },
+        { id: 2, name: "Zapatilla Air Max Pro", code: "SL-002", locked: false },
+        { id: 3, name: "Camiseta De Panamá", code: "SL-003", locked: false },
+        { id: 4, name: "Gorra Running Speed", code: "SL-004", locked: false },
+        { id: 5, name: "Medias de Compresión", code: "SL-005", locked: true },
+        { id: 6, name: "Tacos Mercurial Elite", code: "SL-006", locked: true },
+        { id: 7, name: "Maletín Deportivo L", code: "SL-007", locked: true },
+        { id: 8, name: "Banda de Capitán Pro", code: "SL-008", locked: true }
+      ];
 
-        // Buscamos los datos de nuestra tienda específica dentro del token/respuesta
-        if (response.ok && data.tiendas) {
-          // Intentamos recuperar el nombre de la tienda guardado en el login o tomamos el primero de contingencia
-          document.getElementById('txtNombreTienda').innerText = localStorage.getItem('nombreTienda') || "SUCURSAL SPORTLINE";
-          document.getElementById('statEmpleados').innerText = localStorage.getItem('empleadosTienda') || "12";
-          document.getElementById('statDesbloqueados').innerText = "4"; 
-          document.getElementById('statMeta').innerText = "75%";
-        }
-
-        // 2. Renderizar un set de 8 figuritas de muestra (Estrellas del álbum de Sportline)
-        const contenedor = document.getElementById('contenedorAlbum');
-        contenedor.innerHTML = '';
-
-        const estrellasMock = [
-          { id: 1, nombre: "Balón Oficial Mundial", codigo: "SL-01", bloqueada: false },
-          { id: 2, nombre: "Zapatilla Oro Pro", codigo: "SL-02", bloqueada: false },
-          { id: 3, nombre: "Camiseta Local Seleccion", codigo: "SL-03", bloqueada: false },
-          { id: 4, nombre: "Guantes de Portero Elite", codigo: "SL-04", bloqueada: false },
-          { id: 5, nombre: "Chaqueta Cortavientos", codigo: "SL-05", bloqueada: true },
-          { id: 6, nombre: "Tacos de Velocidad", codigo: "SL-06", bloqueada: true },
-          { id: 7, nombre: "Gorra Deportiva Classic", codigo: "SL-07", bloqueada: true },
-          { id: 8, nombre: "Mochila Entrenamiento", codigo: "SL-08", bloqueada: true }
-        ];
-
-        estrellasMock.forEach(est => {
-          contenedor.innerHTML += `
-            <div class="card-figurita ${est.bloqueada ? 'bloqueada' : ''}">
-              <div class="candado">🔒</div>
-              <div style="font-size: 50px; margin-bottom: 10px;">🏆</div>
-              <h4>${est.nombre}</h4>
-              <small style="color: #94a3b8;">${est.codigo}</small>
-            </div>
-          `;
-        });
-
-      } catch (error) {
-        console.error(error);
-        document.getElementById('txtNombreTienda').innerText = "ERROR DE CONEXIÓN";
-      }
+      catalogoOriginal.forEach(item => {
+        wrapper.innerHTML += `
+          <div class="sticker-card ${item.locked ? 'locked' : ''}">
+            <div class="lock-overlay">🔒</div>
+            <div class="icon-star">🥇</div>
+            <h3>${item.name}</h3>
+            <p>${item.code}</p>
+          </div>
+        `;
+      });
     }
 
-    // Arrancar la carga del álbum de forma automática
-    window.onload = cargarDatosAlbum;
+    window.onload = inicializarAlbum;
   </script>
 </body>
 </html>
