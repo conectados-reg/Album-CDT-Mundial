@@ -19,18 +19,23 @@ router.post('/login', async (req, res) => {
       return res.json({ token, esAdmin: true, redirect: 'admin.html' });
     }
 
-    // 2. Si no es admin, buscar si pertenece a una Sucursal/Tienda en Supabase
+    // 2. ULTRA-BLINDADO: Solo pedimos campos básicos para evitar caídas por columnas inexistentes
     const { data: tienda, error } = await supabase
       .from('tiendas')
-      .select('*')
+      .select('id, email, password_hash, codigo, nombre')
       .eq('email', email.trim())
-      .single();
+      .maybeSingle();
 
-    if (error || !tienda) {
+    if (error) {
+      console.error('Error directo de Supabase:', error);
+      return res.status(500).json({ error: `Fallo en base de datos: ${error.message}` });
+    }
+
+    if (!tienda) {
       return res.status(401).json({ error: 'Credencial inválida o sucursal no registrada.' });
     }
 
-    // 3. Verificación de contraseña flexible (acepta texto plano o el hash correcto)
+    // 3. Verificación de contraseña flexible
     const contraseñaValida = (password === 'sport123' || password === tienda.password_hash);
 
     if (!contraseñaValida) {
@@ -39,25 +44,24 @@ router.post('/login', async (req, res) => {
 
     // 4. Generar el Token de acceso para la Tienda
     const token = jwt.sign(
-      { id: tienda.id, email: tienda.email, codigo: tienda.codigo, rol: 'tienda' },
+      { id: tienda.id, email: tienda.email, codigo: tienda.codigo || 'SL-GENERIC', rol: 'tienda' },
       process.env.JWT_SECRET || 'secretolocal123',
       { expiresIn: '8h' }
     );
 
-    // Redirige al flujo del álbum correspondiente
     res.json({ 
       token, 
       esAdmin: false, 
       redirect: 'album.html',
       tienda: {
-        nombre: tienda.nombre,
-        codigo: tienda.codigo
+        nombre: tienda.nombre || 'Sucursal Sportline',
+        codigo: tienda.codigo || 'SL-GENERIC'
       }
     });
 
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Error interno en el servidor de autenticación.' });
+    console.error('Error crítico atrapado:', error);
+    res.status(500).json({ error: `Error interno: ${error.message || error}` });
   }
 });
 
