@@ -4,23 +4,22 @@ const { createClient } = require('@supabase/supabase-js');
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
-// Middleware para validar el token JWT del administrador
 function verificarToken(req, res, next) {
   const token = req.headers.authorization?.split(' ')[1];
-  if (!token) return res.status(401).json({ error: 'Acceso denegado. Token faltante.' });
+  if (!token) return res.status(401).json({ error: 'Token faltante.' });
   
   try {
     req.usuario = jwt.verify(token, process.env.JWT_SECRET);
     next();
   } catch (error) {
-    res.status(401).json({ error: 'Sesión inválida o expirada.' });
+    res.status(401).json({ error: 'Sesión inválida.' });
   }
 }
 
-// Obtener todas las tiendas para el Panel de Administración
+// Endpoint para jalar las 240 tiendas de Sportline al panel
 router.get('/', verificarToken, async (req, res) => {
   if (req.usuario.rol !== 'admin') {
-    return res.status(403).json({ error: 'Permisos insuficientes para ver esta sección.' });
+    return res.status(403).json({ error: 'No eres administrador.' });
   }
 
   try {
@@ -46,7 +45,7 @@ router.get('/', verificarToken, async (req, res) => {
     res.json({ tiendas: tiendasFormateadas });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Error al consultar la base de datos de tiendas.' });
+    res.status(500).json({ error: 'Error en la base de datos.' });
   }
 });
 
