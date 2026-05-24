@@ -413,6 +413,7 @@
     function banderaPais(region) {
       const r = (region || '').toLowerCase();
       if (r.includes('panam'))  return '🇵🇦';
+      if (r.includes('colombia') || r.includes('colom')) return '🇨🇴';
       if (r.includes('costa') || r.includes('rica')) return '🇨🇷';
       if (r.includes('guatem')) return '🇬🇹';
       if (r.includes('domini') || r.includes('rep')) return '🇩🇴';
