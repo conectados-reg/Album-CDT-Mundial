@@ -1,120 +1,200 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Admin — Álbum Estrellas</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
-<style>
-/* Conservamos intactos tus estilos originales de administración */
-:root{--p-blue:#0046AD;--p-navy:#002B6E;--p-orange:#F7A800;--p-red:#E8231A;--blanco:#ffffff;--borde:rgba(255,255,255,0.12);--texto-suave:rgba(255,255,255,0.5);}
-*{margin:0;padding:0;box-sizing:border-box;}
-body{min-height:100vh;background:linear-gradient(160deg,#001f5e 0%,#05174a 100%);color:#fff;font-family:'Barlow',sans-serif;}
-.navbar{position:sticky;top:0;z-index:100;background:rgba(0,43,110,.97);backdrop-filter:blur(16px);border-bottom:3px solid var(--p-orange);padding:.75rem 1.5rem;display:flex;align-items:center;justify-content:space-between;}
-.nav-brand{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:.06em;}
-.nav-badge{background:var(--p-red);font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:.6rem;padding:.25rem .75rem;border-radius:20px;margin-left:.6rem;text-transform:uppercase;}
-.btn-logout{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);font-family:'Barlow Condensed',sans-serif;font-size:.65rem;padding:.4rem .9rem;border-radius:20px;cursor:pointer;text-transform:uppercase;}
-.btn-logout:hover{background:var(--p-red);color:#fff;}
-.main{max-width:1300px;margin:0 auto;padding:2rem 1.5rem 4rem;}
-.page-title{font-family:'Bebas Neue',sans-serif;font-size:3rem;}
-.page-title span{color:var(--p-orange);}
-.page-subtitle{font-family:'Barlow Condensed',sans-serif;font-size:.75rem;color:var(--texto-suave);letter-spacing:.18em;text-transform:uppercase;margin-top:.4rem;}
-.global-stats{display:flex;gap:1rem;flex-wrap:wrap;margin:2.5rem 0;}
-.gstat{background:rgba(255,255,255,.07);border:1px solid var(--borde);border-radius:12px;padding:1rem 1.4rem;flex:1;min-width:140px;}
-.gstat-num{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:var(--p-orange);}
-.gstat-label{font-family:'Barlow Condensed',sans-serif;font-size:.62rem;color:var(--texto-suave);text-transform:uppercase;}
-.stores-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;}
-.store-card{background:rgba(255,255,255,.06);border:1px solid var(--borde);border-radius:14px;padding:1.2rem;text-decoration:none;color:inherit;display:block;transition:all .2s;}
-.store-card:hover{border-color:var(--p-orange);background:rgba(255,255,255,.09);}
-.store-card-top{display:flex;justify-content:space-between;align-items:flex-start;}
-.store-codigo{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:.65rem;color:var(--p-orange);letter-spacing:.18em;}
-.store-nombre{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1rem;}
-.store-region{font-size:.7rem;color:var(--texto-suave);}
-.store-pct-big{font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--p-orange);text-align:right;}
-.store-progress-bar{width:100%;height:5px;background:rgba(255,255,255,.12);border-radius:3px;margin:1rem 0 .7rem;overflow:hidden;}
-.store-progress-fill{height:100%;background:var(--p-orange);}
-.store-footer{display:flex;justify-content:space-between;font-family:'Barlow Condensed',sans-serif;font-size:.7rem;color:var(--texto-suave);}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Álbum Estrellas - Panel de Administración</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #0b1329;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: white;
+    }
+    header {
+      background-color: #1c2541;
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #ffcc00;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+      color: #ffcc00;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .admin-badge {
+      background: #ffaa00;
+      color: #0b1329;
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-weight: bold;
+      font-size: 12px;
+      margin-left: 10px;
+    }
+    .btn-logout {
+      background: #ef4444;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-logout:hover {
+      background: #dc2626;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
+    .welcome-card {
+      background: #1c2541;
+      padding: 20px;
+      border-radius: 10px;
+      border: 1px solid #3a506b;
+      margin-bottom: 30px;
+    }
+    .welcome-card h2 {
+      margin-top: 0;
+      color: #ffcc00;
+    }
+    .table-container {
+      background: #1c2541;
+      border-radius: 10px;
+      border: 1px solid #3a506b;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    .table-header {
+      background: #3a506b;
+      padding: 15px 20px;
+      font-weight: bold;
+      font-size: 18px;
+      color: #ffcc00;
+      border-bottom: 1px solid #5c7494;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+    th, td {
+      padding: 15px 20px;
+      border-bottom: 1px solid #3a506b;
+    }
+    th {
+      background-color: #161e35;
+      color: #cbd5e1;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    tr:hover {
+      background-color: #232f52;
+    }
+    .txt-clave {
+      color: #ffcc00;
+      font-family: 'Courier New', Courier, monospace;
+      font-weight: bold;
+      background: #0b1329;
+      padding: 4px 8px;
+      border-radius: 4px;
+      border: 1px solid #3a506b;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .status-activa { background: #10b981; color: #064e3b; }
+    .status-inactiva { background: #ef4444; color: #7f1d1d; }
+    .loading {
+      text-align: center;
+      padding: 40px;
+      font-size: 18px;
+      color: #cbd5e1;
+    }
+  </style>
 </head>
 <body>
 
-<nav class="navbar">
-  <div><span class="nav-brand">ÁLBUM ESTRELLAS</span><span class="nav-badge">Admin Panel</span></div>
-  <button class="btn-logout" id="btnLogout">Cerrar Sesión</button>
-</nav>
+  <header>
+    <div style="display: flex; align-items: center;">
+      <h1>Álbum Estrellas</h1>
+      <span class="admin-badge">PANEL ADMIN</span>
+    </div>
+    <button class="btn-logout" id="btnLogout">CERRAR SESIÓN</button>
+  </header>
 
-<div class="main">
-  <div class="page-header">
-    <h1 class="page-title">PANEL GENERAL DE <span>TIENDAS</span></h1>
-    <p class="page-subtitle" id="adminSubtitle">Monitoreo corporativo en tiempo real</p>
-  </div>
-
-  <div class="global-stats" id="globalStats">
+  <div class="container">
+    <div class="welcome-card">
+      <h2>¡Bienvenido al Panel de Control!</h2>
+      <p>Aquí tienes el listado completo de las sucursales registradas en el sistema. Puedes auditar sus accesos, revisar sus contraseñas en vivo y ver el progreso total de sus empleados.</p>
     </div>
 
-  <div class="stores-grid" id="storesGrid">Cargando sucursales...</div>
-</div>
+    <div class="table-container">
+      <div class="table-header">Resumen General de Sucursales</div>
+      <div id="loadingState" class="loading">Cargando datos del servidor...</div>
+      
+      <table id="tablaTiendas" style="display: none;">
+        <thead>
+          <tr>
+            <th>Nombre Sucursal</th>
+            <th>Código ID</th>
+            <th>Correo Electrónico</th>
+            <th>Contraseña Real 👁️</th>
+            <th>Región / Ciudad</th>
+            <th>Total Empleados</th>
+            <th>Estrellas Juntadas</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody id="listaTiendasCuerpo">
+          </tbody>
+      </table>
+    </div>
+  </div>
 
-<script src="js/auth.js"></script>
-<script>
-const ADMIN_API_URL = "http://localhost:3000/api";
+  <script>
+    const API_URL = "https://album-cdt-mundial.onrender.com/api";
+    const token = localStorage.getItem('token');
+    const esAdmin = localStorage.getItem('esAdmin');
 
-document.addEventListener('DOMContentLoaded', async () => {
-  const session = requireAuth(true);
-  if (!session) return;
+    // Seguridad básica: Si no es admin o no hay token, regresarlo al Login
+    if (!token || esAdmin !== 'true') {
+      localStorage.clear();
+      window.location.href = 'index.html';
+    }
 
-  document.getElementById('btnLogout').addEventListener('click', logout);
+    // Botón de Cerrar Sesión
+    document.getElementById('btnLogout').onclick = () => {
+      localStorage.clear();
+      window.location.href = 'index.html';
+    };
 
-  try {
-    const response = await fetch(`${ADMIN_API_URL}/stores`, {
-      headers: { 'Authorization': `Bearer ${session.token}` }
-    });
-    const data = await response.json();
-    
-    renderGlobalStats(data.tiendas);
-    renderStores(data.tiendas);
+    // Función principal para cargar las tiendas desde Render
+    async function cargarTiendasAdmin() {
+      try {
+        const response = await fetch(`${API_URL}/tiendas`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
 
-  } catch (err) {
-    document.getElementById('storesGrid').innerHTML = "<p>Error al conectar con la base de datos.</p>";
-  }
-});
+        const data = await response.json();
 
-function renderGlobalStats(tiendas) {
-  const totalTiendas = tiendas.length;
-  const totalEmpleados = tiendas.reduce((s, t) => s + t.total_empleados, 0);
-  const totalDesbloqueados = tiendas.reduce((s, t) => s + t.desbloqueados, 0);
-
-  document.getElementById('globalStats').innerHTML = `
-    <div class="gstat"><div class="gstat-num">${totalTiendas}</div><div class="gstat-label">Tiendas Activas</div></div>
-    <div class="gstat"><div class="gstat-num">${totalEmpleados}</div><div class="gstat-label">Empleados Totales</div></div>
-    <div class="gstat"><div class="gstat-num">${totalDesbloqueados}</div><div class="gstat-label">Estrellas Desbloqueadas</div></div>
-  `;
-}
-
-function renderStores(tiendas) {
-  const grid = document.getElementById('storesGrid');
-  if (!tiendas.length) {
-    grid.innerHTML = "<p>No hay tiendas para mostrar.</p>";
-    return;
-  }
-
-  grid.innerHTML = tiendas.map(t => {
-    const pct = t.total_empleados ? Math.round((t.desbloqueados / t.total_empleados) * 100) : 0;
-    return `
-      <a class="store-card" href="album.html?id=${t.id}">
-        <div class="store-card-top">
-          <div>
-            <div class="store-codigo">${t.codigo}</div>
-            <div class="store-nombre">${t.nombre}</div>
-            <div class="store-region">${t.region} · ${t.ciudad}</div>
-          </div>
-          <div><div class="store-pct-big">${pct}%</div></div>
-        </div>
-        <div class="store-progress-bar"><div class="store-progress-fill" style="width:${pct}%"></div></div>
-        <div class="store-footer"><span>${t.desbloqueados}/${t.total_empleados} Estrellas</span></div>
-      </a>`;
-  }).join('');
-}
-</script>
-</body>
-</html>
+        if (!response.ok) {
+          alert('Error al cargar los datos: ' + (data.error || 'Acceso denegado.'));
+          return
