@@ -5,7 +5,7 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Configuración de CORS para Vercel
+// CORS totalmente abierto para evitar bloqueos con Vercel
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -14,20 +14,20 @@ app.use(cors({
 
 app.use(express.json());
 
-// Verificación inicial
+// Ruta de diagnóstico para saber si Render está vivo
 app.get('/', (req, res) => {
-  res.send('Servidor del Álbum CDT Mundial Activo y Corriendo 🚀');
+  res.send('¡Backend del Álbum Sportline corriendo en vivo! 🚀');
 });
 
-// ENRUTAMIENTO UNIFICADO (Corregido para apuntar a stores.js)
+// ENRUTAMIENTO (Forzado en minúsculas estrictas para Linux/Render)
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/tiendas', require('./routes/stores'));
 
-// Control de errores de rutas globales
+// Manejo de rutas globales no encontradas
 app.use((req, res) => {
   res.status(404).json({ error: 'Ruta no encontrada en el backend.' });
 });
 
 app.listen(PORT, () => {
-  console.log(`Servidor escuchando en el puerto ${PORT}`);
+  console.log(`Servidor activo en el puerto ${PORT}`);
 });
