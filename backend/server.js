@@ -5,31 +5,29 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Configuración de CORS para permitir que Vercel se conecte sin bloqueos
+// Configuración de CORS segura y flexible para Vercel
 app.use(cors({
-  origin: '*', // Permite peticiones desde cualquier sitio (ideal para producción con Vercel)
+  origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Middleware para entender formatos JSON
 app.use(express.json());
 
-// Ruta base de prueba para verificar que el servidor está vivo
+// Verificación inicial del servidor
 app.get('/', (req, res) => {
-  res.send('Servidor del Álbum CDT Mundial corriendo exitosamente 🚀');
+  res.send('Servidor del Álbum CDT Mundial Activo y Corriendo 🚀');
 });
 
-// Enrutamiento principal del sistema
+// Enrutamiento unificado para Auth, Tiendas e Index
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/tiendas', require('./routes/tiendas'));
 
-// Manejo de rutas inexistentes (Error 404)
+// Control de errores de rutas globales
 app.use((req, res) => {
-  res.status(404).json({ error: 'Ruta no encontrada en el servidor de Render.' });
+  res.status(404).json({ error: 'Ruta no encontrada en el backend.' });
 });
 
-// Iniciar el servidor en el puerto correcto
 app.listen(PORT, () => {
-  console.log(`Servidor activo en el puerto ${PORT}`);
+  console.log(`Servidor escuchando en el puerto ${PORT}`);
 });
