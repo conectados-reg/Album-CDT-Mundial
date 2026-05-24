@@ -3,57 +3,76 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Álbum Estrellas - Vista Corporativa</title>
+  <title>Álbum Estrellas - Vista Corporativa Vibrante</title>
   <style>
-    /* TU DISEÑO ORIGINAL RESTAURADO AL 100% */
+    /* ==========================================================
+       TU DISEÑO ORIGINAL BRILLANTE E INTERACTIVO RESTAURADO
+    ========================================================== */
     body {
       margin: 0;
       padding: 0;
       background-color: #050a18;
-      font-family: 'Segoe UI', sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       color: white;
+      overflow-x: hidden;
     }
+    
+    /* Header vibrante con degradado y sombra intensa */
     .header-album {
-      background: linear-gradient(135deg, #111a36, #1c2541);
-      padding: 20px 40px;
+      background: linear-gradient(135deg, #111a36 0%, #1c2541 100%);
+      padding: 25px 50px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 3px solid #ffcc00;
+      border-bottom: 4px solid #ffcc00;
+      box-shadow: 0 5px 25px rgba(255, 204, 0, 0.25); /* Resplandor amarillo */
     }
     .header-album h1 {
       margin: 0;
-      font-size: 26px;
+      font-size: 30px;
       color: #ffffff;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 2px;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.5); /* Brillo en el texto */
     }
     .header-album h1 span {
       color: #ffcc00;
+      text-shadow: 0 0 15px rgba(255, 204, 0, 0.8); /* Brillo intenso amarillo */
     }
     .btn-salir {
-      background-color: #e11d48;
+      background-color: #ff4d4d;
       color: white;
       border: none;
-      padding: 10px 20px;
-      border-radius: 6px;
+      padding: 12px 25px;
+      border-radius: 8px;
       font-weight: bold;
       cursor: pointer;
       text-transform: uppercase;
+      transition: background 0.3s, box-shadow 0.3s;
+      box-shadow: 0 4px 10px rgba(255, 77, 77, 0.3);
     }
+    .btn-salir:hover {
+      background-color: #ff1a1a;
+      box-shadow: 0 0 20px rgba(255, 77, 77, 0.6); /* Brillo al pasar el ratón */
+    }
+    
     .main-container {
-      max-width: 1400px;
-      margin: 40px auto;
-      padding: 0 30px;
+      max-width: 1500px;
+      margin: 50px auto;
+      padding: 0 40px;
     }
+    
+    /* Panel de Metas con Brillo Constante */
     .panel-metas {
       display: flex;
       justify-content: space-between;
+      align-items: center;
       background: #111a36;
-      padding: 25px;
-      border-radius: 12px;
-      border: 1px solid #232f52;
-      margin-bottom: 40px;
+      padding: 30px;
+      border-radius: 15px;
+      border: 2px solid #ffcc00;
+      margin-bottom: 50px;
+      box-shadow: 0 0 30px rgba(255, 204, 0, 0.15); /* Resplandor amarillo suave constante */
     }
     .meta-box {
       text-align: center;
@@ -61,54 +80,104 @@
     }
     .meta-box h4 {
       margin: 0;
-      font-size: 36px;
+      font-size: 48px;
       color: #ffcc00;
+      text-shadow: 0 0 20px rgba(255, 204, 0, 0.8); /* Brillo intenso en los números */
     }
     .meta-box p {
-      margin: 5px 0 0 0;
-      color: #94a3b8;
-      font-size: 13px;
+      margin: 8px 0 0 0;
+      color: #cbd5e1;
+      font-size: 14px;
       text-transform: uppercase;
+      letter-spacing: 1px;
     }
+    
+    /* Rejilla principal */
     .album-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 30px;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 35px;
     }
+    
+    /* Casillas (Figuritas) con EFECTOS DE INTERACCIÓN (Hover) */
     .sticker-card {
-      background: #1c2541;
-      border-radius: 10px;
-      padding: 20px;
+      background-color: #1c2541;
+      border-radius: 15px;
+      padding: 25px;
       text-align: center;
-      border: 2px solid #3a506b;
+      border: 3px solid #3a506b;
       position: relative;
+      cursor: pointer;
+      overflow: hidden;
+      
+      /* Animaciones de transición suaves */
+      transition: transform 0.3s ease, 
+                  border-color 0.3s ease, 
+                  box-shadow 0.3s ease, 
+                  background-color 0.3s ease;
     }
+    
+    /* --- EL EFECTO MÁGICO AL TOCAR CON EL CURSOR (HOVER) --- */
+    .sticker-card:hover {
+      transform: scale(1.08); /* Se agranda ligeramente */
+      border-color: #ffcc00; /* El borde cambia a amarillo brillante */
+      background-color: #232f52; /* El fondo se ilumina ligeramente */
+      box-shadow: 0 0 35px rgba(255, 204, 0, 0.7); /* Brillo amarillo INTENSO de neón */
+      z-index: 10; /* Se superpone a las demás */
+    }
+    
+    /* Estado de Casilla Bloqueada (Gris y pálida) */
     .sticker-card.locked {
       filter: grayscale(100%);
-      opacity: 0.3;
+      opacity: 0.25;
+      border-color: #2a3b50;
+      cursor: not-allowed;
     }
+    
+    /* Efecto Hover incluso en las bloqueadas (para que brillen un poco) */
+    .sticker-card.locked:hover {
+      filter: grayscale(80%); /* Recupera un poco de color */
+      opacity: 0.5;
+      border-color: #ffaa00;
+      box-shadow: 0 0 25px rgba(255, 170, 0, 0.5); /* Brillo ámbar */
+    }
+    
+    /* Iconos y textos internos */
     .sticker-card .icon-star {
-      font-size: 60px;
-      margin-bottom: 15px;
+      font-size: 70px;
+      margin-bottom: 20px;
+      text-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+      transition: text-shadow 0.3s ease;
     }
+    /* El icono brilla más en hover */
+    .sticker-card:hover .icon-star {
+      text-shadow: 0 0 25px rgba(255, 204, 0, 0.9);
+    }
+    
     .sticker-card h3 {
-      margin: 10px 0 5px 0;
-      font-size: 16px;
+      margin: 15px 0 8px 0;
+      font-size: 18px;
       color: #ffffff;
+      text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
     }
     .sticker-card p {
       margin: 0;
-      font-size: 12px;
+      font-size: 14px;
       color: #ffcc00;
+      font-weight: bold;
+      text-shadow: 0 0 10px rgba(255, 204, 0, 0.6);
     }
+    
+    /* Candado para las bloqueadas */
     .lock-overlay {
       position: absolute;
-      top: 45%;
+      top: 48%;
       left: 50%;
       transform: translate(-50%, -50%);
-      font-size: 34px;
-      color: #ef4444;
+      font-size: 40px;
+      color: #ff4d4d;
       display: none;
+      text-shadow: 0 0 15px rgba(255, 77, 77, 0.8);
     }
     .locked .lock-overlay {
       display: block;
@@ -118,22 +187,22 @@
 <body>
 
   <div class="header-album">
-    <h1 id="lblTienda">SUCURSAL: <span id="nombreTiendaDinamico">CARGANDO...</span></h1>
+    <h1 id="lblTienda">SUCURSAL: <span id="nombreTiendaDinamico">CARGANDO TIENDA...</span></h1>
     <button class="btn-salir" onclick="cerrarSesion()">Cerrar Sesión</button>
   </div>
 
   <div class="main-container">
     <div class="panel-metas">
       <div class="meta-box">
-        <h4 id="valDesbloqueadas">4</h4>
+        <h4 id="valDesbloqueadas">5</h4>
         <p>Estrellas Ganadas</p>
       </div>
       <div class="meta-box">
-        <h4 id="valMeta">83%</h4>
+        <h4 id="valMeta">100%</h4>
         <p>Cumplimiento de Meta</p>
       </div>
       <div class="meta-box">
-        <h4>Semana 6</h4>
+        <h4>Semana 8</h4>
         <p>Periodo de Medición</p>
       </div>
     </div>
@@ -146,6 +215,7 @@
     const API_URL = "https://album-cdt-mundial.onrender.com/api";
     const token = localStorage.getItem('token');
 
+    // Seguridad básica
     if (!token) {
       window.location.href = 'index.html';
     }
@@ -156,41 +226,7 @@
     }
 
     async function inicializarAlbum() {
-      // Pintar cabecera con los datos guardados en el login corporativo
+      // Pintar cabecera corporativa
       document.getElementById('nombreTiendaDinamico').innerText = localStorage.getItem('nombreTienda') || "SPORTLINE SUCURSAL";
       
-      const response = await fetch(`${API_URL}/tiendas/`, {
-        method: 'GET',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
-      const wrapper = document.getElementById('wrapperAlbum');
-      wrapper.innerHTML = '';
-
-      const catalogoOriginal = [
-        { id: 1, name: "Balón Oficial Nike", code: "SL-001", locked: false },
-        { id: 2, name: "Zapatilla Air Max Pro", code: "SL-002", locked: false },
-        { id: 3, name: "Camiseta De Panamá", code: "SL-003", locked: false },
-        { id: 4, name: "Gorra Running Speed", code: "SL-004", locked: false },
-        { id: 5, name: "Medias de Compresión", code: "SL-005", locked: true },
-        { id: 6, name: "Tacos Mercurial Elite", code: "SL-006", locked: true },
-        { id: 7, name: "Maletín Deportivo L", code: "SL-007", locked: true },
-        { id: 8, name: "Banda de Capitán Pro", code: "SL-008", locked: true }
-      ];
-
-      catalogoOriginal.forEach(item => {
-        wrapper.innerHTML += `
-          <div class="sticker-card ${item.locked ? 'locked' : ''}">
-            <div class="lock-overlay">🔒</div>
-            <div class="icon-star">🥇</div>
-            <h3>${item.name}</h3>
-            <p>${item.code}</p>
-          </div>
-        `;
-      });
-    }
-
-    window.onload = inicializarAlbum;
-  </script>
-</body>
-</html>
+      // Intentamos jalar datos reales de Render, si falla usamos
