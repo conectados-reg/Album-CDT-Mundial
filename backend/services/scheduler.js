@@ -1,7 +1,7 @@
 require('dotenv').config();
 const cron                = require('node-cron');
 const { createClient }    = require('@supabase/supabase-js');
-const { leerDatosVentas } = require('./googleSheets');
+const { leerDatosVentas } = require('./googlesheets');
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
