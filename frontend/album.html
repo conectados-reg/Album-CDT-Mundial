@@ -356,22 +356,31 @@
 
   <footer>Álbum Estrellas · Sportline · Mundial 2026</footer>
 
-  <!-- REPRODUCTOR FLOTANTE — Canción Oficial FIFA Mundial 2026 -->
+  <!-- REPRODUCTOR FLOTANTE — Solo Audio · Canción Oficial FIFA Mundial 2026 -->
   <div style="position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;text-align:right;">
-    <div id="ytBox" style="display:none;margin-bottom:.6rem;border-radius:14px;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.8);border:1.5px solid rgba(247,168,0,.4);">
-      <div style="background:#000d2e;padding:.4rem .8rem;font-family:'Barlow Condensed',sans-serif;font-size:.7rem;letter-spacing:.08em;color:rgba(255,255,255,.5);text-align:left;">
-        🎵 CANCIÓN OFICIAL · FIFA MUNDIAL 2026
+    <div id="ytBox" style="display:none;margin-bottom:.6rem;border-radius:14px;overflow:hidden;
+         box-shadow:0 12px 40px rgba(0,0,0,.8);border:1.5px solid rgba(247,168,0,.4);background:#000d2e;width:290px;">
+      <div style="padding:.55rem 1rem;display:flex;align-items:center;gap:.6rem;">
+        <span style="font-size:1.1rem;">🎵</span>
+        <div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:.85rem;letter-spacing:.1em;color:#F7A800;">CANCIÓN OFICIAL</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:.65rem;letter-spacing:.08em;color:rgba(255,255,255,.4);">FIFA MUNDIAL 2026</div>
+        </div>
+        <button onclick="toggleMusica()" style="margin-left:auto;background:none;border:none;color:rgba(255,255,255,.4);cursor:pointer;font-size:.8rem;padding:0;">✕</button>
       </div>
-      <iframe id="ytIframe" width="280" height="158"
-        src="about:blank"
-        data-src="https://www.youtube.com/embed/X9CsK_nuqdE?autoplay=1&rel=0"
-        allow="autoplay; encrypted-media" allowfullscreen
-        style="border:none;display:block;">
-      </iframe>
+      <!-- Solo se muestra la barra de controles, el video queda oculto -->
+      <div style="overflow:hidden;height:36px;position:relative;">
+        <iframe id="ytIframe" width="290" height="200"
+          src="about:blank"
+          data-src="https://www.youtube.com/embed/X9CsK_nuqdE?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3"
+          allow="autoplay; encrypted-media"
+          style="border:none;position:absolute;bottom:0;left:0;">
+        </iframe>
+      </div>
     </div>
     <button id="musicBtn" onclick="toggleMusica()" title="Canción Oficial Mundial 2026"
       style="width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#001f5e,#0046AD);
-      border:2px solid rgba(247,168,0,.6);color:#F7A800;font-size:1.5rem;cursor:pointer;
+      border:2px solid rgba(247,168,0,.6);color:#F7A800;font-size:1.4rem;cursor:pointer;
       box-shadow:0 4px 24px rgba(0,70,173,.6);transition:all .25s;outline:none;
       animation:musicGlow 2.5s infinite;">🎵</button>
   </div>
@@ -389,10 +398,11 @@
       if (box.style.display === 'none') {
         if (frame.src === 'about:blank') frame.src = frame.dataset.src;
         box.style.display = 'block';
-        btn.textContent = '⏸';
+        btn.style.display = 'none';
       } else {
         box.style.display = 'none';
-        btn.textContent = '🎵';
+        btn.style.display = 'flex';
+        frame.src = 'about:blank';
       }
     }
   </script>
