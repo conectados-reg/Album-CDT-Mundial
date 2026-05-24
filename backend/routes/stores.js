@@ -16,7 +16,24 @@ function verificarToken(req, res, next) {
   }
 }
 
-// Endpoint para jalar las 240 tiendas de Sportline al panel
+// GET /api/tiendas/lista — público, solo nombre/email/region para el dropdown del login
+router.get('/lista', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('tiendas')
+      .select('email, nombre, region')
+      .eq('activa', true)
+      .order('region', { nullsFirst: false })
+      .order('nombre');
+    if (error) throw error;
+    res.json({ tiendas: data || [] });
+  } catch (err) {
+    console.error('[Tiendas Lista]', err.message);
+    res.status(500).json({ error: 'Error al cargar tiendas.' });
+  }
+});
+
+// GET /api/tiendas/ — admin: lista completa con datos sensibles
 router.get('/', verificarToken, async (req, res) => {
   if (req.usuario.rol !== 'admin') {
     return res.status(403).json({ error: 'No eres administrador.' });

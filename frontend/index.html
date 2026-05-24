@@ -316,20 +316,7 @@
         <div class="custom-select-wrapper">
           <div class="custom-select-trigger" id="selectTrigger">— Elige una cuenta —</div>
           <div class="custom-select-dropdown" id="selectDropdown">
-            <div class="dropdown-option placeholder-opt" data-value="">— Elige una cuenta —</div>
-            <div class="dropdown-option" data-value="admin@sportline.com">🔐 Cuenta Administrador</div>
-            <div class="dropdown-group-label">🇵🇦 Panamá</div>
-            <div class="dropdown-option" data-value="albrook.mega@sportline.com.pa">Albrook Megastore</div>
-            <div class="dropdown-option" data-value="multiplaza@sportline.com.pa">Multiplaza Pacific</div>
-            <div class="dropdown-option" data-value="metromall@sportline.com.pa">Metromall</div>
-            <div class="dropdown-group-label">🇨🇷 Costa Rica</div>
-            <div class="dropdown-option" data-value="oxigeno@sportline.co.cr">Oxígeno Human Playground</div>
-            <div class="dropdown-option" data-value="multiplaza.escazu@sportline.co.cr">Multiplaza Escazú</div>
-            <div class="dropdown-group-label">🇬🇹 Guatemala</div>
-            <div class="dropdown-option" data-value="miraflores@sportline.com.gt">Miraflores</div>
-            <div class="dropdown-option" data-value="oakland@sportline.com.gt">Oakland Mall</div>
-            <div class="dropdown-group-label">🇩🇴 República Dominicana</div>
-            <div class="dropdown-option" data-value="agora@sportline.com.do">Ágora Mall</div>
+            <div class="dropdown-option placeholder-opt" data-value="">— Cargando sucursales… —</div>
           </div>
         </div>
         <input type="hidden" id="txtEmail" value="">
@@ -405,30 +392,69 @@
     const hidden   = document.getElementById('txtEmail');
     let selectedValue = '';
 
+    function bindDropdownOptions() {
+      dropdown.querySelectorAll('.dropdown-option').forEach(opt => {
+        opt.addEventListener('click', function() {
+          const val = this.dataset.value;
+          dropdown.querySelectorAll('.dropdown-option').forEach(o => o.classList.remove('selected-opt'));
+          if (val) {
+            this.classList.add('selected-opt');
+            trigger.textContent = this.textContent.trim();
+            trigger.classList.add('selected');
+          } else {
+            trigger.textContent = '— Elige una cuenta —';
+            trigger.classList.remove('selected');
+          }
+          selectedValue = val;
+          hidden.value  = val;
+          dropdown.classList.remove('open');
+          trigger.classList.remove('open');
+        });
+      });
+    }
+
+    function bandera(region) {
+      const r = (region || '').toLowerCase();
+      if (r.includes('panam'))  return '🇵🇦';
+      if (r.includes('colom'))  return '🇨🇴';
+      if (r.includes('costa'))  return '🇨🇷';
+      if (r.includes('guatem')) return '🇬🇹';
+      if (r.includes('domini')) return '🇩🇴';
+      if (r.includes('hondur')) return '🇭🇳';
+      if (r.includes('salvad')) return '🇸🇻';
+      return '🌍';
+    }
+
+    async function cargarDropdown() {
+      try {
+        const res  = await fetch(`${API_URL}/tiendas/lista`);
+        const data = await res.json();
+        const lista = data.tiendas || [];
+        let html = '<div class="dropdown-option placeholder-opt" data-value="">— Elige una cuenta —</div>';
+        html += '<div class="dropdown-option" data-value="admin@sportline.com">🔐 Cuenta Administrador</div>';
+        let regionActual = null;
+        for (const t of lista) {
+          const region = t.region || 'General';
+          if (region !== regionActual) {
+            html += `<div class="dropdown-group-label">${bandera(region)} ${region.toUpperCase()}</div>`;
+            regionActual = region;
+          }
+          html += `<div class="dropdown-option" data-value="${t.email}">${t.nombre}</div>`;
+        }
+        dropdown.innerHTML = html;
+        bindDropdownOptions();
+      } catch (e) {
+        dropdown.innerHTML = '<div class="dropdown-option placeholder-opt" data-value="">— Error al cargar —</div>';
+      }
+    }
+
+    cargarDropdown();
+
     trigger.addEventListener('click', e => {
       e.stopPropagation();
       const open = dropdown.classList.contains('open');
       dropdown.classList.toggle('open', !open);
       trigger.classList.toggle('open', !open);
-    });
-
-    dropdown.querySelectorAll('.dropdown-option').forEach(opt => {
-      opt.addEventListener('click', function() {
-        const val = this.dataset.value;
-        dropdown.querySelectorAll('.dropdown-option').forEach(o => o.classList.remove('selected-opt'));
-        if (val) {
-          this.classList.add('selected-opt');
-          trigger.textContent = this.textContent.trim();
-          trigger.classList.add('selected');
-        } else {
-          trigger.textContent = '— Elige una cuenta —';
-          trigger.classList.remove('selected');
-        }
-        selectedValue = val;
-        hidden.value  = val;
-        dropdown.classList.remove('open');
-        trigger.classList.remove('open');
-      });
     });
 
     document.addEventListener('click', e => {
