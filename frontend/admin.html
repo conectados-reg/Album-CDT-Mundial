@@ -621,7 +621,10 @@
         if (data.semana) document.getElementById('notifSemanaInfo').textContent = `Semana activa: ${data.semana.nombre||'Semana '+data.semana.numero}`;
         const tiendas = data.tiendas || [];
         if (!tiendas.length) { emptyEl.style.display = 'block'; return; }
-        gridEl.innerHTML = tiendas.map(t => `
+        window._notifData = {};
+        gridEl.innerHTML = tiendas.map(t => {
+          window._notifData[t.tienda_id] = { empleados: t.empleados, semana: data.semana };
+          return `
           <div class="notif-card" id="card-${t.tienda_id}">
             <div class="notif-card-head">
               <h4>🏬 ${t.nombre}</h4>
@@ -631,23 +634,30 @@
               <div class="notif-email">📧 ${t.email||'Sin email'}</div>
               <ul class="notif-emp-list">${(t.empleados||[]).map(e=>`<li><strong>${e.nombre}</strong> <span>· ${e.cargo||'Asesor'}</span></li>`).join('')}</ul>
               <button class="btn-send" id="btn-${t.tienda_id}"
-                onclick="enviarNotificacion('${t.tienda_id}','${(data.semana?.nombre||'Semana').replace(/'/g,"\\'")}',${data.semana?.numero||0})">
+                onclick="enviarNotificacion('${t.tienda_id}')">
                 📧 Enviar Notificación
               </button>
             </div>
-          </div>`).join('');
+          </div>`;
+        }).join('');
         gridEl.style.display = 'grid';
       } catch { loadEl.innerHTML = '❌ Error de conexión.'; }
     }
 
-    async function enviarNotificacion(tiendaId, semanaNombre, semanaNumero) {
+    async function enviarNotificacion(tiendaId) {
       const btn = document.getElementById(`btn-${tiendaId}`);
       btn.disabled = true; btn.textContent = '⏳ Enviando...';
+      const info = window._notifData[tiendaId] || {};
+      const semana = info.semana || {};
       try {
         const res = await fetch(`${API_URL}/notificaciones/enviar/${tiendaId}`, {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ semana_nombre: semanaNombre, semana_numero: semanaNumero })
+          body: JSON.stringify({
+            empleados: info.empleados || [],
+            semana_nombre: semana.nombre || `Semana ${semana.numero || ''}`,
+            semana_numero: semana.numero || 0
+          })
         });
         const data = await res.json();
         if (res.ok) { btn.classList.add('sent'); btn.textContent = '✅ Enviada'; showToast(`✅ Email enviado a ${data.email}`); }

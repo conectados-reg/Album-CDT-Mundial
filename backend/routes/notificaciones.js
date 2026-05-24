@@ -81,75 +81,103 @@ router.post('/enviar/:tienda_id', verificarToken, async (req, res) => {
       return res.status(503).json({ error: 'Servicio de email no configurado. Agrega BREVO_API_KEY en Render.' });
     }
 
-    const listaHtml = (empleados || [])
-      .map(e => `
-        <tr>
-          <td style="padding:.6em .8em;border-bottom:1px solid #f0f0f0;">
-            <span style="font-size:1.1em;">⭐</span>
-          </td>
-          <td style="padding:.6em .8em;border-bottom:1px solid #f0f0f0;">
-            <strong style="color:#000d2e;font-size:.95em;">${e.nombre}</strong><br>
-            <span style="color:#888;font-size:.8em;">${e.cargo}</span>
-          </td>
-          <td style="padding:.6em .8em;border-bottom:1px solid #f0f0f0;text-align:right;">
-            <span style="background:#e8f5e9;color:#2e7d32;font-weight:bold;font-size:.85em;padding:.2em .6em;border-radius:12px;">✓ 100%</span>
-          </td>
-        </tr>`).join('');
-
     const frontendUrl = process.env.FRONTEND_URL || 'https://album-cdt-mundial.onrender.com';
     const total = empleados?.length || 0;
 
+    const tarjetas = (empleados || []).map((e, i) => `
+      <td width="30%" style="padding:0 6px;vertical-align:top;text-align:center;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(180deg,#001a55,#000d2e);border-radius:10px;overflow:hidden;border:1.5px solid rgba(247,168,0,0.5);">
+          <tr><td style="background:linear-gradient(90deg,#F7A800,#e69500);height:5px;font-size:0;">&nbsp;</td></tr>
+          <tr><td style="padding:14px 8px 6px;text-align:center;">
+            <div style="font-size:2.2em;line-height:1;">⭐</div>
+            <div style="background:rgba(247,168,0,.15);color:#F7A800;font-size:9px;letter-spacing:.12em;padding:2px 6px;border-radius:10px;margin:6px auto 8px;display:inline-block;font-weight:bold;">AL 100%</div>
+          </td></tr>
+          <tr><td style="background:rgba(0,0,0,.3);padding:8px;border-top:1px solid rgba(255,255,255,.07);">
+            <div style="color:#fff;font-size:10px;font-weight:bold;letter-spacing:.04em;line-height:1.3;">${e.nombre}</div>
+            <div style="color:rgba(255,255,255,.45);font-size:9px;margin-top:3px;">${e.cargo || 'Asesor de Ventas'}</div>
+          </td></tr>
+        </table>
+      </td>`).join('');
+
+    const filas = [];
+    const lista = empleados || [];
+    for (let i = 0; i < lista.length; i += 3) {
+      const grupo = lista.slice(i, i + 3);
+      while (grupo.length < 3) grupo.push(null);
+      filas.push(`<tr>${grupo.map((e, j) => e
+        ? `<td width="33%" style="padding:6px;vertical-align:top;text-align:center;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(180deg,#001a55,#000d2e);border-radius:10px;border:1.5px solid rgba(247,168,0,0.5);">
+              <tr><td style="background:linear-gradient(90deg,#F7A800,#e69500);height:5px;font-size:0;">&nbsp;</td></tr>
+              <tr><td style="padding:12px 8px 6px;text-align:center;">
+                <div style="font-size:2em;">⭐</div>
+                <div style="background:rgba(247,168,0,.2);color:#F7A800;font-size:8px;letter-spacing:.1em;padding:2px 6px;border-radius:10px;margin:5px auto;display:inline-block;font-weight:bold;">✓ 100%</div>
+              </td></tr>
+              <tr><td style="background:rgba(0,0,0,.3);padding:7px 8px;border-top:1px solid rgba(255,255,255,.07);">
+                <div style="color:#fff;font-size:10px;font-weight:bold;line-height:1.3;">${e.nombre}</div>
+                <div style="color:rgba(255,255,255,.45);font-size:8px;margin-top:2px;">${e.cargo || 'Asesor de Ventas'}</div>
+              </td></tr>
+            </table>
+           </td>`
+        : `<td width="33%" style="padding:6px;"></td>`).join('')}</tr>`);
+    }
+
     const htmlBody = `<!DOCTYPE html>
-<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f0f2f5;font-family:Arial,Helvetica,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f2f5;">
-<tr><td align="center" style="padding:2.5em 1em;">
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Álbum Estrellas · SLA Corp.</title></head>
+<body style="margin:0;padding:0;background:#000d2e;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(180deg,#000d2e,#001a55);">
+<tr><td align="center" style="padding:2em 1em;">
 
-  <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.12);">
+  <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
 
-    <!-- HEADER -->
-    <tr><td style="background:linear-gradient(135deg,#000d2e 0%,#001a55 60%,#0046AD 100%);padding:2.5em 2em;text-align:center;">
-      <div style="font-size:3em;margin-bottom:.3em;">🏆</div>
-      <h1 style="color:#F7A800;font-size:1.8em;margin:0 0 .2em;letter-spacing:.08em;font-family:Georgia,serif;">¡MISIÓN CUMPLIDA!</h1>
-      <p style="color:rgba(255,255,255,.7);margin:0;font-size:.9em;letter-spacing:.06em;">ÁLBUM ESTRELLAS · SLA CORP. · FIFA MUNDIAL 2026</p>
+    <!-- LOGO + HEADER -->
+    <tr><td style="background:linear-gradient(135deg,#000d2e,#001f5e,#0046AD);border-radius:16px 16px 0 0;padding:2.5em 2em 2em;text-align:center;border:1px solid rgba(247,168,0,.2);border-bottom:none;">
+      <img src="https://i.postimg.cc/hv6YBVfc/logo-sla.png" alt="SLA Corp." width="90" style="margin-bottom:1em;filter:drop-shadow(0 0 12px rgba(247,168,0,.5));" onerror="this.style.display='none'">
+      <div style="display:inline-block;background:rgba(247,168,0,.15);border:1px solid rgba(247,168,0,.4);border-radius:20px;padding:.3em 1em;margin-bottom:.8em;">
+        <span style="color:#F7A800;font-size:.7em;letter-spacing:.15em;font-weight:bold;">⚽ FIFA MUNDIAL 2026</span>
+      </div>
+      <h1 style="color:#fff;font-size:2em;margin:.2em 0 .1em;letter-spacing:.06em;">ÁLBUM <span style="color:#F7A800;">ESTRELLAS</span></h1>
+      <p style="color:rgba(255,255,255,.5);margin:0;font-size:.78em;letter-spacing:.1em;">SLA CORP. · TEMPORADA MUNDIAL 2026</p>
     </td></tr>
 
-    <!-- SALUDO -->
-    <tr><td style="padding:2em 2em 1em;">
-      <h2 style="color:#000d2e;margin:0 0 .5em;font-size:1.2em;">¡Felicitaciones, ${tienda.nombre}! 🎉</h2>
-      <p style="color:#444;line-height:1.7;margin:0;">En <strong>${semana_nombre}</strong>, ${total === 1 ? 'el siguiente asesor alcanzó' : `los siguientes <strong>${total} asesores</strong> alcanzaron`} el <strong style="color:#F7A800;">100% de su meta de ventas</strong> y desbloquearon su espacio en el Álbum Estrellas:</p>
-    </td></tr>
-
-    <!-- TABLA DE ESTRELLAS -->
-    <tr><td style="padding:0 2em 1.5em;">
-      <table width="100%" cellpadding="0" cellspacing="0" style="border:1.5px solid #F7A800;border-radius:10px;overflow:hidden;">
-        <tr style="background:#000d2e;">
-          <td colspan="3" style="padding:.6em 1em;font-size:.7em;letter-spacing:.12em;color:#F7A800;font-weight:bold;">ASESORES AL 100% · ${semana_nombre?.toUpperCase()}</td>
-        </tr>
-        ${listaHtml}
-      </table>
+    <!-- BANNER META CUMPLIDA -->
+    <tr><td style="background:linear-gradient(90deg,#0046AD,#001f5e);padding:1.2em 2em;text-align:center;border-left:1px solid rgba(247,168,0,.2);border-right:1px solid rgba(247,168,0,.2);">
+      <div style="font-size:1.4em;margin-bottom:.3em;">🏆</div>
+      <h2 style="color:#F7A800;margin:0;font-size:1.4em;letter-spacing:.05em;">¡META ALCANZADA!</h2>
+      <p style="color:rgba(255,255,255,.75);margin:.4em 0 0;font-size:.88em;">${tienda.nombre} · ${semana_nombre}</p>
     </td></tr>
 
     <!-- MENSAJE -->
-    <tr><td style="padding:0 2em 1.5em;">
-      <div style="background:#fffde7;border-left:4px solid #F7A800;padding:1em 1.2em;border-radius:4px;">
-        <p style="margin:0;color:#5d4037;font-size:.9em;line-height:1.6;">
-          📷 Su espacio en el álbum está <strong>desbloqueado</strong>. Ingresen al sistema y suban su foto — ¡su figurita Panini los espera!
-        </p>
-      </div>
+    <tr><td style="background:#001233;padding:1.8em 2em 1.2em;border-left:1px solid rgba(247,168,0,.2);border-right:1px solid rgba(247,168,0,.2);">
+      <p style="color:rgba(255,255,255,.8);line-height:1.7;margin:0;font-size:.92em;">
+        ¡Excelentes noticias! ${total === 1
+          ? 'Un asesor de tu equipo alcanzó'
+          : `<strong style="color:#F7A800;">${total} asesores</strong> de tu equipo alcanzaron`}
+        el <strong style="color:#F7A800;">100% de su meta de ventas</strong> esta semana.
+        Su espacio en el <strong>Álbum Estrellas</strong> está desbloqueado — ¡es hora de subir su figurita! 📸
+      </p>
     </td></tr>
 
-    <!-- BOTÓN CTA -->
-    <tr><td style="padding:0 2em 2.5em;text-align:center;">
-      <a href="${frontendUrl}/album.html" style="display:inline-block;padding:.9em 2.5em;background:linear-gradient(135deg,#F7A800,#e69500);color:#000d2e;text-decoration:none;border-radius:30px;font-weight:bold;font-size:1em;letter-spacing:.04em;box-shadow:0 4px 16px rgba(247,168,0,.4);">
-        ⭐ Subir mi Foto al Álbum
+    <!-- FIGURITAS / TARJETAS -->
+    <tr><td style="background:#001233;padding:.5em 1.5em 1.8em;border-left:1px solid rgba(247,168,0,.2);border-right:1px solid rgba(247,168,0,.2);">
+      <div style="color:rgba(255,255,255,.35);font-size:.65em;letter-spacing:.15em;text-align:center;margin-bottom:.8em;">— FIGURITAS DESBLOQUEADAS —</div>
+      <table width="100%" cellpadding="0" cellspacing="0">${filas.join('')}</table>
+    </td></tr>
+
+    <!-- CTA -->
+    <tr><td style="background:#001233;padding:0 2em 2.5em;text-align:center;border-left:1px solid rgba(247,168,0,.2);border-right:1px solid rgba(247,168,0,.2);">
+      <a href="${frontendUrl}/album.html"
+         style="display:inline-block;padding:.85em 2.5em;background:linear-gradient(135deg,#F7A800,#e69500);color:#000d2e;text-decoration:none;border-radius:30px;font-weight:bold;font-size:1em;letter-spacing:.04em;box-shadow:0 6px 20px rgba(247,168,0,.4);">
+        📷 Ir al Álbum y Subir Foto
       </a>
     </td></tr>
 
     <!-- FOOTER -->
-    <tr><td style="background:#f8f8f8;border-top:1px solid #eee;padding:1.2em 2em;text-align:center;">
-      <p style="color:#aaa;font-size:.72em;margin:0;">SLA Corp. · Álbum Estrellas · FIFA Mundial 2026<br>
-      <span style="font-size:.9em;">Este correo fue enviado automáticamente — no responder.</span></p>
+    <tr><td style="background:rgba(0,0,0,.4);border:1px solid rgba(247,168,0,.15);border-top:1px solid rgba(247,168,0,.2);border-radius:0 0 16px 16px;padding:1.2em 2em;text-align:center;">
+      <p style="color:rgba(255,255,255,.25);font-size:.68em;margin:0;letter-spacing:.06em;">
+        SLA CORP. · ÁLBUM ESTRELLAS · FIFA MUNDIAL 2026<br>
+        <span style="font-size:.85em;">Correo automático — no responder.</span>
+      </p>
     </td></tr>
 
   </table>
