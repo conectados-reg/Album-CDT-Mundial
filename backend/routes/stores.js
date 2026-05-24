@@ -26,6 +26,7 @@ router.get('/', verificarToken, async (req, res) => {
     const { data: tiendas, error } = await supabase
       .from('tiendas')
       .select('id, codigo, email, password_hash, nombre, region, ciudad, total_empleados, activa')
+      .order('region', { nullsFirst: false })
       .order('nombre');
 
     if (error) throw error;
