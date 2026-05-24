@@ -97,18 +97,39 @@ router.delete('/:id', verificarToken, async (req, res) => {
   }
 });
 
-// GET /api/empleados/admin/:tienda_id — admin ve empleados de cualquier tienda
+// GET /api/empleados/admin/:tienda_id — admin ve empleados activos con estado 100% de la semana activa
 router.get('/admin/:tienda_id', verificarToken, async (req, res) => {
   if (req.usuario.rol !== 'admin') return res.status(403).json({ error: 'Solo para admin.' });
   try {
+    const { data: semana } = await supabase
+      .from('semanas').select('id, numero').eq('activa', true).maybeSingle();
+
     const { data, error } = await supabase
       .from('empleados')
-      .select('id, nombre, cargo, foto_url, activo, created_at')
+      .select('id, nombre, cargo, foto_url, espacios_album(desbloqueado, semana_id)')
       .eq('tienda_id', req.params.tienda_id)
-      .order('activo', { ascending: false })
+      .eq('activo', true)
       .order('nombre');
     if (error) throw error;
-    res.json({ empleados: data || [] });
+
+    const empleados = (data || []).map(emp => {
+      const espacio = semana
+        ? (emp.espacios_album || []).find(e => e.semana_id === semana.id)
+        : null;
+      return {
+        id: emp.id,
+        nombre: emp.nombre,
+        cargo: emp.cargo || 'Asesor de Ventas',
+        foto_url: emp.foto_url || null,
+        desbloqueado: espacio?.desbloqueado || false,
+      };
+    });
+
+    res.json({
+      empleados,
+      semana: semana ? { id: semana.id, numero: semana.numero } : null,
+      desbloqueados: empleados.filter(e => e.desbloqueado).length,
+    });
   } catch (err) {
     console.error('[Empleados Admin GET]', err.message);
     res.status(500).json({ error: 'Error al obtener empleados.' });
