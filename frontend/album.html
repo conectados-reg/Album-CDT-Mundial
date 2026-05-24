@@ -315,6 +315,16 @@
         <div class="nav-store" id="lblTienda">Cargando sucursal...</div>
       </div>
     </div>
+    <a href="cambiar-clave.html" style="
+      font-family:'Barlow Condensed',sans-serif;font-size:.7rem;font-weight:700;
+      letter-spacing:.1em;text-transform:uppercase;text-decoration:none;
+      background:rgba(0,70,173,.15);color:rgba(255,255,255,.5);
+      border:1.5px solid rgba(0,70,173,.3);border-radius:20px;
+      padding:.35rem .9rem;transition:all .2s;"
+      onmouseover="this.style.background='rgba(0,70,173,.35)';this.style.color='#fff'"
+      onmouseout="this.style.background='rgba(0,70,173,.15)';this.style.color='rgba(255,255,255,.5)'">
+      🔄 Cambiar Clave
+    </a>
     <button class="btn-salir" onclick="cerrarSesion()">✕ Cerrar Sesión</button>
   </nav>
 
@@ -356,50 +366,111 @@
       window.location.href = 'index.html';
     }
 
+    // Emoji de figurita según el cargo del empleado
+    function iconoPorCargo(cargo) {
+      const c = (cargo || '').toLowerCase();
+      if (c.includes('gerente') || c.includes('director')) return '👑';
+      if (c.includes('supervisor'))  return '🎯';
+      if (c.includes('cajero') || c.includes('caja')) return '💳';
+      if (c.includes('bodega') || c.includes('almac')) return '📦';
+      if (c.includes('visual'))      return '🎨';
+      return '⭐';
+    }
+
+    function renderizarAlbum(empleados, semana) {
+      const wrapper = document.getElementById('wrapperAlbum');
+      wrapper.innerHTML = '';
+
+      if (!empleados.length) {
+        wrapper.innerHTML = `
+          <div style="grid-column:1/-1;text-align:center;padding:3rem 1rem;
+               font-family:'Barlow Condensed',sans-serif;font-size:.9rem;
+               letter-spacing:.06em;color:rgba(255,255,255,.35);">
+            📋 No hay empleados asignados a tu sucursal para ${semana ? semana.nombre : 'esta semana'}.<br>
+            <span style="font-size:.75rem;opacity:.6;">Contacta al administrador para registrar el equipo.</span>
+          </div>`;
+        return;
+      }
+
+      const desbloqueados = empleados.filter(e => e.desbloqueado).length;
+      document.getElementById('valDesbloqueadas').textContent = desbloqueados;
+      document.getElementById('badge-count').textContent = `${empleados.length} figuritas`;
+
+      empleados.forEach(emp => {
+        const icono = iconoPorCargo(emp.cargo);
+        const esGold = emp.desbloqueado;
+        const imgTag = emp.foto_url
+          ? `<img src="${emp.foto_url}" alt="${emp.nombre}"
+                  style="width:80px;height:80px;border-radius:50%;object-fit:cover;
+                         border:2px solid rgba(247,168,0,.4);"
+                  onerror="this.outerHTML='<span class=\\'card-icon\\'>${icono}</span>'">`
+          : `<span class="card-icon">${icono}</span>`;
+
+        wrapper.innerHTML += `
+          <div class="sticker-card ${emp.desbloqueado ? '' : 'locked'} ${esGold ? 'gold' : ''}">
+            <div class="card-band"></div>
+            <div class="card-num">#${String(emp.numero).padStart(3,'0')}</div>
+            <div class="card-watermark">SL</div>
+            <div class="lock-badge">🔒</div>
+            <div class="card-photo">${imgTag}</div>
+            <div class="card-footer">
+              <div class="card-code">${emp.cargo || 'Asesor de Ventas'}</div>
+              <div class="card-name">${emp.nombre}</div>
+            </div>
+          </div>`;
+      });
+    }
+
     async function inicializarAlbum() {
       const nombreTienda = localStorage.getItem('nombreTienda') || 'SPORTLINE SUCURSAL';
       document.getElementById('lblTienda').textContent = nombreTienda;
 
       try {
-        const res = await fetch(`${API_URL}/tiendas/`, {
+        const res = await fetch(`${API_URL}/album/`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
-        if (!res.ok) throw new Error();
+
+        if (res.status === 401) {
+          localStorage.clear();
+          window.location.href = 'index.html';
+          return;
+        }
+
+        if (!res.ok) throw new Error('API error');
+
+        const data = await res.json();
+
+        // Actualizar stats con datos reales
+        const semanaLabel = data.semana ? data.semana.nombre : 'S—';
+        document.getElementById('valDesbloqueadas').textContent = data.desbloqueados ?? 0;
+        document.getElementById('valMeta').textContent =
+          data.total > 0 ? `${Math.round((data.desbloqueados / data.total) * 100)}%` : '—';
+        document.querySelector('.stat-n:last-of-type, #semanaLabel') && null;
+        // Actualiza el tercer stat card con la semana real
+        const statCards = document.querySelectorAll('.stat-n');
+        if (statCards[2]) statCards[2].textContent = data.semana ? `S${data.semana.numero}` : 'S—';
+
+        renderizarAlbum(data.empleados || [], data.semana);
+
       } catch {
-        console.log('Usando datos locales para demostración.');
+        // Fallback visual mientras el backend está en frío (Render free tier)
+        console.warn('Backend no disponible, mostrando demo.');
+        document.querySelector('.stat-n:nth-child(1)') && null;
+
+        const demo = [
+          { numero:1, nombre:'Ana García',      cargo:'Gerente de Tienda',    desbloqueado:true,  foto_url:null },
+          { numero:2, nombre:'Carlos López',    cargo:'Asesor de Ventas',     desbloqueado:true,  foto_url:null },
+          { numero:3, nombre:'María Rodríguez', cargo:'Supervisora',          desbloqueado:true,  foto_url:null },
+          { numero:4, nombre:'José Martínez',   cargo:'Asesor de Ventas',     desbloqueado:false, foto_url:null },
+          { numero:5, nombre:'Laura Pérez',     cargo:'Cajera',               desbloqueado:false, foto_url:null },
+          { numero:6, nombre:'Diego Torres',    cargo:'Visual Merchandiser',  desbloqueado:false, foto_url:null },
+        ];
+
+        document.getElementById('valDesbloqueadas').textContent = 3;
+        document.getElementById('valMeta').textContent = '50%';
+        document.getElementById('badge-count').textContent = `${demo.length} figuritas (demo)`;
+        renderizarAlbum(demo, { nombre: 'Semana 2 — Demo' });
       }
-
-      const catalogo = [
-        { id:1, name:'Balón Oficial Nike Pro',    code:'SL-001', locked:false, icon:'⚽', gold:false },
-        { id:2, name:'Zapatilla Air Max Elite',   code:'SL-002', locked:false, icon:'👟', gold:false },
-        { id:3, name:'Camiseta Oficial Panamá',   code:'SL-003', locked:false, icon:'👕', gold:false },
-        { id:4, name:'Gorra Running Speed',       code:'SL-004', locked:false, icon:'🧢', gold:false },
-        { id:5, name:'Trofeo Campeón Semanal',    code:'SL-005', locked:false, icon:'🏆', gold:true  },
-        { id:6, name:'Tacos Mercurial Oro',       code:'SL-006', locked:true,  icon:'🥇', gold:true  },
-        { id:7, name:'Maletín Deportivo L',       code:'SL-007', locked:true,  icon:'🎒', gold:false },
-        { id:8, name:'Banda Capitán Élite',       code:'SL-008', locked:true,  icon:'🎗️', gold:false },
-      ];
-
-      const wrapper = document.getElementById('wrapperAlbum');
-      wrapper.innerHTML = '';
-      document.getElementById('badge-count').textContent = `${catalogo.length} estrellas`;
-
-      catalogo.forEach(item => {
-        wrapper.innerHTML += `
-          <div class="sticker-card ${item.locked ? 'locked' : ''} ${item.gold ? 'gold' : ''}">
-            <div class="card-band"></div>
-            <div class="card-num">#${String(item.id).padStart(3,'0')}</div>
-            <div class="card-watermark">SL</div>
-            <div class="lock-badge">🔒</div>
-            <div class="card-photo">
-              <span class="card-icon">${item.icon}</span>
-            </div>
-            <div class="card-footer">
-              <div class="card-code">${item.code}</div>
-              <div class="card-name">${item.name}</div>
-            </div>
-          </div>`;
-      });
     }
 
     window.onload = inicializarAlbum;
