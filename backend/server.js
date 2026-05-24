@@ -5,7 +5,7 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Configuración de CORS segura y flexible para Vercel
+// Configuración de CORS para Vercel
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -14,14 +14,14 @@ app.use(cors({
 
 app.use(express.json());
 
-// Verificación inicial del servidor
+// Verificación inicial
 app.get('/', (req, res) => {
   res.send('Servidor del Álbum CDT Mundial Activo y Corriendo 🚀');
 });
 
-// Enrutamiento unificado para Auth, Tiendas e Index
+// ENRUTAMIENTO UNIFICADO (Corregido para apuntar a stores.js)
 app.use('/api/auth', require('./routes/auth'));
-app.use('/api/tiendas', require('./routes/tiendas'));
+app.use('/api/tiendas', require('./routes/stores'));
 
 // Control de errores de rutas globales
 app.use((req, res) => {
