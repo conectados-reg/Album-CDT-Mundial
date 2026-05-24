@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Álbum Estrellas — Sportline</title>
+  <link rel="icon" type="image/png" href="logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -309,7 +310,7 @@
   <!-- NAVBAR -->
   <nav>
     <div class="nav-brand">
-      <span class="nav-icon">⭐</span>
+      <img src="logo.png" alt="Sportline" style="height:38px;width:auto;filter:drop-shadow(0 0 8px rgba(247,168,0,.5));" onerror="this.outerHTML='<span class=\'nav-icon\'>⭐</span>'">
       <div>
         <div class="nav-title">ÁLBUM <span>ESTRELLAS</span></div>
         <div class="nav-store" id="lblTienda">Cargando sucursal...</div>
@@ -354,6 +355,47 @@
   </div>
 
   <footer>Álbum Estrellas · Sportline · Mundial 2026</footer>
+
+  <!-- REPRODUCTOR FLOTANTE — Canción Oficial FIFA Mundial 2026 -->
+  <div style="position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;text-align:right;">
+    <div id="ytBox" style="display:none;margin-bottom:.6rem;border-radius:14px;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.8);border:1.5px solid rgba(247,168,0,.4);">
+      <div style="background:#000d2e;padding:.4rem .8rem;font-family:'Barlow Condensed',sans-serif;font-size:.7rem;letter-spacing:.08em;color:rgba(255,255,255,.5);text-align:left;">
+        🎵 CANCIÓN OFICIAL · FIFA MUNDIAL 2026
+      </div>
+      <iframe id="ytIframe" width="280" height="158"
+        src="about:blank"
+        data-src="https://www.youtube.com/embed/X9CsK_nuqdE?autoplay=1&rel=0"
+        allow="autoplay; encrypted-media" allowfullscreen
+        style="border:none;display:block;">
+      </iframe>
+    </div>
+    <button id="musicBtn" onclick="toggleMusica()" title="Canción Oficial Mundial 2026"
+      style="width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#001f5e,#0046AD);
+      border:2px solid rgba(247,168,0,.6);color:#F7A800;font-size:1.5rem;cursor:pointer;
+      box-shadow:0 4px 24px rgba(0,70,173,.6);transition:all .25s;outline:none;
+      animation:musicGlow 2.5s infinite;">🎵</button>
+  </div>
+  <style>
+    @keyframes musicGlow {
+      0%,100% { box-shadow:0 4px 24px rgba(0,70,173,.6),0 0 0 0 rgba(247,168,0,.4); }
+      50%      { box-shadow:0 4px 24px rgba(0,70,173,.6),0 0 0 10px rgba(247,168,0,.0); }
+    }
+  </style>
+  <script>
+    function toggleMusica() {
+      var box   = document.getElementById('ytBox');
+      var btn   = document.getElementById('musicBtn');
+      var frame = document.getElementById('ytIframe');
+      if (box.style.display === 'none') {
+        if (frame.src === 'about:blank') frame.src = frame.dataset.src;
+        box.style.display = 'block';
+        btn.textContent = '⏸';
+      } else {
+        box.style.display = 'none';
+        btn.textContent = '🎵';
+      }
+    }
+  </script>
 
   <script>
     const API_URL  = "https://album-cdt-mundial.onrender.com/api";
