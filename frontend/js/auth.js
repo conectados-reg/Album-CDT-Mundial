@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:3000/api"; // Cambiar por tu URL de Render en producción
+const API_URL = "https://album-cdt-mundial.onrender.com/api"; // Cambiar por tu URL de Render en producción
 
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('loginForm');
