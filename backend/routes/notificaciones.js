@@ -1,7 +1,6 @@
 const router = require('express').Router();
 const jwt = require('jsonwebtoken');
 const { createClient } = require('@supabase/supabase-js');
-const nodemailer = require('nodemailer');
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
@@ -77,16 +76,9 @@ router.post('/enviar/:tienda_id', verificarToken, async (req, res) => {
 
     const destinatario = process.env.NOTIFY_OVERRIDE_EMAIL || tienda.email;
 
-    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-      return res.status(503).json({ error: 'Servicio de email no configurado en el servidor.' });
+    if (!process.env.RESEND_API_KEY) {
+      return res.status(503).json({ error: 'Servicio de email no configurado. Agrega RESEND_API_KEY en Render.' });
     }
-
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: false,
-      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
-    });
 
     const listaHtml = (empleados || [])
       .map(e => `
@@ -106,11 +98,7 @@ router.post('/enviar/:tienda_id', verificarToken, async (req, res) => {
     const frontendUrl = process.env.FRONTEND_URL || 'https://album-cdt-mundial.onrender.com';
     const total = empleados?.length || 0;
 
-    await transporter.sendMail({
-      from: `"Álbum Estrellas · SLA Corp." <${process.env.SMTP_USER}>`,
-      to: destinatario,
-      subject: `⭐ ${total} asesor${total !== 1 ? 'es' : ''} desbloquearon su figurita — ${semana_nombre}`,
-      html: `<!DOCTYPE html>
+    const htmlBody = `<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#f0f2f5;font-family:Arial,Helvetica,sans-serif;">
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f2f5;">
@@ -165,10 +153,28 @@ router.post('/enviar/:tienda_id', verificarToken, async (req, res) => {
 
   </table>
 </td></tr></table>
-</body></html>`
+</body></html>`;
+
+    const respEmail = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        from: 'Álbum Estrellas SLA Corp. <onboarding@resend.dev>',
+        to: [destinatario],
+        subject: `⭐ ${total} asesor${total !== 1 ? 'es' : ''} desbloquearon su figurita — ${semana_nombre}`,
+        html: htmlBody
+      })
     });
 
-    res.json({ ok: true, email: tienda.email });
+    if (!respEmail.ok) {
+      const errData = await respEmail.json();
+      throw new Error(errData.message || 'Error de Resend');
+    }
+
+    res.json({ ok: true, email: destinatario });
   } catch (err) {
     console.error('[Email enviar]', err.message);
     res.status(500).json({ error: `Error al enviar: ${err.message}` });
