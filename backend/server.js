@@ -22,6 +22,7 @@ app.get('/', (req, res) => {
 // ENRUTAMIENTO CORREGIDO (Usa rutas locales estándar de Node)
 app.use('/api/auth', require('./routes/auth.js'));
 app.use('/api/tiendas', require('./routes/stores.js'));
+app.use('/api/album', require('./routes/album.js'));
 
 // Control de rutas globales no encontradas
 app.use((req, res) => {

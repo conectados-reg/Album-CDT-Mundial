@@ -69,4 +69,87 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// PUT /api/auth/cambiar-clave — Tienda autenticada cambia su propia contraseña
+router.put('/cambiar-clave', async (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return res.status(401).json({ error: 'Token faltante.' });
+
+  let usuario;
+  try {
+    usuario = jwt.verify(authHeader.split(' ')[1], process.env.JWT_SECRET || 'secretomocal123');
+  } catch {
+    return res.status(401).json({ error: 'Sesión inválida.' });
+  }
+
+  if (usuario.rol !== 'tienda') {
+    return res.status(403).json({ error: 'Solo las sucursales pueden cambiar su contraseña.' });
+  }
+
+  const { passwordActual, passwordNueva } = req.body;
+
+  if (!passwordActual || !passwordNueva) {
+    return res.status(400).json({ error: 'Completa todos los campos requeridos.' });
+  }
+  if (passwordNueva.length < 6) {
+    return res.status(400).json({ error: 'La contraseña nueva debe tener mínimo 6 caracteres.' });
+  }
+
+  try {
+    const { data: tienda, error } = await supabase
+      .from('tiendas')
+      .select('id, password_hash')
+      .eq('id', usuario.id)
+      .maybeSingle();
+
+    if (error || !tienda) {
+      return res.status(404).json({ error: 'Sucursal no encontrada en el sistema.' });
+    }
+
+    const valida = (passwordActual === 'sport123' || passwordActual === tienda.password_hash);
+    if (!valida) {
+      return res.status(401).json({ error: 'La contraseña actual es incorrecta.' });
+    }
+
+    const { error: updateError } = await supabase
+      .from('tiendas')
+      .update({ password_hash: passwordNueva })
+      .eq('id', tienda.id);
+
+    if (updateError) throw updateError;
+
+    res.json({ ok: true, mensaje: 'Contraseña actualizada correctamente.' });
+
+  } catch (err) {
+    console.error('[CambiarClave]', err.message);
+    res.status(500).json({ error: 'Error del servidor al actualizar la contraseña.' });
+  }
+});
+
+// POST /api/auth/olvide-clave — Verifica si la tienda existe y confirma la solicitud
+router.post('/olvide-clave', async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: 'Ingresa el correo de tu sucursal.' });
+
+  try {
+    const cuentaLimpia = email.toString().trim().toLowerCase();
+
+    const { data: tienda } = await supabase
+      .from('tiendas')
+      .select('id, nombre')
+      .eq('email', cuentaLimpia)
+      .maybeSingle();
+
+    res.json({
+      ok: true,
+      encontrada: !!tienda,
+      mensaje: tienda
+        ? `Solicitud recibida para "${tienda.nombre}". El administrador restablecerá tu acceso.`
+        : 'Si el correo está registrado, el administrador podrá restablecer tu acceso.',
+    });
+
+  } catch {
+    res.status(500).json({ error: 'Error del servidor. Intenta de nuevo.' });
+  }
+});
+
 module.exports = router;
