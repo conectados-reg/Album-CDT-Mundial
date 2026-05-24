@@ -75,6 +75,8 @@ router.post('/enviar/:tienda_id', verificarToken, async (req, res) => {
       .from('tiendas').select('nombre, email').eq('id', req.params.tienda_id).single();
     if (!tienda?.email) return res.status(404).json({ error: 'Tienda sin email registrado.' });
 
+    const destinatario = process.env.NOTIFY_OVERRIDE_EMAIL || tienda.email;
+
     if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
       return res.status(503).json({ error: 'Servicio de email no configurado en el servidor.' });
     }
@@ -106,7 +108,7 @@ router.post('/enviar/:tienda_id', verificarToken, async (req, res) => {
 
     await transporter.sendMail({
       from: `"Álbum Estrellas · SLA Corp." <${process.env.SMTP_USER}>`,
-      to: tienda.email,
+      to: destinatario,
       subject: `⭐ ${total} asesor${total !== 1 ? 'es' : ''} desbloquearon su figurita — ${semana_nombre}`,
       html: `<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
