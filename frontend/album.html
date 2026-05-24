@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Álbum Estrellas de Ventas</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/michele-cosson/sales-album-styles/album-styles.min.css">
+<style>
+/* Reutiliza todos tus estilos hermosos del tag <style> original de tu album.html */
+:root{--p-blue:#0046AD;--p-navy:#002B6E;--p-orange:#F7A800;--p-red:#E8231A;--blanco:#ffffff;--borde:rgba(255,255,255,0.12);--texto-suave:rgba(255,255,255,0.5);}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#05174a;color:var(--blanco);font-family:'Barlow',sans-serif;min-height:100vh;}
+.navbar{position:sticky;top:0;z-index:100;background:rgba(0,43,110,.97);backdrop-filter:blur(16px);border-bottom:3px solid var(--p-orange);padding:.75rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;}
+.nav-left{display:flex;flex-direction:column;}
+.nav-tienda{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:.06em;}
+.nav-region{font-family:'Barlow Condensed',sans-serif;font-size:.65rem;text-transform:uppercase;color:var(--texto-suave);}
+.nav-center{font-family:'Barlow Condensed',sans-serif;font-weight:700;color:var(--p-orange);text-transform:uppercase;font-size:.75rem;}
+.nav-right{display:flex;align-items:center;gap:1rem;}
+.nav-progress{display:flex;align-items:center;gap:.6rem;}
+.progress-pct{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:var(--p-orange);}
+.progress-track{width:80px;height:5px;background:rgba(255,255,255,.15);border-radius:3px;overflow:hidden;}
+.progress-fill{height:100%;background:var(--p-orange);transition:width .6s ease;}
+.btn-logout{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;padding:.4rem .9rem;border-radius:20px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:.65rem;text-transform:uppercase;}
+.btn-logout:hover{background:var(--p-red);}
+.hero{padding:2.5rem 1.5rem;background:linear-gradient(180deg,#001f5e 0%,#05174a 100%);border-bottom:1px solid var(--borde);}
+.hero-inner{max-width:1300px;margin:0 auto;}
+.hero-top{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1.5rem;}
+.hero-tienda{font-family:'Bebas Neue',sans-serif;font-size:clamp(2rem,5vw,3.5rem);line-height:1;}
+.hero-region{font-family:'Barlow Condensed',sans-serif;color:var(--p-orange);text-transform:uppercase;font-size:.75rem;}
+.hero-stats{display:flex;gap:1rem;}
+.hstat{background:rgba(255,255,255,.07);border:1px solid var(--borde);border-radius:12px;padding:.9rem 1.3rem;text-align:center;min-width:100px;}
+.hstat-num{font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--p-orange);}
+.hstat-label{font-family:'Barlow Condensed',sans-serif;font-size:.6rem;text-transform:uppercase;color:var(--texto-suave);}
+.stats-bar-wrap{padding:.8rem 1.5rem;background:rgba(0,0,0,.25);border-bottom:1px solid var(--borde);}
+.stats-bar-inner{max-width:1300px;margin:0 auto;display:flex;align-items:center;gap:.6rem;}
+.stats-bar-label{font-family:'Barlow Condensed',sans-serif;font-size:.65rem;text-transform:uppercase;color:var(--texto-suave);}
+#statsBar{display:flex;gap:.5rem;}
+.mini-stat{display:flex;align-items:center;gap:.4rem;background:rgba(255,255,255,.06);padding:.3rem .7rem;border-radius:20px;cursor:pointer;}
+.mini-num{font-family:'Barlow Condensed',sans-serif;font-size:.7rem;color:#fff;}
+.mini-bar-wrap{width:40px;height:3px;background:rgba(255,255,255,.15);}
+.mini-bar-fill{height:100%;background:var(--p-orange);}
+.mini-pct{font-family:'Barlow Condensed',sans-serif;font-size:.68rem;color:var(--p-orange);}
+.album-wrap{max-width:1300px;margin:0 auto;padding:2rem 1.5rem;}
+.semana-section{margin-bottom:3rem;}
+.semana-header{display:flex;justify-content:space-between;padding:.9rem 1.2rem;background:rgba(255,255,255,.06);border-left:4px solid var(--p-orange);border-radius:12px 12px 0 0;}
+.semana-num{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;}
+.semana-nombre{font-family:'Barlow Condensed',sans-serif;color:var(--texto-suave);margin-left:.8rem;text-transform:uppercase;font-size:.8rem;}
+.semana-meta{display:flex;align-items:center;gap:.8rem;}
+.semana-badge{font-family:'Barlow Condensed',sans-serif;font-size:.65rem;text-transform:uppercase;padding:.3rem .85rem;border-radius:20px;background:rgba(247,168,0,.2);color:var(--p-orange);}
+.semana-counter{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;color:var(--texto-suave);}
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.75rem;padding:1rem;background:rgba(0,0,0,.15);border:1px solid var(--borde);border-top:none;border-radius:0 0 12px 12px;}
+.sticker{position:relative;border-radius:12px;overflow:hidden;display:flex;flex-direction:column;aspect-ratio:3/4;transition:all .2s;}
+.sticker:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(0,0,0,.4);}
+.sticker-inner{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.6rem;}
+.sticker-silhouette{width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:rgba(255,255,255,.2);}
+.sticker-footer{padding:.5rem;text-align:center;}
+.sticker-nombre{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.72rem;color:#fff;}
+.sticker-status{font-size:.6rem;text-transform:uppercase;color:var(--p-orange);font-family:'Barlow Condensed',sans-serif;}
+.sticker-desbloqueado{background:linear-gradient(145deg,#003a99 0%,#0053c8 50%,#1a6ef0 100%);border:2px solid rgba(247,168,0,.5);}
+.sticker-foto{width:68px;height:68px;border-radius:50%;border:3px solid var(--p-orange);overflow:hidden;}
+.sticker-foto img{width:100%;height:100%;object-fit:cover;}
+.sticker-badge-meta{background:var(--p-orange);color:#000;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:.6rem;padding:.2rem .6rem;border-radius:20px;margin-top:.4rem;}
+.sticker-cargo{font-size:.6rem;color:rgba(255,255,255,.4);}
+.sticker-en-curso{background:linear-gradient(145deg,#002060 0%,#003080 100%);border:2px solid rgba(247,168,0,.3);}
+.sticker-bloqueado{background:linear-gradient(145deg,#0d1a2e 0%,#15243d 100%);border:2px solid rgba(255,255,255,.08);opacity:.7;}
+.sticker-futura{background:linear-gradient(145deg,#080f1e 0%,#0d1830 100%);border:2px solid rgba(255,255,255,.05);opacity:.5;}
+.pulse-ring{position:absolute;top:.6rem;right:.6rem;width:10px;height:10px;border-radius:50%;background:var(--p-orange);animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(247,168,0,.5);}50%{box-shadow:0 0 0 6px rgba(247,168,0,0);}}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-left">
+    <div class="nav-tienda" id="navTienda">Cargando Tienda...</div>
+    <div class="nav-region" id="navRegion"></div>
+  </div>
+  <div class="nav-center" id="navSemana">Semana -- de 6</div>
+  <div class="nav-right">
+    <div class="nav-progress">
+      <span class="progress-pct" id="navPct">0%</span>
+      <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    </div>
+    <button class="btn-logout" id="btnLogout">Salir</button>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-top">
+      <div>
+        <h1 class="hero-tienda" id="heroTienda">--</h1>
+        <p class="hero-region" id="heroRegion">--</p>
+        <p class="hero-fechas" id="heroFechas">--</p>
+      </div>
+      <div class="hero-stats">
+        <div class="hstat"><div class="hstat-num" id="statDesbloqueados">0</div><div class="hstat-label">Desbloqueados</div></div>
+        <div class="hstat"><div class="hstat-num" id="statTotal">0</div><div class="hstat-label">Total Empleados</div></div>
+        <div class="hstat"><div class="hstat-num" id="statSemana">0</div><div class="hstat-label">Semana Actual</div></div>
+        <div class="hstat"><div class="hstat-num" id="statPorSemana">0</div><div class="hstat-label">Meta Semanal</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="stats-bar-wrap">
+  <div class="stats-bar-inner">
+    <span class="stats-bar-label">Semanas:</span>
+    <div id="statsBar"></div>
+  </div>
+</div>
+
+<div class="album-wrap">
+  <div id="albumContainer"></div>
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/album.js"></script>
+</body>
+</html>
