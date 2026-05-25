@@ -324,6 +324,60 @@
     }
     .album-search-input:focus { border-color: var(--p-orange); background: rgba(247,168,0,.06); box-shadow: 0 0 0 3px rgba(247,168,0,.1); }
     .album-search-input::placeholder { color: rgba(255,255,255,.25); }
+
+    /* ── MODAL FOTO ── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; z-index: 9000;
+      background: rgba(0,0,0,.75); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center; padding: 1rem;
+    }
+    .modal-box {
+      background: linear-gradient(160deg,#0d1e4a,#091535);
+      border: 1.5px solid rgba(247,168,0,.3); border-radius: 18px;
+      padding: 1.8rem; width: 100%; max-width: 400px;
+      position: relative; box-shadow: 0 24px 60px rgba(0,0,0,.7);
+    }
+    .modal-box h3 {
+      font-family: 'Bebas Neue',sans-serif; font-size: 1.3rem;
+      letter-spacing: .1em; color: var(--p-orange); margin-bottom: 1.2rem; text-align: center;
+    }
+    .modal-nombre {
+      font-family: 'Barlow Condensed',sans-serif; font-size: .85rem;
+      color: rgba(255,255,255,.5); text-align: center; margin-top: -.8rem; margin-bottom: 1.2rem;
+    }
+    .modal-close {
+      position: absolute; top: .9rem; right: 1rem;
+      background: none; border: none; color: rgba(255,255,255,.4);
+      font-size: 1.2rem; cursor: pointer; line-height: 1;
+    }
+    .modal-close:hover { color: #fff; }
+    .upload-area {
+      border: 2px dashed rgba(247,168,0,.3); border-radius: 12px;
+      padding: 2rem 1rem; text-align: center; cursor: pointer;
+      transition: border-color .2s, background .2s; margin-bottom: 1rem;
+    }
+    .upload-area:hover { border-color: var(--p-orange); background: rgba(247,168,0,.05); }
+    .upload-area label { cursor: pointer; display: block; }
+    #fotoPreview {
+      width: 100%; max-height: 220px; object-fit: cover;
+      border-radius: 8px; margin-bottom: .8rem; display: none;
+    }
+    .btn-subir {
+      width: 100%; padding: .75rem; border: none; border-radius: 10px;
+      background: linear-gradient(135deg,#F7A800,#d98c00); color: #000;
+      font-family: 'Barlow Condensed',sans-serif; font-size: .9rem;
+      font-weight: 700; letter-spacing: .1em; cursor: pointer;
+      transition: filter .2s; display: none;
+    }
+    .btn-subir:hover { filter: brightness(1.1); }
+    .btn-subir:disabled { background: rgba(255,255,255,.1); color: rgba(255,255,255,.3); cursor: not-allowed; filter: none; }
+    .alert-foto {
+      font-family: 'Barlow Condensed',sans-serif; font-size: .82rem;
+      padding: .5rem .8rem; border-radius: 8px; margin-bottom: .8rem;
+      background: rgba(232,35,26,.15); color: #ff6b6b;
+      border: 1px solid rgba(232,35,26,.3); display: none;
+    }
+    .alert-foto.ok { background: rgba(0,200,83,.12); color: #69f0ae; border-color: rgba(0,200,83,.3); }
   </style>
 </head>
 <body>
@@ -383,6 +437,30 @@
   </div>
 
   <footer>Álbum Estrellas · Sportline · Mundial 2026</footer>
+
+  <!-- MODAL SUBIR FOTO -->
+  <div id="modalFoto" class="modal-overlay">
+    <div class="modal-box">
+      <button class="modal-close" onclick="cerrarModal()">✕</button>
+      <h3>📷 Subir Figurita</h3>
+      <div class="modal-nombre" id="modalNombre"></div>
+      <div class="alert-foto" id="alertFoto"></div>
+      <div class="upload-area">
+        <label for="fileInput">
+          <img id="fotoPreview" alt="Vista previa">
+          <div style="font-size:2.5rem;margin-bottom:.5rem;">📸</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:.85rem;color:rgba(255,255,255,.5);">
+            Toca para seleccionar una foto
+          </div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:.72rem;color:rgba(255,255,255,.3);margin-top:.3rem;">
+            JPG, PNG · Máximo 5 MB
+          </div>
+        </label>
+        <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="previsualizarFoto(event)">
+      </div>
+      <button class="btn-subir" id="btnSubir" onclick="subirFoto()">⬆️ Subir al Álbum</button>
+    </div>
+  </div>
 
   <!-- REPRODUCTOR FLOTANTE — Solo Audio · Canción Oficial FIFA Mundial 2026 -->
   <div style="position:fixed;bottom:1.5rem;left:1.5rem;z-index:9999;">
@@ -452,6 +530,14 @@
     }
 
     let _todosEmpleados = [], _semanaActual = null;
+    let empIdFoto = null, fotoBase64 = null, fotoTipo = null;
+
+    function mostrarAlerta(msg, esOk = false) {
+      const el = document.getElementById('alertFoto');
+      el.textContent = msg;
+      el.className = 'alert-foto' + (esOk ? ' ok' : '');
+      el.style.display = 'block';
+    }
 
     function renderAlbum(empleados, semana) {
       const wrapper     = document.getElementById('wrapperAlbum');
