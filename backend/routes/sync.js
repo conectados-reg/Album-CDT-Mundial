@@ -128,10 +128,11 @@ router.post('/ventas', verificarSyncKey, async (req, res) => {
         );
         stats.desbloqueados++;
       } else {
-        // Si existía espacio desbloqueado previo, bloquearlo
+        // Solo crear el espacio bloqueado si no existe uno todavía.
+        // ignoreDuplicates:true garantiza que nunca se sobreescriba un desbloqueo previo.
         await supabase.from('espacios_album').upsert(
           { empleado_id: emp.id, semana_id: semana.id, desbloqueado: false },
-          { onConflict: 'empleado_id,semana_id' }
+          { onConflict: 'empleado_id,semana_id', ignoreDuplicates: true }
         );
         stats.bloqueados++;
       }
