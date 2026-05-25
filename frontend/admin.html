@@ -276,6 +276,40 @@
     }
     .admin-search-input:focus { border-color: var(--p-orange); background: rgba(247,168,0,.06); box-shadow: 0 0 0 3px rgba(247,168,0,.1); }
     .admin-search-input::placeholder { color: rgba(255,255,255,.25); }
+
+    /* ── ACCORDION PAÍS ── */
+    .pais-acc-btn {
+      width: 100%; text-align: left;
+      background: rgba(0,20,60,.6); border: none;
+      border-top: 1px solid rgba(247,168,0,.12);
+      border-bottom: 1px solid rgba(247,168,0,.15);
+      padding: .75rem 1.2rem; cursor: pointer;
+      display: flex; align-items: center; gap: .6rem;
+      font-family: 'Bebas Neue', sans-serif; font-size: .95rem;
+      letter-spacing: .12em; color: var(--p-orange);
+      transition: background .15s;
+    }
+    .pais-acc-btn:hover { background: rgba(0,30,80,.8); }
+    .pais-acc-btn .acc-arrow { margin-left: auto; font-size: .65rem; transition: transform .2s; color: rgba(255,255,255,.25); }
+    .pais-acc-btn.open .acc-arrow { transform: rotate(90deg); color: var(--p-orange); }
+    .pais-acc-stores { display: none; }
+    .pais-acc-btn.open + .pais-acc-stores { display: block; }
+
+    /* ── STORE ACCORDION BUTTON ── */
+    .store-acc-btn {
+      width: 100%; text-align: left;
+      background: rgba(0,10,35,.5); border: none;
+      border-bottom: 1px solid rgba(255,255,255,.04);
+      padding: .62rem 1.2rem .62rem 2.8rem; cursor: pointer;
+      display: flex; align-items: center; gap: .6rem;
+      font-family: 'Barlow Condensed', sans-serif; font-size: .9rem;
+      font-weight: 600; letter-spacing: .03em; color: rgba(255,255,255,.72);
+      transition: background .15s;
+    }
+    .store-acc-btn:hover { background: rgba(0,70,173,.14); color: #fff; }
+    .store-acc-btn .acc-arrow { font-size: .55rem; color: rgba(255,255,255,.2); transition: transform .2s; margin-left: auto; }
+    .store-acc-btn.open .acc-arrow { transform: rotate(90deg); color: var(--p-orange); }
+    .store-acc-panel { display: none; padding: .9rem 1.4rem .9rem 3rem; background: rgba(0,0,0,.22); border-bottom: 2px solid rgba(247,168,0,.08); }
   </style>
 </head>
 <body>
@@ -283,7 +317,7 @@
   <!-- NAVBAR -->
   <header>
     <div class="header-brand">
-      <img src="logo.png" alt="SLA Corp"
+      <img src="https://i.postimg.cc/hv6YBVfc/logo-sla.png" alt="SLA Corp"
         style="height:36px;width:auto;filter:drop-shadow(0 0 8px rgba(247,168,0,.5));"
         onerror="this.outerHTML='<span style=\'font-size:1.5rem;\'>📊</span>'">
       <div>
@@ -322,24 +356,10 @@
           <h3>⭐ Directorio Corporativo</h3>
           <span class="table-count" id="badge-count">Cargando...</span>
         </div>
-        <div class="table-wrapper">
-          <div id="loadingState" class="state-msg">
-            <div class="spin">⚙️</div><br>Cargando directorio de Sportline...
-          </div>
-          <table id="tablaTiendas" style="display:none;">
-            <thead>
-              <tr>
-                <th style="padding-left:1.8rem">Sucursal</th>
-                <th>Código</th>
-                <th>Correo</th>
-                <th>Contraseña 👁</th>
-                <th style="text-align:center">Personal</th>
-                <th>Estado</th>
-              </tr>
-            </thead>
-            <tbody id="listaTiendasCuerpo"></tbody>
-          </table>
+        <div id="loadingState" class="state-msg">
+          <div class="spin">⚙️</div><br>Cargando directorio de Sportline...
         </div>
+        <div id="acordeonTiendas" style="display:none;"></div>
       </div>
     </div>
 
@@ -388,7 +408,7 @@
       <div id="notifSemanaInfo" class="week-info" style="margin-bottom:1rem;"></div>
       <div id="notifLoading" class="state-msg"><div class="spin">⚙️</div><br>Cargando logros de esta semana...</div>
       <div id="notifEmpty" class="state-msg" style="display:none;">🎯 No hay tiendas con asesores al 100% en la semana activa aún.</div>
-      <div id="notifGrid" class="notif-grid" style="display:none;"></div>
+      <div id="notifAcordeon" style="display:none;"></div>
     </div>
 
   </div>
@@ -446,10 +466,10 @@
     let _todasTiendas = [];
 
     function renderTablaTiendas(tiendas) {
-      const tbody = document.getElementById('listaTiendasCuerpo');
-      tbody.innerHTML = '';
+      const wrap = document.getElementById('acordeonTiendas');
       if (!tiendas.length) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:rgba(255,255,255,.3);padding:2rem;">No se encontraron sucursales.</td></tr>';
+        wrap.innerHTML = '<div class="state-msg">No se encontraron sucursales.</div>';
+        document.getElementById('badge-count').textContent = '0 sucursales';
         return;
       }
       const grupos = {};
@@ -458,37 +478,28 @@
         if (!grupos[k]) grupos[k] = [];
         grupos[k].push(t);
       });
-      let total = 0;
+      let total = 0, html = '';
       Object.entries(grupos).forEach(([pais, lista]) => {
         total += lista.length;
-        tbody.innerHTML += `
-          <tr class="pais-header">
-            <td colspan="6">
-              <div class="pais-label">
-                ${banderaPais(pais)} ${pais.toUpperCase()}
-                <span class="pais-count">${lista.length} sucursal${lista.length !== 1 ? 'es' : ''}</span>
-              </div>
-            </td>
-          </tr>`;
-        lista.forEach(t => {
-          tbody.innerHTML += `
-            <tr class="row-tienda" id="row-${t.id}" onclick="toggleEmpleados('${t.id}')">
-              <td class="td-nombre"><strong>${t.nombre}</strong></td>
-              <td class="td-codigo">${t.codigo}</td>
-              <td class="td-email">${t.email || '—'}</td>
-              <td><span class="txt-clave">${t.clave || '------'}</span></td>
-              <td class="td-empleados">👥 ${t.total_empleados || 0}</td>
-              <td><span class="badge-activa">Activa</span></td>
-            </tr>
-            <tr class="row-empleados" id="emp-row-${t.id}" style="display:none;">
-              <td colspan="6">
-                <div class="emp-panel" id="emp-panel-${t.id}">
-                  <span class="emp-loading">Cargando personal...</span>
-                </div>
-              </td>
-            </tr>`;
-        });
+        html += `
+          <button class="pais-acc-btn" onclick="this.classList.toggle('open')">
+            ${banderaPais(pais)} ${pais.toUpperCase()}
+            <span style="font-family:'Barlow Condensed',sans-serif;font-size:.7rem;font-weight:700;color:rgba(255,255,255,.35);margin-left:.4rem;">${lista.length} sucursal${lista.length!==1?'es':''}</span>
+            <span class="acc-arrow">▶</span>
+          </button>
+          <div class="pais-acc-stores">
+            ${lista.map(t => `
+              <button class="store-acc-btn" id="store-btn-${t.id}" onclick="toggleStoreAcc('${t.id}')">
+                🏬 ${t.nombre}
+                <span style="font-family:'Barlow Condensed',sans-serif;font-size:.75rem;color:rgba(255,255,255,.3);">👥 ${t.total_empleados||0}</span>
+                <span class="acc-arrow">▶</span>
+              </button>
+              <div class="store-acc-panel" id="store-acc-${t.id}" style="display:none;">
+                <span class="emp-loading">Cargando personal...</span>
+              </div>`).join('')}
+          </div>`;
       });
+      wrap.innerHTML = html;
       document.getElementById('badge-count').textContent = `${total} sucursales`;
     }
 
@@ -511,7 +522,7 @@
         renderTablaTiendas(_todasTiendas);
 
         document.getElementById('loadingState').style.display = 'none';
-        document.getElementById('tablaTiendas').style.display = 'table';
+        document.getElementById('acordeonTiendas').style.display = 'block';
 
       } catch (err) {
         console.error(err);
@@ -519,19 +530,19 @@
       }
     }
 
-    async function toggleEmpleados(tiendaId) {
-      const mainRow = document.getElementById(`row-${tiendaId}`);
-      const empRow  = document.getElementById(`emp-row-${tiendaId}`);
-      const isOpen  = empRow.style.display !== 'none';
+    async function toggleStoreAcc(tiendaId) {
+      const btn   = document.getElementById(`store-btn-${tiendaId}`);
+      const panel = document.getElementById(`store-acc-${tiendaId}`);
+      const isOpen = panel.style.display === 'block';
 
       if (isOpen) {
-        empRow.style.display = 'none';
-        mainRow.classList.remove('expanded');
+        panel.style.display = 'none';
+        if (btn) btn.classList.remove('open');
         return;
       }
 
-      empRow.style.display = 'table-row';
-      mainRow.classList.add('expanded');
+      panel.style.display = 'block';
+      if (btn) btn.classList.add('open');
 
       if (empCache[tiendaId]) {
         renderEmpleados(tiendaId, empCache[tiendaId]);
@@ -544,12 +555,12 @@
         empCache[tiendaId] = data;
         renderEmpleados(tiendaId, data);
       } catch {
-        document.getElementById(`emp-panel-${tiendaId}`).innerHTML = '<span class="emp-loading">❌ Error al cargar personal.</span>';
+        document.getElementById(`store-acc-${tiendaId}`).innerHTML = '<span class="emp-loading">❌ Error al cargar personal.</span>';
       }
     }
 
     function renderEmpleados(tiendaId, data) {
-      const panel     = document.getElementById(`emp-panel-${tiendaId}`);
+      const panel     = document.getElementById(`store-acc-${tiendaId}`);
       const empleados = data.empleados || [];
       const nDesbloq  = data.desbloqueados || 0;
       const semana    = data.semana;
@@ -639,8 +650,8 @@
     async function cargarNotificaciones() {
       const loadEl  = document.getElementById('notifLoading');
       const emptyEl = document.getElementById('notifEmpty');
-      const gridEl  = document.getElementById('notifGrid');
-      loadEl.style.display = 'block'; emptyEl.style.display = 'none'; gridEl.style.display = 'none';
+      const acordEl = document.getElementById('notifAcordeon');
+      loadEl.style.display = 'block'; emptyEl.style.display = 'none'; acordEl.style.display = 'none';
       try {
         const res  = await fetch(`${API_URL}/notificaciones/pendientes`, { headers: { 'Authorization': `Bearer ${token}` } });
         const data = await res.json();
@@ -650,26 +661,39 @@
         const tiendas = data.tiendas || [];
         if (!tiendas.length) { emptyEl.style.display = 'block'; return; }
         window._notifData = {};
-        gridEl.innerHTML = tiendas.map(t => {
+        acordEl.innerHTML = tiendas.map(t => {
           window._notifData[t.tienda_id] = { empleados: t.empleados, semana: data.semana };
           return `
-          <div class="notif-card" id="card-${t.tienda_id}">
-            <div class="notif-card-head">
-              <h4>🏬 ${t.nombre}</h4>
-              <span class="count-badge">⭐ ${t.empleados.length}</span>
-            </div>
-            <div class="notif-card-body">
+            <button class="store-acc-btn" id="nstore-btn-${t.tienda_id}" onclick="toggleNotifTienda('${t.tienda_id}')">
+              🏬 ${t.nombre}
+              <span style="font-family:'Barlow Condensed',sans-serif;font-size:.75rem;color:var(--p-green);">⭐ ${t.empleados.length}</span>
+              <span class="acc-arrow">▶</span>
+            </button>
+            <div class="store-acc-panel" id="nstore-panel-${t.tienda_id}" style="display:none;">
               <div class="notif-email">📧 ${t.email||'Sin email'}</div>
-              <ul class="notif-emp-list">${(t.empleados||[]).map(e=>`<li><strong>${e.nombre}</strong> <span>· ${e.cargo||'Asesor'}</span></li>`).join('')}</ul>
-              <button class="btn-send" id="btn-${t.tienda_id}"
-                onclick="enviarNotificacion('${t.tienda_id}')">
+              <div class="emp-grid" style="margin-bottom:.9rem;">
+                ${(t.empleados||[]).map(e=>`
+                  <div class="emp-chip ok">
+                    <span class="badge-100">100%</span>
+                    ${e.nombre}
+                    <span class="chip-cargo">${e.cargo||'Asesor'}</span>
+                  </div>`).join('')}
+              </div>
+              <button class="btn-send" id="btn-${t.tienda_id}" onclick="enviarNotificacion('${t.tienda_id}')">
                 📧 Enviar Notificación
               </button>
-            </div>
-          </div>`;
+            </div>`;
         }).join('');
-        gridEl.style.display = 'grid';
+        acordEl.style.display = 'block';
       } catch { loadEl.innerHTML = '❌ Error de conexión.'; }
+    }
+
+    function toggleNotifTienda(tiendaId) {
+      const btn   = document.getElementById(`nstore-btn-${tiendaId}`);
+      const panel = document.getElementById(`nstore-panel-${tiendaId}`);
+      const isOpen = panel.style.display === 'block';
+      btn.classList.toggle('open', !isOpen);
+      panel.style.display = isOpen ? 'none' : 'block';
     }
 
     async function enviarNotificacion(tiendaId) {
