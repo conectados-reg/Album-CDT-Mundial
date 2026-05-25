@@ -555,7 +555,18 @@
       if (periodoEl) periodoEl.textContent = semanaLabel;
 
       if (!total) {
-        wrapper.innerHTML = '<div class="loading-msg">📭 Sin colaboradores registrados aún. El álbum se actualizará cuando lleguen los datos del sistema.</div>';
+        wrapper.innerHTML = `
+        <div style="grid-column:1/-1;text-align:center;padding:4rem 2rem;">
+          <div style="font-size:4rem;margin-bottom:1.2rem;filter:drop-shadow(0 0 20px rgba(247,168,0,.3));">⭐</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:.12em;color:var(--p-orange);margin-bottom:.6rem;">ÁLBUM EN ESPERA</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:.95rem;letter-spacing:.05em;color:rgba(255,255,255,.4);max-width:340px;margin:0 auto;line-height:1.7;">
+            Aún no hay colaboradores registrados.<br>Las figuritas aparecerán una vez que el sistema sincronice los datos de ventas.
+          </div>
+          <div style="margin-top:1.8rem;display:inline-flex;align-items:center;gap:.5rem;background:rgba(247,168,0,.08);border:1px solid rgba(247,168,0,.2);border-radius:30px;padding:.5rem 1.2rem;">
+            <span style="font-size:.9rem;">⚽</span>
+            <span style="font-family:'Barlow Condensed',sans-serif;font-size:.78rem;letter-spacing:.1em;color:rgba(247,168,0,.6);">FIFA MUNDIAL 2026 · SPORTLINE</span>
+          </div>
+        </div>`;
         return;
       }
 
