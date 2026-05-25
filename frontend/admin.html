@@ -282,6 +282,23 @@
       .info-card { flex-direction: column; align-items: flex-start; }
       .container { padding: 0 1rem 3rem; }
     }
+    .admin-search-wrap { position: relative; max-width: 380px; margin-bottom: 1rem; }
+    .admin-search-wrap .s-icon { position: absolute; left: .9rem; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,.35); pointer-events: none; }
+    .admin-search-input {
+      width: 100%;
+      background: rgba(255,255,255,.05);
+      border: 1.5px solid rgba(255,255,255,.1);
+      border-radius: 10px;
+      color: #fff;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .9rem;
+      letter-spacing: .03em;
+      padding: .6rem 1rem .6rem 2.5rem;
+      outline: none;
+      transition: border-color .2s, background .2s, box-shadow .2s;
+    }
+    .admin-search-input:focus { border-color: var(--p-orange); background: rgba(247,168,0,.06); box-shadow: 0 0 0 3px rgba(247,168,0,.1); }
+    .admin-search-input::placeholder { color: rgba(255,255,255,.25); }
   </style>
 </head>
 <body>
@@ -301,57 +318,199 @@
   <!-- CONTENT -->
   <div class="container">
 
-    <div class="info-card">
-      <span class="info-card-icon">🏬</span>
-      <div class="info-card-text">
-        <h2>Monitoreo Corporativo en Tiempo Real</h2>
-        <p>Control centralizado de contraseñas, correos electrónicos y auditoría de personal · Sportline</p>
+    <!-- ══════════════════════ TAB 1: SUCURSALES ══════════════════════ -->
+    <div class="tab-panel active" id="tab-sucursales">
+      <div class="info-card">
+        <span class="info-card-icon">🏬</span>
+        <div class="info-card-text">
+          <h2>Sucursales por País</h2>
+          <p>Haz clic en una sucursal para ver su personal activo y cuántos cumplieron el 100% · Sportline</p>
+        </div>
+      </div>
+
+      <div class="admin-search-wrap">
+        <span class="s-icon">🔍</span>
+        <input type="text" id="searchSucursal" class="admin-search-input" placeholder="Buscar sucursal o región…" autocomplete="off">
+      </div>
+      <div class="table-card">
+        <div class="table-card-header">
+          <h3>⭐ Directorio Corporativo</h3>
+          <span class="table-count" id="badge-count">Cargando...</span>
+        </div>
+        <div class="table-wrapper">
+          <div id="loadingState" class="state-msg">
+            <div class="spin">⚙️</div><br>Cargando directorio de Sportline...
+          </div>
+          <table id="tablaTiendas" style="display:none;">
+            <thead>
+              <tr>
+                <th style="padding-left:1.8rem">Sucursal</th>
+                <th>Código</th>
+                <th>Correo</th>
+                <th>Contraseña 👁</th>
+                <th style="text-align:center">Personal</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody id="listaTiendasCuerpo"></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
-    <div class="table-card">
-      <div class="table-card-header">
-        <h3>⭐ Sucursales Registradas</h3>
-        <span class="table-count" id="badge-count">Cargando...</span>
-      </div>
-      <div class="table-wrapper">
-        <div id="loadingState" class="state-msg">
-          <div class="spin">⚙️</div><br>Cargando la base de datos de Sportline...
+    <!-- ══════════════════════ TAB 2: RENDIMIENTO ══════════════════════ -->
+    <div class="tab-panel" id="tab-rendimiento">
+      <div class="info-card">
+        <span class="info-card-icon">📊</span>
+        <div class="info-card-text">
+          <h2>Rendimiento Semanal por Tienda</h2>
+          <p>Selecciona una semana para ver cuántos asesores cumplieron el 100% de su meta de ventas</p>
         </div>
-        <table id="tablaTiendas" style="display:none;">
-          <thead>
-            <tr>
-              <th>Sucursal</th>
-              <th>Código ID</th>
-              <th>Correo electrónico</th>
-              <th>Contraseña 👁</th>
-              <th>Región</th>
-              <th>Ciudad</th>
-              <th style="text-align:center">Empleados</th>
-              <th>Estado</th>
-            </tr>
-          </thead>
-          <tbody id="listaTiendasCuerpo"></tbody>
-        </table>
       </div>
+      <div class="week-selector" id="weekSelector"></div>
+      <div class="week-info" id="weekInfo"></div>
+      <div class="table-card">
+        <div class="table-card-header">
+          <h3 id="rendTitle">📈 Selecciona una semana</h3>
+          <span class="table-count" id="rendBadge">—</span>
+        </div>
+        <div class="table-wrapper">
+          <div id="rendLoading" class="state-msg">Selecciona una semana arriba para ver los resultados.</div>
+          <table id="tablaRendimiento" style="display:none;">
+            <thead>
+              <tr>
+                <th>#</th><th>Sucursal</th><th>Región</th>
+                <th style="text-align:center">Total</th>
+                <th style="text-align:center">Al 100%</th>
+                <th>Cumplimiento</th>
+              </tr>
+            </thead>
+            <tbody id="rendCuerpo"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════ TAB 3: NOTIFICACIONES ══════════════════════ -->
+    <div class="tab-panel" id="tab-notificaciones">
+      <div class="info-card">
+        <span class="info-card-icon">📧</span>
+        <div class="info-card-text">
+          <h2>Notificaciones de Desbloqueo</h2>
+          <p>Tiendas con asesores que cumplieron el 100% esta semana · Envía la notificación por email</p>
+        </div>
+      </div>
+      <div id="notifSemanaInfo" class="week-info" style="margin-bottom:1rem;"></div>
+      <div id="notifLoading" class="state-msg"><div class="spin">⚙️</div><br>Cargando logros de esta semana...</div>
+      <div id="notifEmpty" class="state-msg" style="display:none;">🎯 No hay tiendas con asesores al 100% en la semana activa aún.</div>
+      <div id="notifGrid" class="notif-grid" style="display:none;"></div>
     </div>
 
   </div>
 
+  <div id="toast"></div>
+
   <script>
-    const API_URL = "https://album-cdt-mundial.onrender.com/api";
+    const API_URL = 'https://album-cdt-mundial.onrender.com/api';
     const token   = localStorage.getItem('token');
     const esAdmin = localStorage.getItem('esAdmin');
 
-    if (!token || esAdmin !== 'true') {
-      localStorage.clear();
-      window.location.href = 'index.html';
+    if (!token || esAdmin !== 'true') { localStorage.clear(); window.location.href = 'index.html'; }
+
+    document.getElementById('btnLogout').onclick = () => { localStorage.clear(); window.location.href = 'index.html'; };
+
+    /* ── TOAST ── */
+    function showToast(msg, ms = 2800) {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), ms);
     }
 
-    document.getElementById('btnLogout').onclick = () => {
-      localStorage.clear();
-      window.location.href = 'index.html';
-    };
+    /* ── TABS ── */
+    let notifLoaded = false;
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+        if (btn.dataset.tab === 'notificaciones' && !notifLoaded) {
+          notifLoaded = true;
+          cargarNotificaciones();
+        }
+      });
+    });
+
+    const empCache = {};
+
+    function banderaPais(region) {
+      const r = (region || '').toLowerCase();
+      if (r.includes('panam'))  return '🇵🇦';
+      if (r.includes('colombia') || r.includes('colom')) return '🇨🇴';
+      if (r.includes('costa') || r.includes('rica')) return '🇨🇷';
+      if (r.includes('guatem')) return '🇬🇹';
+      if (r.includes('domini') || r.includes('rep')) return '🇩🇴';
+      if (r.includes('hondur')) return '🇭🇳';
+      if (r.includes('salvad')) return '🇸🇻';
+      return '🌍';
+    }
+
+    let _todasTiendas = [];
+
+    function renderTablaTiendas(tiendas) {
+      const tbody = document.getElementById('listaTiendasCuerpo');
+      tbody.innerHTML = '';
+      if (!tiendas.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:rgba(255,255,255,.3);padding:2rem;">No se encontraron sucursales.</td></tr>';
+        return;
+      }
+      const grupos = {};
+      tiendas.forEach(t => {
+        const k = t.region || 'General';
+        if (!grupos[k]) grupos[k] = [];
+        grupos[k].push(t);
+      });
+      let total = 0;
+      Object.entries(grupos).forEach(([pais, lista]) => {
+        total += lista.length;
+        tbody.innerHTML += `
+          <tr class="pais-header">
+            <td colspan="6">
+              <div class="pais-label">
+                ${banderaPais(pais)} ${pais.toUpperCase()}
+                <span class="pais-count">${lista.length} sucursal${lista.length !== 1 ? 'es' : ''}</span>
+              </div>
+            </td>
+          </tr>`;
+        lista.forEach(t => {
+          tbody.innerHTML += `
+            <tr class="row-tienda" id="row-${t.id}" onclick="toggleEmpleados('${t.id}')">
+              <td class="td-nombre"><strong>${t.nombre}</strong></td>
+              <td class="td-codigo">${t.codigo}</td>
+              <td class="td-email">${t.email || '—'}</td>
+              <td><span class="txt-clave">${t.clave || '------'}</span></td>
+              <td class="td-empleados">👥 ${t.total_empleados || 0}</td>
+              <td><span class="badge-activa">Activa</span></td>
+            </tr>
+            <tr class="row-empleados" id="emp-row-${t.id}" style="display:none;">
+              <td colspan="6">
+                <div class="emp-panel" id="emp-panel-${t.id}">
+                  <span class="emp-loading">Cargando personal...</span>
+                </div>
+              </td>
+            </tr>`;
+        });
+      });
+      document.getElementById('badge-count').textContent = `${total} sucursales`;
+    }
+
+    document.getElementById('searchSucursal').addEventListener('input', function() {
+      const q = this.value.trim().toLowerCase();
+      renderTablaTiendas(q
+        ? _todasTiendas.filter(t => t.nombre.toLowerCase().includes(q) || (t.region || '').toLowerCase().includes(q) || (t.codigo || '').toLowerCase().includes(q))
+        : _todasTiendas
+      );
+    });
 
     async function cargarTiendasAdmin() {
       try {
@@ -370,27 +529,8 @@
           return;
         }
 
-        const tbody = document.getElementById('listaTiendasCuerpo');
-        tbody.innerHTML = '';
-
-        if (!data.tiendas || data.tiendas.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:rgba(255,255,255,.3);padding:2rem;">No hay tiendas registradas.</td></tr>';
-        } else {
-          data.tiendas.forEach(t => {
-            tbody.innerHTML += `
-              <tr>
-                <td class="td-nombre"><strong>${t.nombre}</strong></td>
-                <td class="td-codigo">${t.codigo}</td>
-                <td class="td-email">${t.email || '—'}</td>
-                <td><span class="txt-clave">${t.clave || '------'}</span></td>
-                <td style="color:rgba(255,255,255,.55);font-family:'Barlow Condensed',sans-serif;">${t.region || 'General'}</td>
-                <td style="color:rgba(255,255,255,.55);font-family:'Barlow Condensed',sans-serif;">${t.ciudad || 'General'}</td>
-                <td class="td-empleados">👥 ${t.total_empleados || 0}</td>
-                <td><span class="badge-activa">Activa</span></td>
-              </tr>`;
-          });
-          document.getElementById('badge-count').textContent = `${data.tiendas.length} sucursales`;
-        }
+        _todasTiendas = data.tiendas || [];
+        renderTablaTiendas(_todasTiendas);
 
         document.getElementById('loadingState').style.display = 'none';
         document.getElementById('tablaTiendas').style.display = 'table';
@@ -401,7 +541,182 @@
       }
     }
 
-    window.onload = cargarTiendasAdmin;
+    async function toggleEmpleados(tiendaId) {
+      const mainRow = document.getElementById(`row-${tiendaId}`);
+      const empRow  = document.getElementById(`emp-row-${tiendaId}`);
+      const isOpen  = empRow.style.display !== 'none';
+
+      if (isOpen) {
+        empRow.style.display = 'none';
+        mainRow.classList.remove('expanded');
+        return;
+      }
+
+      empRow.style.display = 'table-row';
+      mainRow.classList.add('expanded');
+
+      if (empCache[tiendaId]) {
+        renderEmpleados(tiendaId, empCache[tiendaId]);
+        return;
+      }
+
+      try {
+        const res  = await fetch(`${API_URL}/empleados/admin/${tiendaId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+        empCache[tiendaId] = data;
+        renderEmpleados(tiendaId, data);
+      } catch {
+        document.getElementById(`emp-panel-${tiendaId}`).innerHTML = '<span class="emp-loading">❌ Error al cargar personal.</span>';
+      }
+    }
+
+    function renderEmpleados(tiendaId, data) {
+      const panel     = document.getElementById(`emp-panel-${tiendaId}`);
+      const empleados = data.empleados || [];
+      const nDesbloq  = data.desbloqueados || 0;
+      const semana    = data.semana;
+
+      if (!empleados.length) {
+        panel.innerHTML = '<span class="emp-loading">Sin personal activo registrado.</span>';
+        return;
+      }
+
+      const semanaLabel = semana ? `· Semana ${semana.numero}` : '';
+      const chips = empleados.map(e => `
+        <div class="emp-chip ${e.desbloqueado ? 'ok' : ''}">
+          ${e.desbloqueado ? '<span class="badge-100">100%</span>' : '👤'}
+          ${e.nombre}
+          <span class="chip-cargo">${e.cargo}</span>
+        </div>`).join('');
+
+      panel.innerHTML = `
+        <div class="emp-summary">
+          <span class="emp-summary-count">⭐ ${nDesbloq}</span>
+          <span class="emp-summary-total">de ${empleados.length} al 100% ${semanaLabel}</span>
+        </div>
+        <div class="emp-grid">${chips}</div>`;
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       TAB 2 — RENDIMIENTO SEMANAL
+    ══════════════════════════════════════════════════════════ */
+    const semanas = [
+      { numero: 1, fechas: '9–15 Jun 2026'    },
+      { numero: 2, fechas: '16–22 Jun 2026'   },
+      { numero: 3, fechas: '23–29 Jun 2026'   },
+      { numero: 4, fechas: '30 Jun–6 Jul 2026'},
+      { numero: 5, fechas: '7–13 Jul 2026'    },
+      { numero: 6, fechas: '14–19 Jul 2026'   },
+    ];
+
+    function buildWeekSelector() {
+      const wrap = document.getElementById('weekSelector');
+      semanas.forEach(s => {
+        const btn = document.createElement('button');
+        btn.className = 'week-btn'; btn.dataset.num = s.numero;
+        btn.innerHTML = `S${s.numero}<br><small style="font-family:'Barlow Condensed',sans-serif;font-size:.6rem;opacity:.6;">${s.fechas}</small>`;
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.week-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          document.getElementById('weekInfo').textContent = `Semana ${s.numero} · ${s.fechas}`;
+          cargarRendimiento(s.numero);
+        });
+        wrap.appendChild(btn);
+      });
+    }
+
+    async function cargarRendimiento(n) {
+      const loadEl  = document.getElementById('rendLoading');
+      const tableEl = document.getElementById('tablaRendimiento');
+      const tbody   = document.getElementById('rendCuerpo');
+      loadEl.innerHTML = '<div class="spin">⚙️</div><br>Cargando...'; loadEl.style.display = 'block'; tableEl.style.display = 'none';
+      try {
+        const res  = await fetch(`${API_URL}/ventas/admin/semana/${n}`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+        if (!res.ok) { loadEl.innerHTML = `❌ ${data.error || 'Error.'}`; return; }
+        const tiendas = data.tiendas || [];
+        document.getElementById('rendTitle').textContent = `📈 Semana ${n} — ${tiendas.length} tiendas`;
+        document.getElementById('rendBadge').textContent = `${tiendas.reduce((a,t) => a+(t.cumplieron||0),0)} al 100%`;
+        if (!tiendas.length) { loadEl.innerHTML = '📭 Sin datos para esta semana.'; return; }
+        tbody.innerHTML = tiendas.map((t,i) => {
+          const pct = t.total > 0 ? Math.round((t.cumplieron/t.total)*100) : 0;
+          const cls = pct===100?'full':pct>0?'partial':'none';
+          return `<tr>
+            <td class="td-codigo">${i+1}</td>
+            <td class="td-nombre"><strong>${t.nombre}</strong></td>
+            <td style="color:rgba(255,255,255,.5);font-family:'Barlow Condensed',sans-serif;">${t.region||'—'}</td>
+            <td style="text-align:center;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:rgba(255,255,255,.6);">${t.total}</td>
+            <td style="text-align:center;" class="td-pct ${cls}">⭐ ${t.cumplieron}</td>
+            <td><span class="td-pct ${cls}" style="font-size:.85rem;">${pct}%</span>
+              <span class="pct-bar-wrap"><span class="pct-bar" style="width:${pct}%;background:${pct===100?'var(--p-green)':pct>0?'var(--p-orange)':'rgba(255,255,255,.15)'}"></span></span>
+            </td></tr>`;
+        }).join('');
+        loadEl.style.display = 'none'; tableEl.style.display = 'table';
+      } catch { loadEl.innerHTML = '❌ Error de conexión.'; }
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       TAB 3 — NOTIFICACIONES
+    ══════════════════════════════════════════════════════════ */
+    async function cargarNotificaciones() {
+      const loadEl  = document.getElementById('notifLoading');
+      const emptyEl = document.getElementById('notifEmpty');
+      const gridEl  = document.getElementById('notifGrid');
+      loadEl.style.display = 'block'; emptyEl.style.display = 'none'; gridEl.style.display = 'none';
+      try {
+        const res  = await fetch(`${API_URL}/notificaciones/pendientes`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+        if (!res.ok) { loadEl.innerHTML = `❌ ${data.error||'Error.'}`; return; }
+        loadEl.style.display = 'none';
+        if (data.semana) document.getElementById('notifSemanaInfo').textContent = `Semana activa: ${data.semana.nombre||'Semana '+data.semana.numero}`;
+        const tiendas = data.tiendas || [];
+        if (!tiendas.length) { emptyEl.style.display = 'block'; return; }
+        window._notifData = {};
+        gridEl.innerHTML = tiendas.map(t => {
+          window._notifData[t.tienda_id] = { empleados: t.empleados, semana: data.semana };
+          return `
+          <div class="notif-card" id="card-${t.tienda_id}">
+            <div class="notif-card-head">
+              <h4>🏬 ${t.nombre}</h4>
+              <span class="count-badge">⭐ ${t.empleados.length}</span>
+            </div>
+            <div class="notif-card-body">
+              <div class="notif-email">📧 ${t.email||'Sin email'}</div>
+              <ul class="notif-emp-list">${(t.empleados||[]).map(e=>`<li><strong>${e.nombre}</strong> <span>· ${e.cargo||'Asesor'}</span></li>`).join('')}</ul>
+              <button class="btn-send" id="btn-${t.tienda_id}"
+                onclick="enviarNotificacion('${t.tienda_id}')">
+                📧 Enviar Notificación
+              </button>
+            </div>
+          </div>`;
+        }).join('');
+        gridEl.style.display = 'grid';
+      } catch { loadEl.innerHTML = '❌ Error de conexión.'; }
+    }
+
+    async function enviarNotificacion(tiendaId) {
+      const btn = document.getElementById(`btn-${tiendaId}`);
+      btn.disabled = true; btn.textContent = '⏳ Enviando...';
+      const info = window._notifData[tiendaId] || {};
+      const semana = info.semana || {};
+      try {
+        const res = await fetch(`${API_URL}/notificaciones/enviar/${tiendaId}`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            empleados: info.empleados || [],
+            semana_nombre: semana.nombre || `Semana ${semana.numero || ''}`,
+            semana_numero: semana.numero || 0
+          })
+        });
+        const data = await res.json();
+        if (res.ok) { btn.classList.add('sent'); btn.textContent = '✅ Enviada'; showToast(`✅ Email enviado a ${data.email}`); }
+        else { btn.disabled = false; btn.textContent = '📧 Enviar Notificación'; showToast(`❌ ${data.error||'Error.'}`); }
+      } catch { btn.disabled = false; btn.textContent = '📧 Enviar Notificación'; showToast('❌ Error de conexión.'); }
+    }
+
+    /* ── INIT ── */
+    window.onload = () => { cargarTiendasAdmin(); buildWeekSelector(); };
   </script>
 </body>
 </html>

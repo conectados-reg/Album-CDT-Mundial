@@ -139,8 +139,80 @@
       color: rgba(255,255,255,.45);
       margin-bottom: .45rem;
     }
-    .form-group select,
-    .form-group input[type="password"] {
+
+    /* ── SEARCH SELECT ── */
+    .search-select-wrapper { position: relative; }
+    .search-input-wrap { position: relative; }
+    .search-tienda-input {
+      width: 100%;
+      background: rgba(255,255,255,.05);
+      border: 1.5px solid rgba(255,255,255,.1);
+      border-radius: 10px;
+      color: #fff;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .92rem; letter-spacing: .03em;
+      padding: .7rem 1rem .7rem 2.6rem;
+      outline: none;
+      transition: border-color .2s, background .2s, box-shadow .2s;
+    }
+    .search-tienda-input:focus {
+      border-color: var(--p-orange);
+      background: rgba(247,168,0,.06);
+      box-shadow: 0 0 0 3px rgba(247,168,0,.1);
+    }
+    .search-tienda-input::placeholder { color: rgba(255,255,255,.25); }
+    .search-tienda-input.has-value { border-color: rgba(247,168,0,.45); color: #fff; }
+    .search-icon {
+      position: absolute; left: .9rem; top: 50%; transform: translateY(-50%);
+      color: rgba(255,255,255,.35); font-size: .9rem; pointer-events: none;
+    }
+    .search-results {
+      display: none;
+      position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+      background: #0b1940;
+      border: 1.5px solid rgba(247,168,0,.3);
+      border-radius: 10px;
+      z-index: 9999;
+      box-shadow: 0 16px 48px rgba(0,0,0,.8);
+      max-height: 260px;
+      overflow-y: auto;
+    }
+    .search-results.open { display: block; }
+    .search-results::-webkit-scrollbar { width: 4px; }
+    .search-results::-webkit-scrollbar-thumb { background: rgba(247,168,0,.3); border-radius: 2px; }
+    .search-result-item {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .9rem; letter-spacing: .03em;
+      color: rgba(255,255,255,.85);
+      padding: .6rem 1rem;
+      cursor: pointer;
+      display: flex; align-items: center; gap: .6rem;
+      transition: background .15s;
+      border-bottom: 1px solid rgba(255,255,255,.04);
+    }
+    .search-result-item:last-child { border-bottom: none; }
+    .search-result-item:hover { background: rgba(247,168,0,.1); color: #fff; }
+    .search-result-item .res-flag { font-size: .8rem; flex-shrink: 0; }
+    .search-result-item .res-name { flex: 1; }
+    .search-result-item .res-region { font-size: .72rem; color: rgba(255,255,255,.3); }
+    .search-no-results {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .85rem; color: rgba(255,255,255,.3);
+      padding: 1.2rem; text-align: center; font-style: italic;
+    }
+    #btnAdmin {
+      position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9998;
+      background: rgba(0,13,46,.85); border: 1.5px solid rgba(247,168,0,.25);
+      color: rgba(255,255,255,.35); font-family: 'Barlow Condensed', sans-serif;
+      font-size: .7rem; letter-spacing: .1em; padding: .45rem .9rem;
+      border-radius: 20px; cursor: pointer; backdrop-filter: blur(8px);
+      transition: all .2s;
+    }
+    #btnAdmin:hover { border-color: rgba(247,168,0,.6); color: rgba(247,168,0,.9); background: rgba(0,13,46,.95); }
+
+    /* ── PASSWORD ── */
+    .form-group input[type="password"],
+    .form-group input[type="text"] {
       width: 100%;
       background: rgba(255,255,255,.05);
       border: 1.5px solid rgba(255,255,255,.1);
@@ -254,34 +326,17 @@
 
     <form id="loginForm">
       <div class="form-group">
-        <label for="selectTienda">Sucursal o cuenta</label>
-        <select id="selectTienda" required>
-          <option value="">— Elige una cuenta —</option>
-          <option value="admin@sportline.com">🔐 Cuenta Administrador</option>
-
-          <optgroup label="🇵🇦 Panamá">
-            <option value="albrook.mega@sportline.com.pa">Albrook Megastore</option>
-            <option value="multiplaza@sportline.com.pa">Multiplaza Pacific</option>
-            <option value="metromall@sportline.com.pa">Metromall</option>
-          </optgroup>
-
-          <optgroup label="🇨🇷 Costa Rica">
-            <option value="oxigeno@sportline.co.cr">Oxígeno Human Playground</option>
-            <option value="multiplaza.escazu@sportline.co.cr">Multiplaza Escazú</option>
-          </optgroup>
-
-          <optgroup label="🇬🇹 Guatemala">
-            <option value="miraflores@sportline.com.gt">Miraflores</option>
-            <option value="oakland@sportline.com.gt">Oakland Mall</option>
-          </optgroup>
-
-          <optgroup label="🇩🇴 República Dominicana">
-            <option value="agora@sportline.com.do">Ágora Mall</option>
-          </optgroup>
-        </select>
+        <label>Sucursal o cuenta</label>
+        <div class="search-select-wrapper">
+          <div class="search-input-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchTienda" class="search-tienda-input"
+              placeholder="Escribe el nombre de tu sucursal…" autocomplete="off">
+          </div>
+          <div class="search-results" id="searchResults"></div>
+        </div>
+        <input type="hidden" id="txtEmail" value="">
       </div>
-
-      <input type="hidden" id="txtEmail" value="">
 
       <div class="form-group">
         <label for="txtPassword">Contraseña de acceso</label>
@@ -302,17 +357,106 @@
   <script>
     const API_URL = "https://album-cdt-mundial.onrender.com/api";
 
-    document.getElementById('selectTienda').addEventListener('change', function() {
-      document.getElementById('txtEmail').value = this.value;
+    /* ── Búsqueda de sucursal ── */
+    const searchInput   = document.getElementById('searchTienda');
+    const searchResults = document.getElementById('searchResults');
+    const hidden        = document.getElementById('txtEmail');
+    let selectedValue = '';
+    let allTiendas    = [];
+
+    function bandera(region) {
+      const r = (region || '').toLowerCase();
+      if (r.includes('panam'))  return '🇵🇦';
+      if (r.includes('colom'))  return '🇨🇴';
+      if (r.includes('costa'))  return '🇨🇷';
+      if (r.includes('guatem')) return '🇬🇹';
+      if (r.includes('domini')) return '🇩🇴';
+      if (r.includes('hondur')) return '🇭🇳';
+      if (r.includes('salvad')) return '🇸🇻';
+      if (r.includes('nicara')) return '🇳🇮';
+      return '🌍';
+    }
+
+    function renderResults(lista) {
+      if (!lista.length) {
+        searchResults.innerHTML = '<div class="search-no-results">No se encontraron sucursales</div>';
+      } else {
+        searchResults.innerHTML = lista.slice(0, 40).map(t => `
+          <div class="search-result-item" data-email="${t.email}" data-nombre="${t.nombre}">
+            <span class="res-flag">${bandera(t.region)}</span>
+            <span class="res-name">${t.nombre}</span>
+            <span class="res-region">${t.region || ''}</span>
+          </div>`).join('');
+        searchResults.querySelectorAll('.search-result-item').forEach(item => {
+          item.addEventListener('click', () => {
+            selectedValue     = item.dataset.email;
+            hidden.value      = selectedValue;
+            searchInput.value = item.dataset.nombre;
+            searchInput.classList.add('has-value');
+            searchResults.classList.remove('open');
+            document.getElementById('txtPassword').focus();
+          });
+        });
+      }
+      searchResults.classList.add('open');
+    }
+
+    searchInput.addEventListener('input', () => {
+      const q = searchInput.value.trim().toLowerCase();
+      selectedValue = ''; hidden.value = '';
+      searchInput.classList.remove('has-value');
+      if (!q) { searchResults.classList.remove('open'); return; }
+      renderResults(allTiendas.filter(t =>
+        t.nombre.toLowerCase().includes(q) || (t.region || '').toLowerCase().includes(q)
+      ));
     });
 
-    document.getElementById('loginForm').onsubmit = async (e) => {
+    searchInput.addEventListener('focus', () => {
+      const q = searchInput.value.trim().toLowerCase();
+      if (q && allTiendas.length) renderResults(allTiendas.filter(t => t.nombre.toLowerCase().includes(q)));
+    });
+
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.search-select-wrapper')) searchResults.classList.remove('open');
+    });
+
+    function accesAdmin() {
+      selectedValue     = 'admin@sportline.com';
+      hidden.value      = 'admin@sportline.com';
+      searchInput.value = '🔐 Administrador';
+      searchInput.classList.add('has-value');
+      document.getElementById('txtPassword').focus();
+    }
+
+    async function cargarDropdown() {
+      try {
+        const res  = await fetch(`${API_URL}/tiendas/lista`);
+        const data = await res.json();
+        allTiendas = data.tiendas || [];
+        searchInput.placeholder = `Busca entre ${allTiendas.length} sucursales…`;
+      } catch {
+        searchInput.placeholder = 'Error al cargar sucursales';
+      }
+    }
+
+    cargarDropdown();
+
+    /* ── Login ── */
+    let pendingRedirect = null;
+
+    document.getElementById('loginForm').onsubmit = async e => {
       e.preventDefault();
 
-      const emailSelected = document.getElementById('selectTienda').value;
-      const password      = document.getElementById('txtPassword').value;
-      const errorAlerta   = document.getElementById('errorAlerta');
-      const btn           = document.querySelector('.btn-submit');
+      if (!selectedValue) {
+        const err = document.getElementById('errorAlerta');
+        err.textContent = '❌ Por favor elige una sucursal o cuenta.';
+        err.style.display = 'block';
+        return;
+      }
+
+      const password    = document.getElementById('txtPassword').value;
+      const errorAlerta = document.getElementById('errorAlerta');
+      const btn         = document.querySelector('.btn-submit');
 
       errorAlerta.style.display = 'none';
       btn.textContent = 'Verificando...';
@@ -322,7 +466,7 @@
         const response = await fetch(`${API_URL}/auth/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: emailSelected, password })
+          body: JSON.stringify({ email: selectedValue, password })
         });
 
         const data = await response.json();

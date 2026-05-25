@@ -303,6 +303,27 @@
       .album-grid { grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); gap: .8rem; }
       nav { padding: .5rem 1rem; }
     }
+    .album-search-bar {
+      max-width: 420px;
+      position: relative;
+      margin-bottom: 1.2rem;
+    }
+    .album-search-bar .s-icon { position: absolute; left: .9rem; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,.35); pointer-events: none; }
+    .album-search-input {
+      width: 100%;
+      background: rgba(255,255,255,.05);
+      border: 1.5px solid rgba(255,255,255,.1);
+      border-radius: 10px;
+      color: #fff;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .92rem;
+      letter-spacing: .03em;
+      padding: .65rem 1rem .65rem 2.6rem;
+      outline: none;
+      transition: border-color .2s, background .2s, box-shadow .2s;
+    }
+    .album-search-input:focus { border-color: var(--p-orange); background: rgba(247,168,0,.06); box-shadow: 0 0 0 3px rgba(247,168,0,.1); }
+    .album-search-input::placeholder { color: rgba(255,255,255,.25); }
   </style>
 </head>
 <body>
@@ -349,9 +370,16 @@
   <div class="section-wrapper">
     <div class="section-title-bar">
       <h2>⭐ TUS ESTRELLAS</h2>
-      <span class="section-badge" id="badge-count">8 estrellas</span>
+      <span class="section-badge" id="badgeCount">Cargando...</span>
+      <span class="hint-badge">📷 Haz clic en una casilla desbloqueada para subir la foto</span>
     </div>
-    <div class="album-grid" id="wrapperAlbum"></div>
+    <div class="album-search-bar">
+      <span class="s-icon">🔍</span>
+      <input type="text" id="searchEmpleado" class="album-search-input" placeholder="Buscar colaborador…" autocomplete="off">
+    </div>
+    <div class="album-grid" id="wrapperAlbum">
+      <div class="loading-msg"><span class="spin">⚙️</span> Cargando álbum...</div>
+    </div>
   </div>
 
   <footer>Álbum Estrellas · Sportline · Mundial 2026</footer>
@@ -429,103 +457,104 @@
       return '⭐';
     }
 
-    function renderizarAlbum(empleados, semana) {
-      const wrapper = document.getElementById('wrapperAlbum');
-      wrapper.innerHTML = '';
+    let _todosEmpleados = [], _semanaActual = null;
 
-      if (!empleados.length) {
-        wrapper.innerHTML = `
-          <div style="grid-column:1/-1;text-align:center;padding:3rem 1rem;
-               font-family:'Barlow Condensed',sans-serif;font-size:.9rem;
-               letter-spacing:.06em;color:rgba(255,255,255,.35);">
-            📋 No hay empleados asignados a tu sucursal para ${semana ? semana.nombre : 'esta semana'}.<br>
-            <span style="font-size:.75rem;opacity:.6;">Contacta al administrador para registrar el equipo.</span>
-          </div>`;
-        return;
-      }
-
-      const desbloqueados = empleados.filter(e => e.desbloqueado).length;
-      document.getElementById('valDesbloqueadas').textContent = desbloqueados;
-      document.getElementById('badge-count').textContent = `${empleados.length} figuritas`;
-
-      empleados.forEach(emp => {
-        const icono = iconoPorCargo(emp.cargo);
-        const esGold = emp.desbloqueado;
-        const imgTag = emp.foto_url
-          ? `<img src="${emp.foto_url}" alt="${emp.nombre}"
-                  style="width:80px;height:80px;border-radius:50%;object-fit:cover;
-                         border:2px solid rgba(247,168,0,.4);"
-                  onerror="this.outerHTML='<span class=\\'card-icon\\'>${icono}</span>'">`
-          : `<span class="card-icon">${icono}</span>`;
-
-        wrapper.innerHTML += `
-          <div class="sticker-card ${emp.desbloqueado ? '' : 'locked'} ${esGold ? 'gold' : ''}">
-            <div class="card-band"></div>
-            <div class="card-num">#${String(emp.numero).padStart(3,'0')}</div>
-            <div class="card-watermark">SL</div>
-            <div class="lock-badge">🔒</div>
-            <div class="card-photo">${imgTag}</div>
-            <div class="card-footer">
-              <div class="card-code">${emp.cargo || 'Asesor de Ventas'}</div>
-              <div class="card-name">${emp.nombre}</div>
-            </div>
-          </div>`;
-      });
-    }
-
-    async function inicializarAlbum() {
-      const nombreTienda = localStorage.getItem('nombreTienda') || 'SPORTLINE SUCURSAL';
-      document.getElementById('lblTienda').textContent = nombreTienda;
-
+    async function cargarAlbum() {
+      document.getElementById('lblTienda').textContent = localStorage.getItem('nombreTienda') || 'SPORTLINE';
       try {
-        const res = await fetch(`${API_URL}/album/`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-
-        if (res.status === 401) {
-          localStorage.clear();
-          window.location.href = 'index.html';
-          return;
-        }
-
-        if (!res.ok) throw new Error('API error');
-
+        const res = await fetch(`${API_URL}/album/`, { headers: { 'Authorization': `Bearer ${token}` } });
+        if (res.status === 401) { localStorage.clear(); window.location.href = 'index.html'; return; }
+        if (!res.ok) throw new Error();
         const data = await res.json();
-
-        // Actualizar stats con datos reales
-        const semanaLabel = data.semana ? data.semana.nombre : 'S—';
-        document.getElementById('valDesbloqueadas').textContent = data.desbloqueados ?? 0;
-        document.getElementById('valMeta').textContent =
-          data.total > 0 ? `${Math.round((data.desbloqueados / data.total) * 100)}%` : '—';
-        document.querySelector('.stat-n:last-of-type, #semanaLabel') && null;
-        // Actualiza el tercer stat card con la semana real
-        const statCards = document.querySelectorAll('.stat-n');
-        if (statCards[2]) statCards[2].textContent = data.semana ? `S${data.semana.numero}` : 'S—';
-
-        renderizarAlbum(data.empleados || [], data.semana);
-
+        _todosEmpleados = data.empleados || [];
+        _semanaActual   = data.semana;
+        renderAlbum(_todosEmpleados, _semanaActual);
       } catch {
-        // Fallback visual mientras el backend está en frío (Render free tier)
-        console.warn('Backend no disponible, mostrando demo.');
-        document.querySelector('.stat-n:nth-child(1)') && null;
-
-        const demo = [
-          { numero:1, nombre:'Ana García',      cargo:'Gerente de Tienda',    desbloqueado:true,  foto_url:null },
-          { numero:2, nombre:'Carlos López',    cargo:'Asesor de Ventas',     desbloqueado:true,  foto_url:null },
-          { numero:3, nombre:'María Rodríguez', cargo:'Supervisora',          desbloqueado:true,  foto_url:null },
-          { numero:4, nombre:'José Martínez',   cargo:'Asesor de Ventas',     desbloqueado:false, foto_url:null },
-          { numero:5, nombre:'Laura Pérez',     cargo:'Cajera',               desbloqueado:false, foto_url:null },
-          { numero:6, nombre:'Diego Torres',    cargo:'Visual Merchandiser',  desbloqueado:false, foto_url:null },
+        _todosEmpleados = [
+          { id: 'd1', numero: 1, nombre: 'Ana García',      cargo: 'Gerente',          desbloqueado: true,  foto_url: null },
+          { id: 'd2', numero: 2, nombre: 'Carlos López',    cargo: 'Asesor de Ventas', desbloqueado: true,  foto_url: null },
+          { id: 'd3', numero: 3, nombre: 'María Rodríguez', cargo: 'Supervisora',      desbloqueado: false, foto_url: null },
         ];
-
-        document.getElementById('valDesbloqueadas').textContent = 3;
-        document.getElementById('valMeta').textContent = '50%';
-        document.getElementById('badge-count').textContent = `${demo.length} figuritas (demo)`;
-        renderizarAlbum(demo, { nombre: 'Semana 2 — Demo' });
+        _semanaActual = { numero: 1 };
+        renderAlbum(_todosEmpleados, _semanaActual);
+        document.getElementById('badgeCount').textContent = '3 figuritas (demo)';
       }
     }
 
-    window.onload = inicializarAlbum;
+    document.getElementById('searchEmpleado').addEventListener('input', function() {
+      const q = this.value.trim().toLowerCase();
+      if (!q) { renderAlbum(_todosEmpleados, _semanaActual); return; }
+      renderAlbum(_todosEmpleados.filter(e => e.nombre.toLowerCase().includes(q) || (e.cargo || '').toLowerCase().includes(q)), _semanaActual);
+    });
+
+    /* ── MODAL FOTO ── */
+    function abrirModal(empId, nombre) {
+      empIdFoto = empId; fotoBase64 = null; fotoTipo = null;
+      document.getElementById('modalNombre').textContent = nombre;
+      document.getElementById('fotoPreview').style.display = 'none';
+      document.getElementById('btnSubir').style.display = 'none';
+      document.getElementById('alertFoto').style.display = 'none';
+      document.getElementById('fileInput').value = '';
+      document.getElementById('modalFoto').style.display = 'flex';
+    }
+
+    function cerrarModal() { document.getElementById('modalFoto').style.display = 'none'; }
+
+    document.getElementById('modalFoto').addEventListener('click', function(e) {
+      if (e.target === this) cerrarModal();
+    });
+
+    function previsualizarFoto(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      if (file.size > 5 * 1024 * 1024) { mostrarAlerta('La foto no puede superar 5 MB.'); return; }
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const max = 500;
+          let w = img.width, h = img.height;
+          if (w > h && w > max) { h = h * (max / w); w = max; }
+          else if (h > max) { w = w * (max / h); h = max; }
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+          fotoBase64 = dataUrl.split(',')[1];
+          fotoTipo = 'image/jpeg';
+          const preview = document.getElementById('fotoPreview');
+          preview.src = dataUrl;
+          preview.style.display = 'block';
+          document.getElementById('btnSubir').style.display = 'block';
+          document.getElementById('alertFoto').style.display = 'none';
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function subirFoto() {
+      if (!fotoBase64 || !empIdFoto) return;
+      const btn = document.getElementById('btnSubir');
+      btn.textContent = 'Subiendo...'; btn.disabled = true;
+      try {
+        const res = await fetch(`${API_URL}/album/foto`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ empleado_id: empIdFoto, foto_base64: fotoBase64, tipo: fotoTipo })
+        });
+        if (res.status === 401) { localStorage.clear(); window.location.href = 'index.html'; return; }
+        if (!res.ok) throw new Error('API error');
+        mostrarAlerta('✅ Foto subida correctamente.', true);
+        cerrarModal();
+        await cargarAlbum();
+      } catch {
+        mostrarAlerta('❌ Error al subir la foto. Intenta de nuevo.');
+        btn.textContent = '⬆️ Subir al Álbum'; btn.disabled = false;
+      }
+    }
+
+    window.onload = cargarAlbum;
   </script>
 </body>
 </html>
