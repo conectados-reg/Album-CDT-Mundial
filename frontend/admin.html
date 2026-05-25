@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Álbum Estrellas — Panel Admin</title>
-  <link rel="icon" type="image/png" href="https://i.postimg.cc/hv6YBVfc/logo-sla.png">
+  <link rel="icon" type="image/png" href="logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -259,6 +259,23 @@
       .notif-grid { grid-template-columns: 1fr; }
       .tabs-bar { padding: .6rem 1rem 0; }
     }
+    .admin-search-wrap { position: relative; max-width: 380px; margin-bottom: 1rem; }
+    .admin-search-wrap .s-icon { position: absolute; left: .9rem; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,.35); pointer-events: none; }
+    .admin-search-input {
+      width: 100%;
+      background: rgba(255,255,255,.05);
+      border: 1.5px solid rgba(255,255,255,.1);
+      border-radius: 10px;
+      color: #fff;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .9rem;
+      letter-spacing: .03em;
+      padding: .6rem 1rem .6rem 2.5rem;
+      outline: none;
+      transition: border-color .2s, background .2s, box-shadow .2s;
+    }
+    .admin-search-input:focus { border-color: var(--p-orange); background: rgba(247,168,0,.06); box-shadow: 0 0 0 3px rgba(247,168,0,.1); }
+    .admin-search-input::placeholder { color: rgba(255,255,255,.25); }
   </style>
 </head>
 <body>
@@ -266,7 +283,7 @@
   <!-- NAVBAR -->
   <header>
     <div class="header-brand">
-      <img src="https://i.postimg.cc/hv6YBVfc/logo-sla.png" alt="SLA Corp"
+      <img src="logo.png" alt="SLA Corp"
         style="height:36px;width:auto;filter:drop-shadow(0 0 8px rgba(247,168,0,.5));"
         onerror="this.outerHTML='<span style=\'font-size:1.5rem;\'>📊</span>'">
       <div>
@@ -296,6 +313,10 @@
         </div>
       </div>
 
+      <div class="admin-search-wrap">
+        <span class="s-icon">🔍</span>
+        <input type="text" id="searchSucursal" class="admin-search-input" placeholder="Buscar sucursal o región…" autocomplete="off">
+      </div>
       <div class="table-card">
         <div class="table-card-header">
           <h3>⭐ Directorio Corporativo</h3>
@@ -422,6 +443,63 @@
       return '🌍';
     }
 
+    let _todasTiendas = [];
+
+    function renderTablaTiendas(tiendas) {
+      const tbody = document.getElementById('listaTiendasCuerpo');
+      tbody.innerHTML = '';
+      if (!tiendas.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:rgba(255,255,255,.3);padding:2rem;">No se encontraron sucursales.</td></tr>';
+        return;
+      }
+      const grupos = {};
+      tiendas.forEach(t => {
+        const k = t.region || 'General';
+        if (!grupos[k]) grupos[k] = [];
+        grupos[k].push(t);
+      });
+      let total = 0;
+      Object.entries(grupos).forEach(([pais, lista]) => {
+        total += lista.length;
+        tbody.innerHTML += `
+          <tr class="pais-header">
+            <td colspan="6">
+              <div class="pais-label">
+                ${banderaPais(pais)} ${pais.toUpperCase()}
+                <span class="pais-count">${lista.length} sucursal${lista.length !== 1 ? 'es' : ''}</span>
+              </div>
+            </td>
+          </tr>`;
+        lista.forEach(t => {
+          tbody.innerHTML += `
+            <tr class="row-tienda" id="row-${t.id}" onclick="toggleEmpleados('${t.id}')">
+              <td class="td-nombre"><strong>${t.nombre}</strong></td>
+              <td class="td-codigo">${t.codigo}</td>
+              <td class="td-email">${t.email || '—'}</td>
+              <td><span class="txt-clave">${t.clave || '------'}</span></td>
+              <td class="td-empleados">👥 ${t.total_empleados || 0}</td>
+              <td><span class="badge-activa">Activa</span></td>
+            </tr>
+            <tr class="row-empleados" id="emp-row-${t.id}" style="display:none;">
+              <td colspan="6">
+                <div class="emp-panel" id="emp-panel-${t.id}">
+                  <span class="emp-loading">Cargando personal...</span>
+                </div>
+              </td>
+            </tr>`;
+        });
+      });
+      document.getElementById('badge-count').textContent = `${total} sucursales`;
+    }
+
+    document.getElementById('searchSucursal').addEventListener('input', function() {
+      const q = this.value.trim().toLowerCase();
+      renderTablaTiendas(q
+        ? _todasTiendas.filter(t => t.nombre.toLowerCase().includes(q) || (t.region || '').toLowerCase().includes(q) || (t.codigo || '').toLowerCase().includes(q))
+        : _todasTiendas
+      );
+    });
+
     async function cargarTiendasAdmin() {
       try {
         const res  = await fetch(`${API_URL}/tiendas/`, { headers: { 'Authorization': `Bearer ${token}` } });
@@ -429,58 +507,8 @@
 
         if (!res.ok) { document.getElementById('loadingState').innerHTML = '❌ Error al leer datos del servidor.'; return; }
 
-        const tbody = document.getElementById('listaTiendasCuerpo');
-        tbody.innerHTML = '';
-
-        const tiendas = data.tiendas || [];
-
-        if (!tiendas.length) {
-          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:rgba(255,255,255,.3);padding:2rem;">No hay tiendas registradas.</td></tr>';
-        } else {
-          /* Agrupar por región/país */
-          const grupos = {};
-          tiendas.forEach(t => {
-            const k = t.region || 'General';
-            if (!grupos[k]) grupos[k] = [];
-            grupos[k].push(t);
-          });
-
-          let total = 0;
-          Object.entries(grupos).forEach(([pais, lista]) => {
-            total += lista.length;
-            /* Fila de cabecera de país */
-            tbody.innerHTML += `
-              <tr class="pais-header">
-                <td colspan="6">
-                  <div class="pais-label">
-                    ${banderaPais(pais)} ${pais.toUpperCase()}
-                    <span class="pais-count">${lista.length} sucursal${lista.length !== 1 ? 'es' : ''}</span>
-                  </div>
-                </td>
-              </tr>`;
-
-            lista.forEach(t => {
-              tbody.innerHTML += `
-                <tr class="row-tienda" id="row-${t.id}" onclick="toggleEmpleados('${t.id}')">
-                  <td class="td-nombre"><strong>${t.nombre}</strong></td>
-                  <td class="td-codigo">${t.codigo}</td>
-                  <td class="td-email">${t.email || '—'}</td>
-                  <td><span class="txt-clave">${t.clave || '------'}</span></td>
-                  <td class="td-empleados">👥 ${t.total_empleados || 0}</td>
-                  <td><span class="badge-activa">Activa</span></td>
-                </tr>
-                <tr class="row-empleados" id="emp-row-${t.id}" style="display:none;">
-                  <td colspan="6">
-                    <div class="emp-panel" id="emp-panel-${t.id}">
-                      <span class="emp-loading">Cargando personal...</span>
-                    </div>
-                  </td>
-                </tr>`;
-            });
-          });
-
-          document.getElementById('badge-count').textContent = `${total} sucursales`;
-        }
+        _todasTiendas = data.tiendas || [];
+        renderTablaTiendas(_todasTiendas);
 
         document.getElementById('loadingState').style.display = 'none';
         document.getElementById('tablaTiendas').style.display = 'table';
