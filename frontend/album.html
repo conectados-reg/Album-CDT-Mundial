@@ -453,6 +453,62 @@
 
     let _todosEmpleados = [], _semanaActual = null;
 
+    function renderAlbum(empleados, semana) {
+      const wrapper     = document.getElementById('wrapperAlbum');
+      const total       = empleados.length;
+      const desbloq     = empleados.filter(e => e.desbloqueado).length;
+      const pctMeta     = total > 0 ? Math.round((desbloq / total) * 100) : 0;
+      const semanaLabel = semana ? `S${semana.numero}` : '—';
+
+      document.getElementById('valDesbloqueadas').textContent = desbloq;
+      document.getElementById('valMeta').textContent          = pctMeta + '%';
+      document.getElementById('badgeCount').textContent       = `${total} figurita${total !== 1 ? 's' : ''}`;
+
+      // Actualizar periodo de medición
+      const periodoEl = document.querySelector('.stat-card:last-child .stat-n');
+      if (periodoEl) periodoEl.textContent = semanaLabel;
+
+      if (!total) {
+        wrapper.innerHTML = '<div class="loading-msg">📭 Sin colaboradores registrados aún. El álbum se actualizará cuando lleguen los datos del sistema.</div>';
+        return;
+      }
+
+      wrapper.innerHTML = empleados.map(emp => {
+        const icono    = iconoPorCargo(emp.cargo);
+        const numStr   = String(emp.numero || 1).padStart(3, '0');
+        const cargoTxt = emp.cargo || 'Asesor de Ventas';
+        const nombreEsc = emp.nombre.replace(/'/g, "\\'");
+
+        if (!emp.desbloqueado) {
+          return `
+            <div class="sticker-card locked">
+              <div class="card-band"></div>
+              <span class="card-num">#${numStr}</span>
+              <div class="card-photo"><div class="card-icon">🔒</div></div>
+              <div class="card-footer">
+                <div class="card-code">${cargoTxt}</div>
+                <div class="card-name">${emp.nombre}</div>
+              </div>
+            </div>`;
+        }
+
+        const fotoContent = emp.foto_url
+          ? `<img src="${emp.foto_url}" alt="${emp.nombre}" style="width:100%;height:100%;object-fit:cover;border-radius:6px;">`
+          : `<div class="card-icon">${icono}</div>`;
+
+        return `
+          <div class="sticker-card gold" onclick="abrirModal('${emp.id}', '${nombreEsc}')">
+            <div class="card-band"></div>
+            <span class="card-num">#${numStr}</span>
+            <div class="card-photo">${fotoContent}</div>
+            <div class="card-footer">
+              <div class="card-code">${cargoTxt}</div>
+              <div class="card-name">${emp.nombre}</div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
     async function cargarAlbum() {
       document.getElementById('lblTienda').textContent = localStorage.getItem('nombreTienda') || 'SPORTLINE';
       try {
@@ -464,14 +520,9 @@
         _semanaActual   = data.semana;
         renderAlbum(_todosEmpleados, _semanaActual);
       } catch {
-        _todosEmpleados = [
-          { id: 'd1', numero: 1, nombre: 'Ana García',      cargo: 'Gerente',          desbloqueado: true,  foto_url: null },
-          { id: 'd2', numero: 2, nombre: 'Carlos López',    cargo: 'Asesor de Ventas', desbloqueado: true,  foto_url: null },
-          { id: 'd3', numero: 3, nombre: 'María Rodríguez', cargo: 'Supervisora',      desbloqueado: false, foto_url: null },
-        ];
-        _semanaActual = { numero: 1 };
-        renderAlbum(_todosEmpleados, _semanaActual);
-        document.getElementById('badgeCount').textContent = '3 figuritas (demo)';
+        document.getElementById('wrapperAlbum').innerHTML =
+          '<div class="loading-msg">❌ No se pudo conectar al servidor. Recarga la página en unos segundos.</div>';
+        document.getElementById('badgeCount').textContent = 'Error';
       }
     }
 
