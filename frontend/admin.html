@@ -6,6 +6,7 @@
   <title>Álbum Estrellas — Panel Admin</title>
   <link rel="icon" type="image/png" href="logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
   <style>
     :root {
       --p-navy:   #001f5e;
@@ -322,7 +323,7 @@
         onerror="this.outerHTML='<span style=\'font-size:1.5rem;\'>📊</span>'">
       <div>
         <div class="header-title">PANEL <span>ADMIN</span></div>
-        <div class="header-sub">Álbum Estrellas · Sportline Corp</div>
+        <div class="header-sub">Álbum Estrellas · SLA Corp</div>
       </div>
     </div>
     <button class="btn-logout" id="btnLogout">✕ Cerrar Sesión</button>
@@ -330,9 +331,9 @@
 
   <!-- TABS BAR -->
   <div class="tabs-bar">
-    <button class="tab-btn active" data-tab="sucursales">🏬 Sucursales</button>
-    <button class="tab-btn" data-tab="rendimiento">📊 Rendimiento Semanal</button>
-    <button class="tab-btn" data-tab="notificaciones">📧 Notificaciones</button>
+    <button class="tab-btn active" data-tab="sucursales"><i class="fa-solid fa-store"></i> Sucursales</button>
+    <button class="tab-btn" data-tab="rendimiento"><i class="fa-solid fa-chart-column"></i> Rendimiento Semanal</button>
+    <button class="tab-btn" data-tab="notificaciones"><i class="fa-solid fa-envelope"></i> Notificaciones</button>
   </div>
 
   <div class="container">
@@ -340,10 +341,10 @@
     <!-- ══════════════════════ TAB 1: SUCURSALES ══════════════════════ -->
     <div class="tab-panel active" id="tab-sucursales">
       <div class="info-card">
-        <span class="info-card-icon">🏬</span>
+        <span class="info-card-icon"><i class="fa-solid fa-store"></i></span>
         <div class="info-card-text">
-          <h2>Sucursales por País</h2>
-          <p>Haz clic en una sucursal para ver su personal activo y cuántos cumplieron el 100% · Sportline</p>
+          <h2>Tiendas por País</h2>
+          <p>Haz clic en un país para ver sus tiendas, y en cada tienda para ver el personal activo y su cumplimiento.</p>
         </div>
       </div>
 
@@ -353,11 +354,11 @@
       </div>
       <div class="table-card">
         <div class="table-card-header">
-          <h3>⭐ Directorio Corporativo</h3>
+          <h3><i class="fa-solid fa-globe" style="color:var(--p-orange);margin-right:.4rem;font-size:.9rem;"></i>Tiendas por País</h3>
           <span class="table-count" id="badge-count">Cargando...</span>
         </div>
         <div id="loadingState" class="state-msg">
-          <div class="spin">⚙️</div><br>Cargando directorio de Sportline...
+          <i class="fa-solid fa-circle-notch fa-spin" style="font-size:1.4rem;color:var(--p-orange);"></i><br>Cargando directorio SLA Corp...
         </div>
         <div id="acordeonTiendas" style="display:none;"></div>
       </div>
@@ -366,7 +367,7 @@
     <!-- ══════════════════════ TAB 2: RENDIMIENTO ══════════════════════ -->
     <div class="tab-panel" id="tab-rendimiento">
       <div class="info-card">
-        <span class="info-card-icon">📊</span>
+        <span class="info-card-icon"><i class="fa-solid fa-chart-column"></i></span>
         <div class="info-card-text">
           <h2>Rendimiento Semanal por Tienda</h2>
           <p>Selecciona una semana para ver cuántos asesores cumplieron el 100% de su meta de ventas</p>
@@ -399,15 +400,15 @@
     <!-- ══════════════════════ TAB 3: NOTIFICACIONES ══════════════════════ -->
     <div class="tab-panel" id="tab-notificaciones">
       <div class="info-card">
-        <span class="info-card-icon">📧</span>
+        <span class="info-card-icon"><i class="fa-solid fa-envelope"></i></span>
         <div class="info-card-text">
           <h2>Notificaciones de Desbloqueo</h2>
           <p>Tiendas con asesores que cumplieron el 100% esta semana · Envía la notificación por email</p>
         </div>
       </div>
       <div id="notifSemanaInfo" class="week-info" style="margin-bottom:1rem;"></div>
-      <div id="notifLoading" class="state-msg"><div class="spin">⚙️</div><br>Cargando logros de esta semana...</div>
-      <div id="notifEmpty" class="state-msg" style="display:none;">🎯 No hay tiendas con asesores al 100% en la semana activa aún.</div>
+      <div id="notifLoading" class="state-msg"><i class="fa-solid fa-circle-notch fa-spin" style="font-size:1.4rem;color:var(--p-orange);"></i><br>Cargando logros de esta semana...</div>
+      <div id="notifEmpty" class="state-msg" style="display:none;"><i class="fa-regular fa-circle-check" style="font-size:1.4rem;color:rgba(255,255,255,.3);"></i><br>No hay tiendas con asesores al 100% en la semana activa aún.</div>
       <div id="notifAcordeon" style="display:none;"></div>
     </div>
 
@@ -453,14 +454,16 @@
 
     function banderaPais(region) {
       const r = (region || '').toLowerCase();
-      if (r.includes('panam'))  return '🇵🇦';
-      if (r.includes('colombia') || r.includes('colom')) return '🇨🇴';
-      if (r.includes('costa') || r.includes('rica')) return '🇨🇷';
-      if (r.includes('guatem')) return '🇬🇹';
-      if (r.includes('domini') || r.includes('rep')) return '🇩🇴';
-      if (r.includes('hondur')) return '🇭🇳';
-      if (r.includes('salvad')) return '🇸🇻';
-      return '🌍';
+      const mapa = [
+        ['panam',  'pa'], ['colom', 'co'], ['costa',  'cr'],
+        ['guatem', 'gt'], ['domini','do'], ['hondur', 'hn'],
+        ['salvad', 'sv'], ['nicara','ni'],
+      ];
+      for (const [key, code] of mapa) {
+        if (r.includes(key))
+          return `<img src="https://flagcdn.com/20x15/${code}.png" alt="${code}" style="width:20px;height:15px;border-radius:2px;vertical-align:middle;margin-right:6px;box-shadow:0 1px 3px rgba(0,0,0,.4);">`;
+      }
+      return '<i class="fa-solid fa-earth-americas" style="margin-right:6px;color:rgba(255,255,255,.4);font-size:.85rem;vertical-align:middle;"></i>';
     }
 
     let _todasTiendas = [];
@@ -490,8 +493,8 @@
           <div class="pais-acc-stores">
             ${lista.map(t => `
               <button class="store-acc-btn" id="store-btn-${t.id}" onclick="toggleStoreAcc('${t.id}')">
-                🏬 ${t.nombre}
-                <span style="font-family:'Barlow Condensed',sans-serif;font-size:.75rem;color:rgba(255,255,255,.3);">👥 ${t.total_empleados||0}</span>
+                <i class="fa-solid fa-store" style="color:var(--p-orange);font-size:.8rem;margin-right:4px;"></i>${t.nombre}
+                <span style="font-family:'Barlow Condensed',sans-serif;font-size:.75rem;color:rgba(255,255,255,.3);"><i class="fa-solid fa-users" style="font-size:.7rem;margin-right:2px;"></i>${t.total_empleados||0}</span>
                 <span class="acc-arrow">▶</span>
               </button>
               <div class="store-acc-panel" id="store-acc-${t.id}" style="display:none;">
@@ -573,14 +576,14 @@
       const semanaLabel = semana ? `· Semana ${semana.numero}` : '';
       const chips = empleados.map(e => `
         <div class="emp-chip ${e.desbloqueado ? 'ok' : ''}">
-          ${e.desbloqueado ? '<span class="badge-100">100%</span>' : '👤'}
+          ${e.desbloqueado ? '<span class="badge-100">100%</span>' : '<i class="fa-regular fa-user" style="opacity:.4;font-size:.75rem;"></i>'}
           ${e.nombre}
           <span class="chip-cargo">${e.cargo}</span>
         </div>`).join('');
 
       panel.innerHTML = `
         <div class="emp-summary">
-          <span class="emp-summary-count">⭐ ${nDesbloq}</span>
+          <span class="emp-summary-count"><i class="fa-solid fa-star" style="color:var(--p-orange);font-size:.8rem;margin-right:3px;"></i>${nDesbloq}</span>
           <span class="emp-summary-total">de ${empleados.length} al 100% ${semanaLabel}</span>
         </div>
         <div class="emp-grid">${chips}</div>`;
