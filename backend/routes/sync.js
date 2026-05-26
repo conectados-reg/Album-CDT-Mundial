@@ -1,7 +1,5 @@
 const router = require('express').Router();
-const { createClient } = require('@supabase/supabase-js');
-
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+const db = require('../db');
 
 function verificarSyncKey(req, res, next) {
   const key = req.headers['x-sync-key'];
@@ -11,43 +9,37 @@ function verificarSyncKey(req, res, next) {
   next();
 }
 
+async function crearObtenerTienda(tienda_codigo, nombre, pais) {
+  const codigo = tienda_codigo.toString().trim();
+  const emailAuto = `${codigo.toLowerCase()}@sportline.com`;
+
+  await db.query(
+    `INSERT INTO tiendas (codigo, nombre, region, email, password_hash, activa, total_empleados)
+     VALUES ($1, $2, $3, $4, 'sport123', true, 0)
+     ON CONFLICT (codigo) DO NOTHING`,
+    [codigo, nombre.toString().trim(), (pais || 'General').toString().trim(), emailAuto]
+  );
+
+  return db.one('SELECT id, nombre, total_empleados FROM tiendas WHERE codigo = $1', [codigo]);
+}
+
 /**
  * POST /api/sync/registrar-tienda
  * Crea la tienda si no existe, sin crear resultados ni fichas.
- * Body: { tienda_codigo, nombre, pais }
  */
 router.post('/registrar-tienda', verificarSyncKey, async (req, res) => {
   const { tienda_codigo, nombre, pais } = req.body;
   if (!tienda_codigo || !nombre) {
     return res.status(400).json({ error: 'Faltan campos: tienda_codigo, nombre.' });
   }
-
   try {
-    const { data: existente } = await supabase
-      .from('tiendas')
-      .select('id, nombre')
-      .eq('codigo', tienda_codigo.toString().trim())
-      .maybeSingle();
+    const existente = await db.one(
+      'SELECT id, nombre FROM tiendas WHERE codigo = $1',
+      [tienda_codigo.toString().trim()]
+    );
+    if (existente) return res.json({ ok: true, creada: false, tienda: existente.nombre });
 
-    if (existente) {
-      return res.json({ ok: true, creada: false, tienda: existente.nombre });
-    }
-
-    const emailAuto = `${tienda_codigo.toString().trim().toLowerCase()}@sportline.com`;
-    const { error: cErr } = await supabase.from('tiendas').insert({
-      codigo:          tienda_codigo.toString().trim(),
-      nombre:          nombre.toString().trim(),
-      region:          (pais || 'General').toString().trim(),
-      email:           emailAuto,
-      password_hash:   'sport123',
-      activa:          true,
-      total_empleados: 0
-    });
-
-    if (cErr && !cErr.message.includes('duplicate key')) {
-      return res.status(500).json({ error: 'No se pudo crear la tienda: ' + cErr.message });
-    }
-
+    await crearObtenerTienda(tienda_codigo, nombre, pais);
     res.json({ ok: true, creada: true, tienda: nombre.toString().trim() });
   } catch (err) {
     console.error('[Registrar Tienda]', err.message);
@@ -57,100 +49,65 @@ router.post('/registrar-tienda', verificarSyncKey, async (req, res) => {
 
 /**
  * POST /api/sync/resultados
- * Llamado desde Google Apps Script.
- * Body: { tienda_codigo: "1107", semana: 1, porcentaje: 99.04, total_empleados: 12 }
- * total_empleados es opcional — si se envía, actualiza la tienda y recalcula fichas.
+ * Body: { tienda_codigo, semana, porcentaje, nombre, pais, total_empleados? }
  */
 router.post('/resultados', verificarSyncKey, async (req, res) => {
-  const { tienda_codigo, semana: semanaNum, porcentaje, total_empleados } = req.body;
+  const { tienda_codigo, semana: semanaNum, porcentaje, total_empleados, nombre, pais } = req.body;
 
   if (!tienda_codigo || semanaNum == null || porcentaje == null) {
     return res.status(400).json({ error: 'Faltan campos: tienda_codigo, semana, porcentaje.' });
   }
 
   try {
-    const { data: tiendaEncontrada, error: tErr } = await supabase
-      .from('tiendas')
-      .select('id, nombre, total_empleados')
-      .eq('codigo', tienda_codigo.toString().trim())
-      .maybeSingle();
+    let tienda = await db.one(
+      'SELECT id, nombre, total_empleados FROM tiendas WHERE codigo = $1',
+      [tienda_codigo.toString().trim()]
+    );
 
-    if (tErr) return res.status(500).json({ error: tErr.message });
-
-    let tienda = tiendaEncontrada;
-
-    // Si la tienda no existe, crearla automáticamente con los datos del Sheet
     if (!tienda) {
-      const { nombre, pais } = req.body;
       if (!nombre) return res.status(404).json({ error: `Tienda "${tienda_codigo}" no encontrada. Incluye "nombre" en el payload para crearla.` });
-
-      const emailAuto = `${tienda_codigo.toString().trim().toLowerCase()}@sportline.com`;
-
-      // Intentar insertar — si ya existe por carrera paralela, ignorar el error
-      const { error: cErr } = await supabase
-        .from('tiendas')
-        .insert({
-          codigo:          tienda_codigo.toString().trim(),
-          nombre:          nombre.toString().trim(),
-          region:          (pais || 'General').toString().trim(),
-          email:           emailAuto,
-          password_hash:   'sport123',
-          activa:          true,
-          total_empleados: 0
-        });
-
-      if (cErr && !cErr.message.includes('duplicate key')) {
-        return res.status(500).json({ error: 'No se pudo crear la tienda: ' + cErr.message });
-      }
-
-      // Obtener la tienda (recién creada o ya existente)
-      const { data: tiendaReloaded } = await supabase
-        .from('tiendas')
-        .select('id, nombre, total_empleados')
-        .eq('codigo', tienda_codigo.toString().trim())
-        .single();
-
-      tienda = tiendaReloaded;
+      tienda = await crearObtenerTienda(tienda_codigo, nombre, pais);
     }
 
-    // Actualizar total_empleados si viene en el payload y es diferente al actual
     const nuevoTotal = parseInt(total_empleados);
     if (!isNaN(nuevoTotal) && nuevoTotal > 0 && nuevoTotal !== tienda.total_empleados) {
-      await supabase
-        .from('tiendas')
-        .update({ total_empleados: nuevoTotal })
-        .eq('id', tienda.id);
+      await db.query('UPDATE tiendas SET total_empleados = $1 WHERE id = $2', [nuevoTotal, tienda.id]);
     }
 
-    const { data: semana, error: sErr } = await supabase
-      .from('semanas')
-      .select('id, numero')
-      .eq('numero', parseInt(semanaNum))
-      .maybeSingle();
-
-    if (sErr || !semana) return res.status(404).json({ error: `Semana ${semanaNum} no encontrada.` });
+    const semana = await db.one('SELECT id, numero FROM semanas WHERE numero = $1', [parseInt(semanaNum)]);
+    if (!semana) return res.status(404).json({ error: `Semana ${semanaNum} no encontrada.` });
 
     const pct = parseFloat(porcentaje) || 0;
 
-    await supabase.from('resultados_tienda').upsert(
-      { tienda_id: tienda.id, semana_id: semana.id, porcentaje_cumplido: pct, cumplio_meta: pct >= 100, updated_at: new Date().toISOString() },
-      { onConflict: 'tienda_id,semana_id' }
+    await db.query(
+      `INSERT INTO resultados_tienda (tienda_id, semana_id, porcentaje_cumplido, cumplio_meta, updated_at)
+       VALUES ($1, $2, $3, $4, NOW())
+       ON CONFLICT (tienda_id, semana_id) DO UPDATE SET
+         porcentaje_cumplido = EXCLUDED.porcentaje_cumplido,
+         cumplio_meta = EXCLUDED.cumplio_meta,
+         updated_at = NOW()`,
+      [tienda.id, semana.id, pct, pct >= 100]
     );
 
-    // Desbloquear fichas si llega al 100% (redundante con el trigger, pero garantiza consistencia)
     let desbloqueadas = 0;
     if (pct >= 100) {
-      const { data: actualizadas } = await supabase
-        .from('fichas_tienda')
-        .update({ desbloqueado: true, fecha_desbloqueo: new Date().toISOString() })
-        .eq('tienda_id', tienda.id)
-        .eq('semana_id', semana.id)
-        .eq('desbloqueado', false)
-        .select('id');
-      desbloqueadas = actualizadas?.length || 0;
+      const { rows } = await db.query(
+        `UPDATE fichas_tienda SET desbloqueado = true, fecha_desbloqueo = NOW()
+         WHERE tienda_id = $1 AND semana_id = $2 AND desbloqueado = false
+         RETURNING id`,
+        [tienda.id, semana.id]
+      );
+      desbloqueadas = rows.length;
     }
 
-    res.json({ ok: true, tienda: tienda.nombre, semana: semana.numero, porcentaje: pct, fichas_desbloqueadas: desbloqueadas, total_empleados: !isNaN(nuevoTotal) && nuevoTotal > 0 ? nuevoTotal : tienda.total_empleados });
+    res.json({
+      ok: true,
+      tienda:           tienda.nombre,
+      semana:           semana.numero,
+      porcentaje:       pct,
+      fichas_desbloqueadas: desbloqueadas,
+      total_empleados:  !isNaN(nuevoTotal) && nuevoTotal > 0 ? nuevoTotal : tienda.total_empleados,
+    });
 
   } catch (err) {
     console.error('[Sync Resultados]', err.message);

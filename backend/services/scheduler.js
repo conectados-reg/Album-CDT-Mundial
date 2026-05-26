@@ -1,24 +1,14 @@
 require('dotenv').config();
-const cron                = require('node-cron');
-const { createClient }    = require('@supabase/supabase-js');
+const cron = require('node-cron');
+const db   = require('../db');
 const { leerDatosVentas } = require('./googlesheets');
-
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
-);
 
 async function procesarVentasSemanales() {
   console.log(`[${new Date().toISOString()}] Iniciando procesamiento masivo semanal...`);
 
   try {
-    const { data: semana, error: errSem } = await supabase
-      .from('semanas')
-      .select('*')
-      .eq('activa', true)
-      .single();
-
-    if (errSem || !semana) {
+    const semana = await db.one('SELECT * FROM semanas WHERE activa = true LIMIT 1');
+    if (!semana) {
       console.warn('[Scheduler] No hay ninguna semana configurada como activa.');
       return;
     }
@@ -26,15 +16,12 @@ async function procesarVentasSemanales() {
     const datosVentas = await leerDatosVentas();
     if (!datosVentas.length) return console.log('[Scheduler] Google Sheets está vacío.');
 
-    // TRAEMOS TODOS LOS EMPLEADOS ACTIVOS DE UNA SOLA VEZ (Evita el cuello de botella N+1)
-    const { data: todosLosEmpleados } = await supabase
-      .from('empleados')
-      .select('id, nombre, semana_asignada, activo, sheets_row_id')
-      .eq('activo', true);
-
+    const todosLosEmpleados = await db.all(
+      'SELECT id, nombre, semana_asignada, activo, sheets_row_id FROM empleados WHERE activo = true'
+    );
     const empleadoMap = new Map(todosLosEmpleados.map(e => [e.sheets_row_id, e]));
-    
-    const resultadosParaUpsert = [];
+
+    const resultadosParaUpsert   = [];
     const empleadosParaInactivar = [];
 
     for (const dato of datosVentas) {
@@ -45,7 +32,6 @@ async function procesarVentasSemanales() {
         empleadosParaInactivar.push(empleado.id);
         continue;
       }
-
       if (dato.semana !== semana.numero || empleado.semana_asignada !== semana.numero) continue;
 
       resultadosParaUpsert.push({
@@ -53,21 +39,32 @@ async function procesarVentasSemanales() {
         semana_id:           semana.id,
         porcentaje_cumplido: dato.porcentaje,
         cumplio_meta:        dato.porcentaje >= 100,
-        fecha_registro:      new Date().toISOString(),
       });
     }
 
-    // Guardado eficiente en bloques masivos
-    if (empleadosParaInactivar.length > 0) {
-      await supabase.from('empleados').update({ activo: false }).in('id', empleadosParaInactivar);
+    if (empleadosParaInactivar.length) {
+      await db.query('UPDATE empleados SET activo = false WHERE id = ANY($1)', [empleadosParaInactivar]);
     }
 
-    if (resultadosParaUpsert.length > 0) {
-      await supabase.from('resultados_ventas').upsert(resultadosParaUpsert, { onConflict: 'empleado_id,semana_id' });
+    if (resultadosParaUpsert.length) {
+      const BATCH = 100;
+      for (let i = 0; i < resultadosParaUpsert.length; i += BATCH) {
+        const chunk = resultadosParaUpsert.slice(i, i + BATCH);
+        const vals  = db.buildValues(chunk, 4);
+        const pms   = chunk.flatMap(r => [r.empleado_id, r.semana_id, r.porcentaje_cumplido, r.cumplio_meta]);
+        await db.query(
+          `INSERT INTO resultados_ventas (empleado_id, semana_id, porcentaje_cumplido, cumplio_meta, fecha_registro)
+           VALUES ${vals.replace(/\(([^)]+)\)/g, '($1, NOW())')}
+           ON CONFLICT (empleado_id, semana_id) DO UPDATE SET
+             porcentaje_cumplido = EXCLUDED.porcentaje_cumplido,
+             cumplio_meta = EXCLUDED.cumplio_meta`,
+          pms
+        );
+      }
     }
 
-    // Ejecuta la optimización automática que programaste en tu Postgres de Supabase
-    await supabase.rpc('desbloquear_espacios_automatico');
+    // Ejecuta la función PL/pgSQL que desbloquea espacios automáticamente
+    await db.query('SELECT desbloquear_espacios_automatico()');
     console.log('[Scheduler] Sincronización masiva finalizada con éxito.');
 
   } catch (err) {
@@ -76,7 +73,6 @@ async function procesarVentasSemanales() {
 }
 
 function iniciarScheduler() {
-  // Se ejecuta todos los lunes a las 6:00 AM hora Bogotá automáticamente
   cron.schedule('0 6 * * 1', procesarVentasSemanales, {
     timezone: 'America/Bogota',
   });

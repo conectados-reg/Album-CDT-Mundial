@@ -1,19 +1,7 @@
 const router = require('express').Router();
-const jwt = require('jsonwebtoken');
-const { createClient } = require('@supabase/supabase-js');
-
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
-
-function verificarToken(req, res, next) {
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) return res.status(401).json({ error: 'Token faltante.' });
-  try {
-    req.usuario = jwt.verify(token, process.env.JWT_SECRET || 'secretomocal123');
-    next();
-  } catch {
-    res.status(401).json({ error: 'Sesión inválida.' });
-  }
-}
+const { verificarToken } = require('./auth');
+const db  = require('../db');
+const gcs = require('../gcs');
 
 // GET /api/album — Fichas de la tienda agrupadas por semana
 router.get('/', verificarToken, async (req, res) => {
@@ -22,54 +10,46 @@ router.get('/', verificarToken, async (req, res) => {
   try {
     const tiendaId = req.usuario.id;
 
-    const { data: semanaActiva } = await supabase
-      .from('semanas').select('id, numero, nombre').eq('activa', true).maybeSingle();
+    const [semanaActiva, semanas, fichas, resultados] = await Promise.all([
+      db.one('SELECT id, numero, nombre FROM semanas WHERE activa = true LIMIT 1'),
+      db.all('SELECT id, numero, nombre FROM semanas ORDER BY numero'),
+      db.all(
+        `SELECT id, semana_id, numero_ficha, desbloqueado, foto_url
+         FROM fichas_tienda WHERE tienda_id = $1 ORDER BY semana_id, numero_ficha`,
+        [tiendaId]
+      ),
+      db.all(
+        'SELECT semana_id, porcentaje_cumplido FROM resultados_tienda WHERE tienda_id = $1',
+        [tiendaId]
+      ),
+    ]);
 
-    const { data: semanas } = await supabase
-      .from('semanas').select('id, numero, nombre').order('numero');
-    const semanaMap = {};
-    for (const s of (semanas || [])) semanaMap[s.id] = s;
-
-    const { data: fichas, error } = await supabase
-      .from('fichas_tienda')
-      .select('id, semana_id, numero_ficha, desbloqueado, foto_url')
-      .eq('tienda_id', tiendaId)
-      .order('semana_id')
-      .order('numero_ficha');
-
-    if (error) throw error;
-
-    const { data: resultados } = await supabase
-      .from('resultados_tienda')
-      .select('semana_id, porcentaje_cumplido')
-      .eq('tienda_id', tiendaId);
-    const resultadoMap = {};
-    for (const r of (resultados || [])) resultadoMap[r.semana_id] = r.porcentaje_cumplido;
-
-    const pctTienda = semanaActiva ? (resultadoMap[semanaActiva.id] ?? null) : null;
+    const semanaMap    = Object.fromEntries(semanas.map(s => [s.id, s]));
+    const resultadoMap = Object.fromEntries(resultados.map(r => [r.semana_id, r.porcentaje_cumplido]));
+    const pctTienda    = semanaActiva ? (resultadoMap[semanaActiva.id] ?? null) : null;
 
     let contador = 1;
-    const fichasConInfo = (fichas || []).map(f => {
+    const fichasConInfo = fichas.map(f => {
       const sem = semanaMap[f.semana_id] || {};
       return {
-        id: f.id,
-        numero: contador++,
-        semana_id: f.semana_id,
-        semana_numero: sem.numero || null,
-        semana_nombre: sem.nombre || null,
-        numero_ficha: f.numero_ficha,
-        desbloqueado: f.desbloqueado,
-        foto_url: f.foto_url || null,
-        porcentaje: resultadoMap[f.semana_id] ?? null,
+        id:             f.id,
+        numero:         contador++,
+        semana_id:      f.semana_id,
+        semana_numero:  sem.numero  || null,
+        semana_nombre:  sem.nombre  || null,
+        numero_ficha:   f.numero_ficha,
+        desbloqueado:   f.desbloqueado,
+        foto_url:       f.foto_url || null,
+        porcentaje:     resultadoMap[f.semana_id] ?? null,
       };
     });
 
     res.json({
-      fichas: fichasConInfo,
-      semana: semanaActiva || null,
+      fichas:           fichasConInfo,
+      semana:           semanaActiva || null,
       porcentaje_tienda: pctTienda,
-      total: fichasConInfo.length,
-      desbloqueadas: fichasConInfo.filter(f => f.desbloqueado).length,
+      total:            fichasConInfo.length,
+      desbloqueadas:    fichasConInfo.filter(f => f.desbloqueado).length,
     });
 
   } catch (err) {
@@ -85,38 +65,36 @@ router.get('/admin/:tienda_id', verificarToken, async (req, res) => {
   try {
     const tiendaId = req.params.tienda_id;
 
-    const { data: semanas } = await supabase
-      .from('semanas').select('id, numero, nombre').order('numero');
-    const semanaMap = {};
-    for (const s of (semanas || [])) semanaMap[s.id] = s;
+    const [semanas, fichas, resultados] = await Promise.all([
+      db.all('SELECT id, numero, nombre FROM semanas ORDER BY numero'),
+      db.all(
+        'SELECT semana_id, desbloqueado, foto_url FROM fichas_tienda WHERE tienda_id = $1',
+        [tiendaId]
+      ),
+      db.all(
+        'SELECT semana_id, porcentaje_cumplido FROM resultados_tienda WHERE tienda_id = $1',
+        [tiendaId]
+      ),
+    ]);
 
-    const { data: fichas } = await supabase
-      .from('fichas_tienda')
-      .select('semana_id, desbloqueado, foto_url')
-      .eq('tienda_id', tiendaId);
-
-    const { data: resultados } = await supabase
-      .from('resultados_tienda')
-      .select('semana_id, porcentaje_cumplido')
-      .eq('tienda_id', tiendaId);
-    const resultadoMap = {};
-    for (const r of (resultados || [])) resultadoMap[r.semana_id] = r.porcentaje_cumplido;
+    const semanaMap    = Object.fromEntries(semanas.map(s => [s.id, s]));
+    const resultadoMap = Object.fromEntries(resultados.map(r => [r.semana_id, r.porcentaje_cumplido]));
 
     const porSemana = {};
-    for (const f of (fichas || [])) {
+    for (const f of fichas) {
       const sem = semanaMap[f.semana_id];
       if (!sem) continue;
       if (!porSemana[sem.numero]) {
         porSemana[sem.numero] = {
           semana_numero: sem.numero,
           semana_nombre: sem.nombre,
-          porcentaje: resultadoMap[f.semana_id] ?? null,
+          porcentaje:    resultadoMap[f.semana_id] ?? null,
           total: 0, desbloqueadas: 0, con_foto: 0,
         };
       }
       porSemana[sem.numero].total++;
       if (f.desbloqueado) porSemana[sem.numero].desbloqueadas++;
-      if (f.foto_url) porSemana[sem.numero].con_foto++;
+      if (f.foto_url)     porSemana[sem.numero].con_foto++;
     }
 
     res.json({ semanas: Object.values(porSemana).sort((a, b) => a.semana_numero - b.semana_numero) });
@@ -126,34 +104,28 @@ router.get('/admin/:tienda_id', verificarToken, async (req, res) => {
   }
 });
 
-// POST /api/album/foto — subir foto a una ficha desbloqueada
+// POST /api/album/foto — subir foto a una ficha desbloqueada (Cloud Storage)
 router.post('/foto', verificarToken, async (req, res) => {
   if (req.usuario.rol !== 'tienda') return res.status(403).json({ error: 'Solo para sucursales.' });
   const { ficha_id, foto_base64, tipo } = req.body;
   if (!ficha_id || !foto_base64) return res.status(400).json({ error: 'Datos incompletos.' });
 
   try {
-    const { data: ficha } = await supabase
-      .from('fichas_tienda').select('id, tienda_id, desbloqueado').eq('id', ficha_id).single();
+    const ficha = await db.one(
+      'SELECT id, tienda_id, desbloqueado FROM fichas_tienda WHERE id = $1',
+      [ficha_id]
+    );
 
     if (!ficha || ficha.tienda_id !== req.usuario.id)
       return res.status(403).json({ error: 'Sin permiso sobre esta ficha.' });
     if (!ficha.desbloqueado)
       return res.status(403).json({ error: 'Esta ficha no está desbloqueada.' });
 
-    const buffer = Buffer.from(foto_base64, 'base64');
-    const ext = (tipo || '').includes('png') ? 'png' : 'jpg';
+    const ext      = (tipo || '').includes('png') ? 'png' : 'jpg';
     const filename = `ficha-${ficha_id}.${ext}`;
+    const fotoUrl  = await gcs.uploadBase64(filename, foto_base64, tipo || 'image/jpeg');
 
-    const { error: uploadError } = await supabase.storage
-      .from('fotos-empleados')
-      .upload(filename, buffer, { contentType: tipo || 'image/jpeg', upsert: true });
-    if (uploadError) throw uploadError;
-
-    const { data: urlData } = supabase.storage.from('fotos-empleados').getPublicUrl(filename);
-    const fotoUrl = urlData.publicUrl;
-
-    await supabase.from('fichas_tienda').update({ foto_url: fotoUrl }).eq('id', ficha_id);
+    await db.query('UPDATE fichas_tienda SET foto_url = $1 WHERE id = $2', [fotoUrl, ficha_id]);
 
     res.json({ ok: true, foto_url: fotoUrl });
   } catch (err) {

@@ -566,7 +566,8 @@
 
     if (!token) window.location.href = 'index.html';
 
-    function cerrarSesion() {
+    async function cerrarSesion() {
+      await firebase.auth().signOut();
       localStorage.clear();
       window.location.href = 'index.html';
     }
@@ -758,5 +759,9 @@
 
     window.onload = cargarAlbum;
   </script>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="js/firebase-init.js"></script>
 </body>
 </html>
