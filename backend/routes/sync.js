@@ -14,10 +14,11 @@ function verificarSyncKey(req, res, next) {
 /**
  * POST /api/sync/resultados
  * Llamado desde Google Apps Script.
- * Body: { tienda_codigo: "1107", semana: 1, porcentaje: 99.04 }
+ * Body: { tienda_codigo: "1107", semana: 1, porcentaje: 99.04, total_empleados: 12 }
+ * total_empleados es opcional — si se envía, actualiza la tienda y recalcula fichas.
  */
 router.post('/resultados', verificarSyncKey, async (req, res) => {
-  const { tienda_codigo, semana: semanaNum, porcentaje } = req.body;
+  const { tienda_codigo, semana: semanaNum, porcentaje, total_empleados } = req.body;
 
   if (!tienda_codigo || semanaNum == null || porcentaje == null) {
     return res.status(400).json({ error: 'Faltan campos: tienda_codigo, semana, porcentaje.' });
@@ -26,12 +27,21 @@ router.post('/resultados', verificarSyncKey, async (req, res) => {
   try {
     const { data: tienda, error: tErr } = await supabase
       .from('tiendas')
-      .select('id, nombre')
+      .select('id, nombre, total_empleados')
       .eq('codigo', tienda_codigo.toString().trim())
       .maybeSingle();
 
     if (tErr) return res.status(500).json({ error: tErr.message });
     if (!tienda) return res.status(404).json({ error: `Tienda "${tienda_codigo}" no encontrada.` });
+
+    // Actualizar total_empleados si viene en el payload y es diferente al actual
+    const nuevoTotal = parseInt(total_empleados);
+    if (!isNaN(nuevoTotal) && nuevoTotal > 0 && nuevoTotal !== tienda.total_empleados) {
+      await supabase
+        .from('tiendas')
+        .update({ total_empleados: nuevoTotal })
+        .eq('id', tienda.id);
+    }
 
     const { data: semana, error: sErr } = await supabase
       .from('semanas')
@@ -61,7 +71,7 @@ router.post('/resultados', verificarSyncKey, async (req, res) => {
       desbloqueadas = actualizadas?.length || 0;
     }
 
-    res.json({ ok: true, tienda: tienda.nombre, semana: semana.numero, porcentaje: pct, fichas_desbloqueadas: desbloqueadas });
+    res.json({ ok: true, tienda: tienda.nombre, semana: semana.numero, porcentaje: pct, fichas_desbloqueadas: desbloqueadas, total_empleados: !isNaN(nuevoTotal) && nuevoTotal > 0 ? nuevoTotal : tienda.total_empleados });
 
   } catch (err) {
     console.error('[Sync Resultados]', err.message);
