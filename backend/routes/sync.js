@@ -41,7 +41,9 @@ router.post('/resultados', verificarSyncKey, async (req, res) => {
       if (!nombre) return res.status(404).json({ error: `Tienda "${tienda_codigo}" no encontrada. Incluye "nombre" en el payload para crearla.` });
 
       const emailAuto = `${tienda_codigo.toString().trim().toLowerCase()}@sportline.com`;
-      const { data: nueva, error: cErr } = await supabase
+
+      // Intentar insertar — si ya existe por carrera paralela, ignorar el error
+      const { error: cErr } = await supabase
         .from('tiendas')
         .insert({
           codigo:          tienda_codigo.toString().trim(),
@@ -51,12 +53,20 @@ router.post('/resultados', verificarSyncKey, async (req, res) => {
           password_hash:   'sport123',
           activa:          true,
           total_empleados: 0
-        })
+        });
+
+      if (cErr && !cErr.message.includes('duplicate key')) {
+        return res.status(500).json({ error: 'No se pudo crear la tienda: ' + cErr.message });
+      }
+
+      // Obtener la tienda (recién creada o ya existente)
+      const { data: tiendaReloaded } = await supabase
+        .from('tiendas')
         .select('id, nombre, total_empleados')
+        .eq('codigo', tienda_codigo.toString().trim())
         .single();
 
-      if (cErr) return res.status(500).json({ error: 'No se pudo crear la tienda: ' + cErr.message });
-      tienda = nueva;
+      tienda = tiendaReloaded;
     }
 
     // Actualizar total_empleados si viene en el payload y es diferente al actual
