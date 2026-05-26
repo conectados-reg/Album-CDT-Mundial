@@ -12,6 +12,50 @@ function verificarSyncKey(req, res, next) {
 }
 
 /**
+ * POST /api/sync/registrar-tienda
+ * Crea la tienda si no existe, sin crear resultados ni fichas.
+ * Body: { tienda_codigo, nombre, pais }
+ */
+router.post('/registrar-tienda', verificarSyncKey, async (req, res) => {
+  const { tienda_codigo, nombre, pais } = req.body;
+  if (!tienda_codigo || !nombre) {
+    return res.status(400).json({ error: 'Faltan campos: tienda_codigo, nombre.' });
+  }
+
+  try {
+    const { data: existente } = await supabase
+      .from('tiendas')
+      .select('id, nombre')
+      .eq('codigo', tienda_codigo.toString().trim())
+      .maybeSingle();
+
+    if (existente) {
+      return res.json({ ok: true, creada: false, tienda: existente.nombre });
+    }
+
+    const emailAuto = `${tienda_codigo.toString().trim().toLowerCase()}@sportline.com`;
+    const { error: cErr } = await supabase.from('tiendas').insert({
+      codigo:          tienda_codigo.toString().trim(),
+      nombre:          nombre.toString().trim(),
+      region:          (pais || 'General').toString().trim(),
+      email:           emailAuto,
+      password_hash:   'sport123',
+      activa:          true,
+      total_empleados: 0
+    });
+
+    if (cErr && !cErr.message.includes('duplicate key')) {
+      return res.status(500).json({ error: 'No se pudo crear la tienda: ' + cErr.message });
+    }
+
+    res.json({ ok: true, creada: true, tienda: nombre.toString().trim() });
+  } catch (err) {
+    console.error('[Registrar Tienda]', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
  * POST /api/sync/resultados
  * Llamado desde Google Apps Script.
  * Body: { tienda_codigo: "1107", semana: 1, porcentaje: 99.04, total_empleados: 12 }
