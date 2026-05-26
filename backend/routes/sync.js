@@ -25,13 +25,15 @@ router.post('/resultados', verificarSyncKey, async (req, res) => {
   }
 
   try {
-    const { data: tienda, error: tErr } = await supabase
+    const { data: tiendaEncontrada, error: tErr } = await supabase
       .from('tiendas')
       .select('id, nombre, total_empleados')
       .eq('codigo', tienda_codigo.toString().trim())
       .maybeSingle();
 
     if (tErr) return res.status(500).json({ error: tErr.message });
+
+    let tienda = tiendaEncontrada;
 
     // Si la tienda no existe, crearla automáticamente con los datos del Sheet
     if (!tienda) {
@@ -42,12 +44,12 @@ router.post('/resultados', verificarSyncKey, async (req, res) => {
       const { data: nueva, error: cErr } = await supabase
         .from('tiendas')
         .insert({
-          codigo:        tienda_codigo.toString().trim(),
-          nombre:        nombre.toString().trim(),
-          region:        (pais || 'General').toString().trim(),
-          email:         emailAuto,
-          password_hash: 'sport123',
-          activa:        true,
+          codigo:          tienda_codigo.toString().trim(),
+          nombre:          nombre.toString().trim(),
+          region:          (pais || 'General').toString().trim(),
+          email:           emailAuto,
+          password_hash:   'sport123',
+          activa:          true,
           total_empleados: 0
         })
         .select('id, nombre, total_empleados')
