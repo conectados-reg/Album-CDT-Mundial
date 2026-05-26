@@ -438,11 +438,11 @@
   <div class="hero-stats">
     <div class="stat-card">
       <div class="stat-n" id="valDesbloqueadas">5</div>
-      <div class="stat-l">Estrellas Ganadas</div>
+      <div class="stat-l">Fichas Desbloqueadas</div>
     </div>
     <div class="stat-card">
-      <div class="stat-n" id="valMeta">100%</div>
-      <div class="stat-l">Cumplimiento de Meta</div>
+      <div class="stat-n" id="valMeta">—</div>
+      <div class="stat-l">Cumplimiento de Tienda</div>
     </div>
     <div class="stat-card">
       <div class="stat-n">S8</div>
@@ -453,13 +453,9 @@
   <!-- ALBUM -->
   <div class="section-wrapper">
     <div class="section-title-bar">
-      <h2>⭐ TUS ESTRELLAS</h2>
+      <h2>🃏 TUS FICHAS</h2>
       <span class="section-badge" id="badgeCount">Cargando...</span>
       <span class="hint-badge">📷 Haz clic en una casilla desbloqueada para subir la foto</span>
-    </div>
-    <div class="album-search-bar">
-      <span class="s-icon">🔍</span>
-      <input type="text" id="searchEmpleado" class="album-search-input" placeholder="Buscar colaborador…" autocomplete="off">
     </div>
     <div class="album-grid" id="wrapperAlbum">
       <div class="loading-msg"><span class="spin">⚙️</span> Cargando álbum...</div>
@@ -575,19 +571,8 @@
       window.location.href = 'index.html';
     }
 
-    // Emoji de figurita según el cargo del empleado
-    function iconoPorCargo(cargo) {
-      const c = (cargo || '').toLowerCase();
-      if (c.includes('gerente') || c.includes('director')) return '👑';
-      if (c.includes('supervisor'))  return '🎯';
-      if (c.includes('cajero') || c.includes('caja')) return '💳';
-      if (c.includes('bodega') || c.includes('almac')) return '📦';
-      if (c.includes('visual'))      return '🎨';
-      return '⭐';
-    }
-
-    let _todosEmpleados = [], _semanaActual = null;
-    let empIdFoto = null, fotoBase64 = null, fotoTipo = null;
+    let _todasFichas = [], _semanaActual = null, _porcentajeTienda = null;
+    let fichaIdFoto = null, fotoBase64 = null, fotoTipo = null;
 
     function mostrarAlerta(msg, esOk = false) {
       const el = document.getElementById('alertFoto');
@@ -596,28 +581,25 @@
       el.style.display = 'block';
     }
 
-    function renderAlbum(empleados, semana) {
-      const wrapper     = document.getElementById('wrapperAlbum');
-      const total       = empleados.length;
-      const desbloq     = empleados.filter(e => e.desbloqueado).length;
-      const pctMeta     = total > 0 ? Math.round((desbloq / total) * 100) : 0;
-      const semanaLabel = semana ? `S${semana.numero}` : '—';
+    function renderFichas(fichas, semana, pctTienda) {
+      const wrapper  = document.getElementById('wrapperAlbum');
+      const total    = fichas.length;
+      const desbloq  = fichas.filter(f => f.desbloqueado).length;
+      const semLabel = semana ? `S${semana.numero}` : '—';
 
       document.getElementById('valDesbloqueadas').textContent = desbloq;
-      document.getElementById('valMeta').textContent          = pctMeta + '%';
-      document.getElementById('badgeCount').textContent       = `${total} figurita${total !== 1 ? 's' : ''}`;
-
-      // Actualizar periodo de medición
+      document.getElementById('valMeta').textContent = pctTienda != null ? Math.round(pctTienda) + '%' : '—';
+      document.getElementById('badgeCount').textContent = `${total} ficha${total !== 1 ? 's' : ''}`;
       const periodoEl = document.querySelector('.stat-card:last-child .stat-n');
-      if (periodoEl) periodoEl.textContent = semanaLabel;
+      if (periodoEl) periodoEl.textContent = semLabel;
 
       if (!total) {
         wrapper.innerHTML = `
         <div style="grid-column:1/-1;text-align:center;padding:4rem 2rem;">
-          <div style="font-size:4rem;margin-bottom:1.2rem;filter:drop-shadow(0 0 20px rgba(247,168,0,.3));">⭐</div>
+          <div style="font-size:4rem;margin-bottom:1.2rem;filter:drop-shadow(0 0 20px rgba(247,168,0,.3));">🃏</div>
           <div style="font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:.12em;color:var(--p-orange);margin-bottom:.6rem;">ÁLBUM EN ESPERA</div>
           <div style="font-family:'Barlow Condensed',sans-serif;font-size:.95rem;letter-spacing:.05em;color:rgba(255,255,255,.4);max-width:340px;margin:0 auto;line-height:1.7;">
-            Aún no hay colaboradores registrados.<br>Las figuritas aparecerán una vez que el sistema sincronice los datos de ventas.
+            Aún no hay fichas disponibles.<br>Las fichas aparecerán cuando el sistema sincronice los datos del Sheet.
           </div>
           <div style="margin-top:1.8rem;display:inline-flex;align-items:center;gap:.5rem;background:rgba(247,168,0,.08);border:1px solid rgba(247,168,0,.2);border-radius:30px;padding:.5rem 1.2rem;">
             <span style="font-size:.9rem;">⚽</span>
@@ -627,48 +609,66 @@
         return;
       }
 
-      wrapper.innerHTML = empleados.map(emp => {
-        const icono    = iconoPorCargo(emp.cargo);
-        const numStr   = String(emp.numero || 1).padStart(3, '0');
-        const cargoTxt = emp.cargo || 'Asesor de Ventas';
-        const nombreEsc = emp.nombre.replace(/'/g, "\\'");
+      // Agrupar fichas por semana
+      const grupos = {};
+      for (const f of fichas) {
+        const k = f.semana_numero || 0;
+        if (!grupos[k]) grupos[k] = { numero: f.semana_numero, nombre: f.semana_nombre, porcentaje: f.porcentaje, fichas: [] };
+        grupos[k].fichas.push(f);
+      }
 
-        if (!emp.desbloqueado) {
-          return `
-            <div class="sticker-card locked">
+      let html = '';
+      Object.entries(grupos).sort((a, b) => Number(a[0]) - Number(b[0])).forEach(([, grp]) => {
+        const pct      = grp.porcentaje;
+        const pctStr   = pct != null ? Math.round(pct) + '%' : '—';
+        const pctOk    = pct != null && pct >= 100;
+        const pctColor = pctOk ? '#69f0ae' : (pct != null && pct > 0 ? 'var(--p-orange)' : 'rgba(255,255,255,.3)');
+        const desbSem  = grp.fichas.filter(f => f.desbloqueado).length;
+
+        html += `<div style="grid-column:1/-1;display:flex;align-items:center;flex-wrap:wrap;gap:.6rem;padding:.7rem 0 .5rem;margin-top:.8rem;border-bottom:2px solid rgba(247,168,0,.15);">
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:.1em;color:var(--p-orange);">${grp.nombre || 'SEMANA ' + grp.numero}</span>
+          <span style="font-family:'Barlow Condensed',sans-serif;font-size:.75rem;font-weight:700;color:${pctColor};background:rgba(0,0,0,.3);border:1px solid ${pctOk ? 'rgba(74,222,128,.3)' : 'rgba(255,255,255,.1)'};border-radius:6px;padding:.15rem .5rem;">${pctStr}</span>
+          <span style="font-family:'Barlow Condensed',sans-serif;font-size:.7rem;color:rgba(255,255,255,.3);">${desbSem} / ${grp.fichas.length} fichas desbloqueadas</span>
+        </div>`;
+
+        html += grp.fichas.map(f => {
+          const numStr = String(f.numero_ficha || 1).padStart(2, '0');
+
+          if (!f.desbloqueado) {
+            return `<div class="sticker-card locked">
               <div class="card-band"></div>
               <span class="card-num">#${numStr}</span>
               <div class="card-photo"><div class="card-icon">🔒</div></div>
               <div class="card-footer">
-                <div class="card-code">${cargoTxt}</div>
-                <div class="card-name">${emp.nombre}</div>
+                <div class="card-code">S${f.semana_numero || '?'}</div>
+                <div class="card-name">Ficha ${numStr}</div>
               </div>
             </div>`;
-        }
+          }
 
-        const fotoContent = emp.foto_url
-          ? `<img src="${emp.foto_url}" alt="${emp.nombre}" style="width:100%;height:100%;object-fit:cover;border-radius:6px;">`
-          : `<div class="card-icon">${icono}</div>`;
+          const fotoContent = f.foto_url
+            ? `<img src="${f.foto_url}" alt="Ficha ${numStr}" style="width:100%;height:100%;object-fit:cover;border-radius:6px;">`
+            : `<div class="card-icon">🃏</div>`;
 
-        const semBadge = emp.semana_numero
-          ? `<span class="card-week-badge">S${emp.semana_numero}</span>`
-          : '';
-        const pctBadge = emp.porcentaje != null
-          ? `<span class="card-pct-badge">${Math.round(emp.porcentaje)}%</span>`
-          : '';
+          const pctBadge = f.porcentaje != null
+            ? `<span class="card-pct-badge">${Math.round(f.porcentaje)}%</span>`
+            : '';
 
-        return `
-          <div class="sticker-card gold" onclick="abrirModal('${emp.id}', '${nombreEsc}')">
+          return `<div class="sticker-card gold" onclick="abrirModal('${f.id}', 'Ficha ${numStr}')">
             <div class="card-band"></div>
-            ${semBadge}${pctBadge}
+            <span class="card-week-badge">S${f.semana_numero || '?'}</span>
+            ${pctBadge}
             <span class="card-num">#${numStr}</span>
             <div class="card-photo">${fotoContent}</div>
             <div class="card-footer">
-              <div class="card-code">${cargoTxt}</div>
-              <div class="card-name">${emp.nombre}</div>
+              <div class="card-code">S${f.semana_numero || '?'}</div>
+              <div class="card-name">Ficha ${numStr}</div>
             </div>
           </div>`;
-      }).join('');
+        }).join('');
+      });
+
+      wrapper.innerHTML = html;
     }
 
     async function cargarAlbum() {
@@ -678,9 +678,10 @@
         if (res.status === 401) { localStorage.clear(); window.location.href = 'index.html'; return; }
         if (!res.ok) throw new Error();
         const data = await res.json();
-        _todosEmpleados = data.empleados || [];
-        _semanaActual   = data.semana;
-        renderAlbum(_todosEmpleados, _semanaActual);
+        _todasFichas      = data.fichas || [];
+        _semanaActual     = data.semana;
+        _porcentajeTienda = data.porcentaje_tienda;
+        renderFichas(_todasFichas, _semanaActual, _porcentajeTienda);
       } catch {
         document.getElementById('wrapperAlbum').innerHTML =
           '<div class="loading-msg">❌ No se pudo conectar al servidor. Recarga la página en unos segundos.</div>';
@@ -688,16 +689,10 @@
       }
     }
 
-    document.getElementById('searchEmpleado').addEventListener('input', function() {
-      const q = this.value.trim().toLowerCase();
-      if (!q) { renderAlbum(_todosEmpleados, _semanaActual); return; }
-      renderAlbum(_todosEmpleados.filter(e => e.nombre.toLowerCase().includes(q) || (e.cargo || '').toLowerCase().includes(q)), _semanaActual);
-    });
-
     /* ── MODAL FOTO ── */
-    function abrirModal(empId, nombre) {
-      empIdFoto = empId; fotoBase64 = null; fotoTipo = null;
-      document.getElementById('modalNombre').textContent = nombre;
+    function abrirModal(fichaId, label) {
+      fichaIdFoto = fichaId; fotoBase64 = null; fotoTipo = null;
+      document.getElementById('modalNombre').textContent = label;
       document.getElementById('fotoPreview').style.display = 'none';
       document.getElementById('btnSubir').style.display = 'none';
       document.getElementById('alertFoto').style.display = 'none';
@@ -741,14 +736,14 @@
     }
 
     async function subirFoto() {
-      if (!fotoBase64 || !empIdFoto) return;
+      if (!fotoBase64 || !fichaIdFoto) return;
       const btn = document.getElementById('btnSubir');
       btn.textContent = 'Subiendo...'; btn.disabled = true;
       try {
         const res = await fetch(`${API_URL}/album/foto`, {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ empleado_id: empIdFoto, foto_base64: fotoBase64, tipo: fotoTipo })
+          body: JSON.stringify({ ficha_id: fichaIdFoto, foto_base64: fotoBase64, tipo: fotoTipo })
         });
         if (res.status === 401) { localStorage.clear(); window.location.href = 'index.html'; return; }
         if (!res.ok) throw new Error('API error');

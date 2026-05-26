@@ -11,143 +11,60 @@ function verificarSyncKey(req, res, next) {
   next();
 }
 
-function normalizarNombre(n) {
-  return (n || '').trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-}
-
 /**
- * POST /api/sync/ventas
+ * POST /api/sync/resultados
  * Llamado desde Google Apps Script.
- * Body: {
- *   semana: 1,                         // número de semana (1-6)
- *   tienda_codigo: "SL-PA-001",
- *   empleados: [
- *     { nombre: "María García", cargo: "Asesora", activo: true,  porcentaje: 107.5 },
- *     { nombre: "Juan López",   cargo: "Vendedor", activo: false, porcentaje: 0    }
- *   ]
- * }
+ * Body: { tienda_codigo: "1107", semana: 1, porcentaje: 99.04 }
  */
-router.post('/ventas', verificarSyncKey, async (req, res) => {
-  const { semana: semanaNum, tienda_codigo, empleados } = req.body;
+router.post('/resultados', verificarSyncKey, async (req, res) => {
+  const { tienda_codigo, semana: semanaNum, porcentaje } = req.body;
 
-  if (!tienda_codigo || !Array.isArray(empleados) || !semanaNum) {
-    return res.status(400).json({ error: 'Faltan campos: semana, tienda_codigo, empleados.' });
+  if (!tienda_codigo || semanaNum == null || porcentaje == null) {
+    return res.status(400).json({ error: 'Faltan campos: tienda_codigo, semana, porcentaje.' });
   }
 
   try {
-    // 1. Buscar tienda
     const { data: tienda, error: tErr } = await supabase
       .from('tiendas')
       .select('id, nombre')
-      .eq('codigo', tienda_codigo.trim().toUpperCase())
+      .eq('codigo', tienda_codigo.toString().trim())
       .maybeSingle();
 
-    if (tErr) {
-      return res.status(500).json({ error: `Error DB al buscar tienda: ${tErr.message}`, codigo: tienda_codigo });
-    }
-    if (!tienda) {
-      return res.status(404).json({ error: `Tienda "${tienda_codigo}" no encontrada.`, buscado: tienda_codigo.trim().toUpperCase() });
-    }
+    if (tErr) return res.status(500).json({ error: tErr.message });
+    if (!tienda) return res.status(404).json({ error: `Tienda "${tienda_codigo}" no encontrada.` });
 
-    // 2. Buscar semana por número
     const { data: semana, error: sErr } = await supabase
       .from('semanas')
       .select('id, numero')
       .eq('numero', parseInt(semanaNum))
       .maybeSingle();
 
-    if (sErr || !semana) {
-      return res.status(404).json({ error: `Semana ${semanaNum} no encontrada. Crea las 6 semanas primero.` });
+    if (sErr || !semana) return res.status(404).json({ error: `Semana ${semanaNum} no encontrada.` });
+
+    const pct = parseFloat(porcentaje) || 0;
+
+    await supabase.from('resultados_tienda').upsert(
+      { tienda_id: tienda.id, semana_id: semana.id, porcentaje_cumplido: pct, cumplio_meta: pct >= 100, updated_at: new Date().toISOString() },
+      { onConflict: 'tienda_id,semana_id' }
+    );
+
+    // Desbloquear fichas si llega al 100% (redundante con el trigger, pero garantiza consistencia)
+    let desbloqueadas = 0;
+    if (pct >= 100) {
+      const { data: actualizadas } = await supabase
+        .from('fichas_tienda')
+        .update({ desbloqueado: true, fecha_desbloqueo: new Date().toISOString() })
+        .eq('tienda_id', tienda.id)
+        .eq('semana_id', semana.id)
+        .eq('desbloqueado', false)
+        .select('id');
+      desbloqueadas = actualizadas?.length || 0;
     }
 
-    // 3. Cargar empleados actuales de la tienda
-    const { data: empActuales } = await supabase
-      .from('empleados')
-      .select('id, nombre, activo')
-      .eq('tienda_id', tienda.id);
-
-    const empMap = {};
-    for (const e of (empActuales || [])) {
-      empMap[normalizarNombre(e.nombre)] = e;
-    }
-
-    const stats = { creados: 0, desactivados: 0, actualizados: 0, desbloqueados: 0, bloqueados: 0 };
-
-    for (const fila of empleados) {
-      const nombreNorm = normalizarNombre(fila.nombre);
-      const activo     = fila.activo === true || fila.activo === 'TRUE' || fila.activo === 1;
-      const porcentaje = parseFloat(fila.porcentaje) || 0;
-      const cargo      = (fila.cargo || 'Asesor de Ventas').trim();
-
-      let emp = empMap[nombreNorm];
-
-      // Empleado no existe → crearlo (solo si activo)
-      if (!emp && activo) {
-        const { data: nuevo } = await supabase
-          .from('empleados')
-          .insert({ tienda_id: tienda.id, nombre: fila.nombre.trim(), cargo, activo: true, semana_asignada: 1 })
-          .select('id, nombre, activo')
-          .single();
-        if (nuevo) { emp = nuevo; empMap[nombreNorm] = nuevo; stats.creados++; }
-      }
-
-      if (!emp) continue;
-
-      // Empleado inactivo → desactivar
-      if (!activo && emp.activo !== false) {
-        await supabase.from('empleados').update({ activo: false }).eq('id', emp.id);
-        // Eliminar su espacio de esta semana
-        await supabase.from('espacios_album').delete()
-          .eq('empleado_id', emp.id).eq('semana_id', semana.id);
-        // Eliminar resultado de ventas de esta semana
-        await supabase.from('resultados_ventas').delete()
-          .eq('empleado_id', emp.id).eq('semana_id', semana.id);
-        stats.desactivados++;
-        continue;
-      }
-
-      if (!activo) continue; // ya estaba inactivo
-
-      // Reactivar si estaba inactivo
-      if (emp.activo === false) {
-        await supabase.from('empleados').update({ activo: true }).eq('id', emp.id);
-      }
-
-      // Registrar resultado de ventas
-      await supabase.from('resultados_ventas').upsert(
-        { empleado_id: emp.id, semana_id: semana.id, porcentaje_cumplido: porcentaje, cumplio_meta: porcentaje >= 100 },
-        { onConflict: 'empleado_id,semana_id' }
-      );
-      stats.actualizados++;
-
-      // Desbloquear o bloquear espacio del álbum
-      if (porcentaje >= 100) {
-        await supabase.from('espacios_album').upsert(
-          { empleado_id: emp.id, semana_id: semana.id, desbloqueado: true, fecha_desbloqueo: new Date().toISOString() },
-          { onConflict: 'empleado_id,semana_id' }
-        );
-        stats.desbloqueados++;
-      } else {
-        // Solo crear el espacio bloqueado si no existe uno todavía.
-        // ignoreDuplicates:true garantiza que nunca se sobreescriba un desbloqueo previo.
-        await supabase.from('espacios_album').upsert(
-          { empleado_id: emp.id, semana_id: semana.id, desbloqueado: false },
-          { onConflict: 'empleado_id,semana_id', ignoreDuplicates: true }
-        );
-        stats.bloqueados++;
-      }
-    }
-
-    // Actualizar conteo de empleados activos en la tienda
-    const { count } = await supabase
-      .from('empleados').select('id', { count: 'exact', head: true })
-      .eq('tienda_id', tienda.id).eq('activo', true);
-    await supabase.from('tiendas').update({ total_empleados: count || 0 }).eq('id', tienda.id);
-
-    res.json({ ok: true, tienda: tienda.nombre, semana: semana.numero, ...stats });
+    res.json({ ok: true, tienda: tienda.nombre, semana: semana.numero, porcentaje: pct, fichas_desbloqueadas: desbloqueadas });
 
   } catch (err) {
-    console.error('[Sync Ventas]', err.message);
+    console.error('[Sync Resultados]', err.message);
     res.status(500).json({ error: 'Error en sincronización: ' + err.message });
   }
 });

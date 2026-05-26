@@ -15,97 +15,61 @@ function verificarToken(req, res, next) {
   }
 }
 
-// GET /api/album — Una tarjeta por cada semana que el empleado cumplió meta
+// GET /api/album — Fichas de la tienda agrupadas por semana
 router.get('/', verificarToken, async (req, res) => {
-  if (req.usuario.rol !== 'tienda') {
-    return res.status(403).json({ error: 'Solo para sucursales.' });
-  }
+  if (req.usuario.rol !== 'tienda') return res.status(403).json({ error: 'Solo para sucursales.' });
 
   try {
-    // Semana activa para contexto
+    const tiendaId = req.usuario.id;
+
     const { data: semanaActiva } = await supabase
-      .from('semanas').select('numero, nombre').eq('activa', true).maybeSingle();
+      .from('semanas').select('id, numero, nombre').eq('activa', true).maybeSingle();
 
-    // Todos los empleados activos de la tienda con TODOS sus espacios
-    const { data: empleados, error } = await supabase
-      .from('empleados')
-      .select('id, nombre, cargo, foto_url, espacios_album(id, semana_id, desbloqueado)')
-      .eq('tienda_id', req.usuario.id)
-      .eq('activo', true)
-      .order('nombre');
-
-    if (error) throw error;
-
-    // Mapa de semanas
     const { data: semanas } = await supabase
       .from('semanas').select('id, numero, nombre').order('numero');
     const semanaMap = {};
     for (const s of (semanas || [])) semanaMap[s.id] = s;
 
-    // Porcentajes de todas las semanas
-    const empIds = (empleados || []).map(e => e.id);
-    const pctMap = {};
-    if (empIds.length) {
-      const { data: resultados } = await supabase
-        .from('resultados_ventas')
-        .select('empleado_id, semana_id, porcentaje_cumplido')
-        .in('empleado_id', empIds);
-      for (const r of (resultados || [])) {
-        pctMap[`${r.empleado_id}-${r.semana_id}`] = r.porcentaje_cumplido;
-      }
-    }
+    const { data: fichas, error } = await supabase
+      .from('fichas_tienda')
+      .select('id, semana_id, numero_ficha, desbloqueado, foto_url')
+      .eq('tienda_id', tiendaId)
+      .order('semana_id')
+      .order('numero_ficha');
 
-    // Construir resultado: una entrada por espacio desbloqueado + una entrada locked por empleado sin desbloqueos
-    const resultado = [];
+    if (error) throw error;
+
+    const { data: resultados } = await supabase
+      .from('resultados_tienda')
+      .select('semana_id, porcentaje_cumplido')
+      .eq('tienda_id', tiendaId);
+    const resultadoMap = {};
+    for (const r of (resultados || [])) resultadoMap[r.semana_id] = r.porcentaje_cumplido;
+
+    const pctTienda = semanaActiva ? (resultadoMap[semanaActiva.id] ?? null) : null;
+
     let contador = 1;
-
-    for (const emp of (empleados || [])) {
-      const espacios = emp.espacios_album || [];
-      const desbloqueados = espacios
-        .filter(e => e.desbloqueado)
-        .sort((a, b) => (semanaMap[a.semana_id]?.numero || 0) - (semanaMap[b.semana_id]?.numero || 0));
-
-      if (desbloqueados.length > 0) {
-        // Una tarjeta por cada semana cumplida
-        for (const esp of desbloqueados) {
-          const sem = semanaMap[esp.semana_id] || {};
-          resultado.push({
-            id: emp.id,
-            espacio_id: esp.id,
-            numero: contador++,
-            nombre: emp.nombre,
-            cargo: emp.cargo || 'Asesor de Ventas',
-            foto_url: emp.foto_url || null,
-            desbloqueado: true,
-            semana_id: esp.semana_id,
-            semana_numero: sem.numero || null,
-            semana_nombre: sem.nombre || null,
-            porcentaje: pctMap[`${emp.id}-${esp.semana_id}`] ?? null,
-          });
-        }
-      } else {
-        // Tarjeta bloqueada única
-        resultado.push({
-          id: emp.id,
-          espacio_id: null,
-          numero: contador++,
-          nombre: emp.nombre,
-          cargo: emp.cargo || 'Asesor de Ventas',
-          foto_url: null,
-          desbloqueado: false,
-          semana_id: null,
-          semana_numero: null,
-          semana_nombre: null,
-          porcentaje: null,
-        });
-      }
-    }
+    const fichasConInfo = (fichas || []).map(f => {
+      const sem = semanaMap[f.semana_id] || {};
+      return {
+        id: f.id,
+        numero: contador++,
+        semana_id: f.semana_id,
+        semana_numero: sem.numero || null,
+        semana_nombre: sem.nombre || null,
+        numero_ficha: f.numero_ficha,
+        desbloqueado: f.desbloqueado,
+        foto_url: f.foto_url || null,
+        porcentaje: resultadoMap[f.semana_id] ?? null,
+      };
+    });
 
     res.json({
-      empleados: resultado,
+      fichas: fichasConInfo,
       semana: semanaActiva || null,
-      total: resultado.length,
-      desbloqueados: resultado.filter(e => e.desbloqueado).length,
+      porcentaje_tienda: pctTienda,
+      total: fichasConInfo.length,
+      desbloqueadas: fichasConInfo.filter(f => f.desbloqueado).length,
     });
 
   } catch (err) {
@@ -114,33 +78,72 @@ router.get('/', verificarToken, async (req, res) => {
   }
 });
 
-// POST /api/album/foto — subir foto al empleado (persiste en todas sus semanas)
-router.post('/foto', verificarToken, async (req, res) => {
-  if (req.usuario.rol !== 'tienda') return res.status(403).json({ error: 'Solo para sucursales.' });
-  const { empleado_id, foto_base64, tipo } = req.body;
-  if (!empleado_id || !foto_base64) return res.status(400).json({ error: 'Datos incompletos.' });
+// GET /api/album/admin/:tienda_id — admin: resumen de fichas por semana
+router.get('/admin/:tienda_id', verificarToken, async (req, res) => {
+  if (req.usuario.rol !== 'admin') return res.status(403).json({ error: 'Solo para administradores.' });
 
   try {
-    // Verificar que el empleado pertenece a la tienda y tiene algún desbloqueo
-    const { data: emp } = await supabase
-      .from('empleados').select('tienda_id').eq('id', empleado_id).single();
-    if (!emp || emp.tienda_id !== req.usuario.id) {
-      return res.status(403).json({ error: 'Sin permiso sobre este empleado.' });
+    const tiendaId = req.params.tienda_id;
+
+    const { data: semanas } = await supabase
+      .from('semanas').select('id, numero, nombre').order('numero');
+    const semanaMap = {};
+    for (const s of (semanas || [])) semanaMap[s.id] = s;
+
+    const { data: fichas } = await supabase
+      .from('fichas_tienda')
+      .select('semana_id, desbloqueado, foto_url')
+      .eq('tienda_id', tiendaId);
+
+    const { data: resultados } = await supabase
+      .from('resultados_tienda')
+      .select('semana_id, porcentaje_cumplido')
+      .eq('tienda_id', tiendaId);
+    const resultadoMap = {};
+    for (const r of (resultados || [])) resultadoMap[r.semana_id] = r.porcentaje_cumplido;
+
+    const porSemana = {};
+    for (const f of (fichas || [])) {
+      const sem = semanaMap[f.semana_id];
+      if (!sem) continue;
+      if (!porSemana[sem.numero]) {
+        porSemana[sem.numero] = {
+          semana_numero: sem.numero,
+          semana_nombre: sem.nombre,
+          porcentaje: resultadoMap[f.semana_id] ?? null,
+          total: 0, desbloqueadas: 0, con_foto: 0,
+        };
+      }
+      porSemana[sem.numero].total++;
+      if (f.desbloqueado) porSemana[sem.numero].desbloqueadas++;
+      if (f.foto_url) porSemana[sem.numero].con_foto++;
     }
 
-    const { data: espacios } = await supabase
-      .from('espacios_album')
-      .select('id')
-      .eq('empleado_id', empleado_id)
-      .eq('desbloqueado', true)
-      .limit(1);
-    if (!espacios?.length) {
-      return res.status(403).json({ error: 'El empleado no ha desbloqueado ninguna figurita.' });
-    }
+    res.json({ semanas: Object.values(porSemana).sort((a, b) => a.semana_numero - b.semana_numero) });
+  } catch (err) {
+    console.error('[Album Admin]', err.message);
+    res.status(500).json({ error: 'Error al cargar fichas.' });
+  }
+});
+
+// POST /api/album/foto — subir foto a una ficha desbloqueada
+router.post('/foto', verificarToken, async (req, res) => {
+  if (req.usuario.rol !== 'tienda') return res.status(403).json({ error: 'Solo para sucursales.' });
+  const { ficha_id, foto_base64, tipo } = req.body;
+  if (!ficha_id || !foto_base64) return res.status(400).json({ error: 'Datos incompletos.' });
+
+  try {
+    const { data: ficha } = await supabase
+      .from('fichas_tienda').select('id, tienda_id, desbloqueado').eq('id', ficha_id).single();
+
+    if (!ficha || ficha.tienda_id !== req.usuario.id)
+      return res.status(403).json({ error: 'Sin permiso sobre esta ficha.' });
+    if (!ficha.desbloqueado)
+      return res.status(403).json({ error: 'Esta ficha no está desbloqueada.' });
 
     const buffer = Buffer.from(foto_base64, 'base64');
     const ext = (tipo || '').includes('png') ? 'png' : 'jpg';
-    const filename = `${empleado_id}.${ext}`;
+    const filename = `ficha-${ficha_id}.${ext}`;
 
     const { error: uploadError } = await supabase.storage
       .from('fotos-empleados')
@@ -150,7 +153,7 @@ router.post('/foto', verificarToken, async (req, res) => {
     const { data: urlData } = supabase.storage.from('fotos-empleados').getPublicUrl(filename);
     const fotoUrl = urlData.publicUrl;
 
-    await supabase.from('empleados').update({ foto_url: fotoUrl }).eq('id', empleado_id);
+    await supabase.from('fichas_tienda').update({ foto_url: fotoUrl }).eq('id', ficha_id);
 
     res.json({ ok: true, foto_url: fotoUrl });
   } catch (err) {

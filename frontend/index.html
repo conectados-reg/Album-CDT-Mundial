@@ -388,8 +388,9 @@
         searchResults.innerHTML = lista.map(t => `
           <div class="search-result-item" data-email="${t.email}" data-nombre="${t.nombre}">
             <span class="res-flag">${bandera(t.region)}</span>
-            <span class="res-name">${t.nombre}</span>
             <span class="res-region">${t.region || ''}</span>
+            <span style="font-family:'Barlow Condensed',sans-serif;font-size:.72rem;color:var(--p-orange);flex-shrink:0;letter-spacing:.04em;">${t.codigo || ''}</span>
+            <span class="res-name">${t.nombre}</span>
           </div>`).join('');
         searchResults.querySelectorAll('.search-result-item').forEach(item => {
           item.addEventListener('click', () => {
@@ -411,7 +412,7 @@
       searchInput.classList.remove('has-value');
       if (!q) { searchResults.classList.remove('open'); return; }
       renderResults(allTiendas.filter(t =>
-        t.nombre.toLowerCase().includes(q) || (t.region || '').toLowerCase().includes(q)
+        t.nombre.toLowerCase().includes(q) || (t.region || '').toLowerCase().includes(q) || (t.codigo || '').toLowerCase().includes(q)
       ));
     });
 

@@ -21,7 +21,7 @@ router.get('/lista', async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('tiendas')
-      .select('email, nombre, region')
+      .select('email, nombre, region, codigo')
       .eq('activa', true)
       .order('region', { nullsFirst: false })
       .order('nombre');

@@ -333,8 +333,6 @@
   <!-- TABS BAR -->
   <div class="tabs-bar">
     <button class="tab-btn active" data-tab="sucursales"><i class="fa-solid fa-store"></i> Sucursales</button>
-    <button class="tab-btn" data-tab="rendimiento"><i class="fa-solid fa-chart-column"></i> Rendimiento Semanal</button>
-    <button class="tab-btn" data-tab="notificaciones"><i class="fa-solid fa-envelope"></i> Notificaciones</button>
   </div>
 
   <div class="container">
@@ -345,7 +343,7 @@
         <span class="info-card-icon"><i class="fa-solid fa-store"></i></span>
         <div class="info-card-text">
           <h2>Tiendas por País</h2>
-          <p>Haz clic en un país para ver sus tiendas, y en cada tienda para ver el personal activo y su cumplimiento.</p>
+          <p>Haz clic en un país para expandirlo, y en cada tienda para ver el resumen de fichas por semana.</p>
         </div>
       </div>
 
@@ -363,68 +361,6 @@
         </div>
         <div id="acordeonTiendas" style="display:none;"></div>
       </div>
-    </div>
-
-    <!-- ══════════════════════ TAB 2: RENDIMIENTO ══════════════════════ -->
-    <div class="tab-panel" id="tab-rendimiento">
-      <div class="info-card">
-        <span class="info-card-icon"><i class="fa-solid fa-chart-column"></i></span>
-        <div class="info-card-text">
-          <h2>Rendimiento Semanal por Tienda</h2>
-          <p>Haz clic en una semana para ver resultados. Usa <strong style="color:var(--p-orange);">Activar</strong> para indicar cuál es la semana en curso.</p>
-        </div>
-      </div>
-
-      <!-- Control de semana activa -->
-      <div style="background:rgba(0,70,173,.08);border:1px solid rgba(247,168,0,.15);border-radius:12px;padding:1rem 1.2rem;margin-bottom:1rem;">
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:.8rem;letter-spacing:.1em;color:rgba(255,255,255,.4);margin-bottom:.75rem;">
-          <i class="fa-solid fa-calendar-week" style="color:var(--p-orange);margin-right:6px;"></i>CONTROL DE SEMANA ACTIVA
-        </div>
-        <div style="display:flex;gap:.6rem;flex-wrap:wrap;" id="activarBtns">
-          <!-- populated by JS -->
-        </div>
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:.72rem;color:rgba(255,255,255,.3);margin-top:.6rem;letter-spacing:.04em;">
-          La semana activa es la que el sistema usa para nuevos desbloqueos al sincronizar el Sheet.
-        </div>
-      </div>
-
-      <div class="week-selector" id="weekSelector"></div>
-      <div class="week-info" id="weekInfo"></div>
-      <div class="table-card">
-        <div class="table-card-header">
-          <h3 id="rendTitle">📈 Selecciona una semana</h3>
-          <span class="table-count" id="rendBadge">—</span>
-        </div>
-        <div class="table-wrapper">
-          <div id="rendLoading" class="state-msg">Selecciona una semana arriba para ver los resultados.</div>
-          <table id="tablaRendimiento" style="display:none;">
-            <thead>
-              <tr>
-                <th>#</th><th>Sucursal</th><th>Región</th>
-                <th style="text-align:center">Total</th>
-                <th style="text-align:center">Al 100%</th>
-                <th>Cumplimiento</th>
-              </tr>
-            </thead>
-            <tbody id="rendCuerpo"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- ══════════════════════ TAB 3: NOTIFICACIONES ══════════════════════ -->
-    <div class="tab-panel" id="tab-notificaciones">
-      <div class="info-card">
-        <span class="info-card-icon"><i class="fa-solid fa-envelope"></i></span>
-        <div class="info-card-text">
-          <h2>Notificaciones de Desbloqueo</h2>
-          <p>Tiendas con asesores que cumplieron el 100% esta semana · Envía la notificación por email</p>
-        </div>
-      </div>
-      <div id="notifSemanaInfo" class="week-info" style="margin-bottom:1rem;"></div>
-      <div id="notifLoading" class="state-msg"><i class="fa-solid fa-circle-notch fa-spin" style="font-size:1.4rem;color:var(--p-orange);"></i><br>Cargando logros de esta semana...</div>
-      <div id="notifEmpty" class="state-msg" style="display:none;"><i class="fa-regular fa-circle-check" style="font-size:1.4rem;color:rgba(255,255,255,.3);"></i><br>No hay tiendas con asesores al 100% en la semana activa aún.</div>
-      <div id="notifAcordeon" style="display:none;"></div>
     </div>
 
   </div>
@@ -448,17 +384,12 @@
     }
 
     /* ── TABS ── */
-    let notifLoaded = false;
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
         btn.classList.add('active');
         document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
-        if (btn.dataset.tab === 'notificaciones' && !notifLoaded) {
-          notifLoaded = true;
-          cargarNotificaciones();
-        }
       });
     });
 
@@ -508,8 +439,8 @@
           <div class="pais-acc-stores">
             ${lista.map(t => `
               <button class="store-acc-btn" id="store-btn-${t.id}" onclick="toggleStoreAcc('${t.id}')">
-                <i class="fa-solid fa-store" style="color:var(--p-orange);font-size:.8rem;margin-right:4px;"></i>${t.nombre}
-                <span style="font-family:'Barlow Condensed',sans-serif;font-size:.75rem;color:rgba(255,255,255,.3);"><i class="fa-solid fa-users" style="font-size:.7rem;margin-right:2px;"></i>${t.total_empleados||0}</span>
+                <i class="fa-solid fa-store" style="color:var(--p-orange);font-size:.8rem;margin-right:4px;"></i>
+                <span style="font-family:'Barlow Condensed',sans-serif;font-size:.72rem;color:var(--p-orange);margin-right:4px;letter-spacing:.04em;">${t.codigo||''}</span>${t.nombre}
                 <span class="acc-arrow">▶</span>
               </button>
               <div class="store-acc-panel" id="store-acc-${t.id}" style="display:none;">
@@ -563,220 +494,49 @@
       if (btn) btn.classList.add('open');
 
       if (empCache[tiendaId]) {
-        renderEmpleados(tiendaId, empCache[tiendaId]);
+        renderFichasSemana(tiendaId, empCache[tiendaId]);
         return;
       }
 
       try {
-        const res  = await fetch(`${API_URL}/empleados/admin/${tiendaId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const res  = await fetch(`${API_URL}/album/admin/${tiendaId}`, { headers: { 'Authorization': `Bearer ${token}` } });
         const data = await res.json();
         empCache[tiendaId] = data;
-        renderEmpleados(tiendaId, data);
+        renderFichasSemana(tiendaId, data);
       } catch {
-        document.getElementById(`store-acc-${tiendaId}`).innerHTML = '<span class="emp-loading">❌ Error al cargar personal.</span>';
+        document.getElementById(`store-acc-${tiendaId}`).innerHTML = '<span class="emp-loading">❌ Error al cargar fichas.</span>';
       }
     }
 
-    function renderEmpleados(tiendaId, data) {
-      const panel     = document.getElementById(`store-acc-${tiendaId}`);
-      const empleados = data.empleados || [];
-      const nDesbloq  = data.desbloqueados || 0;
-      const semana    = data.semana;
+    function renderFichasSemana(tiendaId, data) {
+      const panel   = document.getElementById(`store-acc-${tiendaId}`);
+      const semanas = data.semanas || [];
 
-      if (!empleados.length) {
-        panel.innerHTML = '<span class="emp-loading">Sin personal activo registrado.</span>';
+      if (!semanas.length) {
+        panel.innerHTML = '<span class="emp-loading">Sin fichas registradas para esta tienda.</span>';
         return;
       }
 
-      const semanaLabel = semana ? `· Semana ${semana.numero}` : '';
-      const chips = empleados.map(e => `
-        <div class="emp-chip ${e.desbloqueado ? 'ok' : ''}">
-          ${e.desbloqueado ? '<span class="badge-100">100%</span>' : '<i class="fa-regular fa-user" style="opacity:.4;font-size:.75rem;"></i>'}
-          ${e.nombre}
-          <span class="chip-cargo">${e.cargo}</span>
-        </div>`).join('');
+      const rows = semanas.map(s => {
+        const pct      = s.porcentaje;
+        const pctStr   = pct != null ? Math.round(pct) + '%' : '—';
+        const pctOk    = pct != null && pct >= 100;
+        const pctColor = pctOk ? 'var(--p-green)' : (pct != null && pct > 0 ? 'var(--p-orange)' : 'rgba(255,255,255,.3)');
+        const fotosBadge = s.con_foto ? `<span style="font-family:'Barlow Condensed',sans-serif;font-size:.68rem;color:rgba(247,168,0,.6);">📷 ${s.con_foto}</span>` : '';
+        return `<div style="display:flex;align-items:center;gap:.8rem;padding:.4rem 0;border-bottom:1px solid rgba(255,255,255,.04);">
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:.9rem;color:var(--p-orange);min-width:50px;">S${s.semana_numero}</span>
+          <span style="font-family:'Barlow Condensed',sans-serif;font-size:.8rem;color:rgba(255,255,255,.5);flex:1;">${s.semana_nombre || 'Semana ' + s.semana_numero}</span>
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:.9rem;color:${pctColor};">${pctStr}</span>
+          <span style="font-family:'Barlow Condensed',sans-serif;font-size:.72rem;color:rgba(255,255,255,.3);">${s.desbloqueadas}/${s.total} fichas</span>
+          ${fotosBadge}
+        </div>`;
+      }).join('');
 
-      panel.innerHTML = `
-        <div class="emp-summary">
-          <span class="emp-summary-count"><i class="fa-solid fa-star" style="color:var(--p-orange);font-size:.8rem;margin-right:3px;"></i>${nDesbloq}</span>
-          <span class="emp-summary-total">de ${empleados.length} al 100% ${semanaLabel}</span>
-        </div>
-        <div class="emp-grid">${chips}</div>`;
-    }
-
-    /* ══════════════════════════════════════════════════════════
-       TAB 2 — RENDIMIENTO SEMANAL + CONTROL DE SEMANA ACTIVA
-    ══════════════════════════════════════════════════════════ */
-    let _semanas = [];
-
-    async function cargarSemanas() {
-      try {
-        const res  = await fetch(`${API_URL}/semanas`, { headers: { 'Authorization': `Bearer ${token}` } });
-        const data = await res.json();
-        _semanas = data.semanas || [];
-      } catch {
-        _semanas = Array.from({length: 6}, (_, i) => ({ numero: i+1, nombre: `Semana ${i+1}`, activa: i === 0 }));
-      }
-      buildWeekSelector(_semanas);
-    }
-
-    function buildWeekSelector(semanas) {
-      // Selector de rendimiento (ver datos)
-      const wrap = document.getElementById('weekSelector');
-      wrap.innerHTML = '';
-      semanas.forEach(s => {
-        const btn = document.createElement('button');
-        btn.className = 'week-btn' + (s.activa ? ' es-activa' : '');
-        btn.dataset.num = s.numero;
-        btn.innerHTML = `
-          <span style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:.05em;">S${s.numero}</span>
-          <small style="font-family:'Barlow Condensed',sans-serif;font-size:.6rem;display:block;margin-top:2px;opacity:${s.activa?1:.5};color:${s.activa?'var(--p-green)':'inherit'};">
-            ${s.activa ? '● ACTIVA' : s.nombre || `Semana ${s.numero}`}
-          </small>`;
-        btn.addEventListener('click', () => {
-          document.querySelectorAll('.week-btn').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          document.getElementById('weekInfo').textContent = s.nombre || `Semana ${s.numero}`;
-          cargarRendimiento(s.numero);
-        });
-        wrap.appendChild(btn);
-      });
-
-      // Botones de activación
-      const activarWrap = document.getElementById('activarBtns');
-      if (!activarWrap) return;
-      activarWrap.innerHTML = semanas.map(s => `
-        <button onclick="activarSemana(${s.numero})"
-          style="font-family:'Barlow Condensed',sans-serif;font-size:.8rem;letter-spacing:.06em;
-          padding:.35rem .85rem;border-radius:8px;cursor:pointer;transition:all .2s;
-          ${s.activa
-            ? 'background:rgba(0,200,83,.15);border:1.5px solid rgba(0,200,83,.5);color:#00c853;'
-            : 'background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.12);color:rgba(255,255,255,.55);'}">
-          ${s.activa
-            ? `<i class="fa-solid fa-circle-dot" style="margin-right:4px;font-size:.7rem;"></i>Semana ${s.numero} <span style="font-size:.65rem;opacity:.7;">ACTIVA</span>`
-            : `Activar S${s.numero}`}
-        </button>`).join('');
-    }
-
-    async function activarSemana(numero) {
-      try {
-        const res = await fetch(`${API_URL}/semanas/${numero}/activar`, {
-          method: 'PUT',
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (!res.ok) throw new Error((await res.json()).error);
-        showToast(`✅ Semana ${numero} activada`);
-        await cargarSemanas();
-      } catch (err) {
-        showToast('❌ ' + err.message);
-      }
-    }
-
-    async function cargarRendimiento(n) {
-      const loadEl  = document.getElementById('rendLoading');
-      const tableEl = document.getElementById('tablaRendimiento');
-      const tbody   = document.getElementById('rendCuerpo');
-      loadEl.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin" style="font-size:1.2rem;color:var(--p-orange);"></i><br>Cargando...'; loadEl.style.display = 'block'; tableEl.style.display = 'none';
-      try {
-        const res  = await fetch(`${API_URL}/ventas/admin/semana/${n}`, { headers: { 'Authorization': `Bearer ${token}` } });
-        const data = await res.json();
-        if (!res.ok) { loadEl.innerHTML = `❌ ${data.error || 'Error.'}`; return; }
-        const tiendas = data.tiendas || [];
-        document.getElementById('rendTitle').textContent = `📈 Semana ${n} — ${tiendas.length} tiendas`;
-        document.getElementById('rendBadge').textContent = `${tiendas.reduce((a,t) => a+(t.cumplieron||0),0)} al 100%`;
-        if (!tiendas.length) { loadEl.innerHTML = '📭 Sin datos para esta semana.'; return; }
-        tbody.innerHTML = tiendas.map((t,i) => {
-          const pct = t.total > 0 ? Math.round((t.cumplieron/t.total)*100) : 0;
-          const cls = pct===100?'full':pct>0?'partial':'none';
-          return `<tr>
-            <td class="td-codigo">${i+1}</td>
-            <td class="td-nombre"><strong>${t.nombre}</strong></td>
-            <td style="color:rgba(255,255,255,.5);font-family:'Barlow Condensed',sans-serif;">${t.region||'—'}</td>
-            <td style="text-align:center;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:rgba(255,255,255,.6);">${t.total}</td>
-            <td style="text-align:center;" class="td-pct ${cls}">⭐ ${t.cumplieron}</td>
-            <td><span class="td-pct ${cls}" style="font-size:.85rem;">${pct}%</span>
-              <span class="pct-bar-wrap"><span class="pct-bar" style="width:${pct}%;background:${pct===100?'var(--p-green)':pct>0?'var(--p-orange)':'rgba(255,255,255,.15)'}"></span></span>
-            </td></tr>`;
-        }).join('');
-        loadEl.style.display = 'none'; tableEl.style.display = 'table';
-      } catch { loadEl.innerHTML = '❌ Error de conexión.'; }
-    }
-
-    /* ══════════════════════════════════════════════════════════
-       TAB 3 — NOTIFICACIONES
-    ══════════════════════════════════════════════════════════ */
-    async function cargarNotificaciones() {
-      const loadEl  = document.getElementById('notifLoading');
-      const emptyEl = document.getElementById('notifEmpty');
-      const acordEl = document.getElementById('notifAcordeon');
-      loadEl.style.display = 'block'; emptyEl.style.display = 'none'; acordEl.style.display = 'none';
-      try {
-        const res  = await fetch(`${API_URL}/notificaciones/pendientes`, { headers: { 'Authorization': `Bearer ${token}` } });
-        const data = await res.json();
-        if (!res.ok) { loadEl.innerHTML = `❌ ${data.error||'Error.'}`; return; }
-        loadEl.style.display = 'none';
-        if (data.semana) document.getElementById('notifSemanaInfo').textContent = `Semana activa: ${data.semana.nombre||'Semana '+data.semana.numero}`;
-        const tiendas = data.tiendas || [];
-        if (!tiendas.length) { emptyEl.style.display = 'block'; return; }
-        window._notifData = {};
-        acordEl.innerHTML = tiendas.map(t => {
-          window._notifData[t.tienda_id] = { empleados: t.empleados, semana: data.semana };
-          return `
-            <button class="store-acc-btn" id="nstore-btn-${t.tienda_id}" onclick="toggleNotifTienda('${t.tienda_id}')">
-              <i class="fa-solid fa-store" style="color:var(--p-orange);font-size:.8rem;margin-right:4px;"></i>${t.nombre}
-              <span style="font-family:'Barlow Condensed',sans-serif;font-size:.75rem;color:var(--p-green);">⭐ ${t.empleados.length}</span>
-              <span class="acc-arrow">▶</span>
-            </button>
-            <div class="store-acc-panel" id="nstore-panel-${t.tienda_id}" style="display:none;">
-              <div class="notif-email">📧 ${t.email||'Sin email'}</div>
-              <div class="emp-grid" style="margin-bottom:.9rem;">
-                ${(t.empleados||[]).map(e=>`
-                  <div class="emp-chip ok">
-                    <span class="badge-100">100%</span>
-                    ${e.nombre}
-                    <span class="chip-cargo">${e.cargo||'Asesor'}</span>
-                  </div>`).join('')}
-              </div>
-              <button class="btn-send" id="btn-${t.tienda_id}" onclick="enviarNotificacion('${t.tienda_id}')">
-                📧 Enviar Notificación
-              </button>
-            </div>`;
-        }).join('');
-        acordEl.style.display = 'block';
-      } catch { loadEl.innerHTML = '❌ Error de conexión.'; }
-    }
-
-    function toggleNotifTienda(tiendaId) {
-      const btn   = document.getElementById(`nstore-btn-${tiendaId}`);
-      const panel = document.getElementById(`nstore-panel-${tiendaId}`);
-      const isOpen = panel.style.display === 'block';
-      btn.classList.toggle('open', !isOpen);
-      panel.style.display = isOpen ? 'none' : 'block';
-    }
-
-    async function enviarNotificacion(tiendaId) {
-      const btn = document.getElementById(`btn-${tiendaId}`);
-      btn.disabled = true; btn.textContent = '⏳ Enviando...';
-      const info = window._notifData[tiendaId] || {};
-      const semana = info.semana || {};
-      try {
-        const res = await fetch(`${API_URL}/notificaciones/enviar/${tiendaId}`, {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            empleados: info.empleados || [],
-            semana_nombre: semana.nombre || `Semana ${semana.numero || ''}`,
-            semana_numero: semana.numero || 0
-          })
-        });
-        const data = await res.json();
-        if (res.ok) { btn.classList.add('sent'); btn.textContent = '✅ Enviada'; showToast(`✅ Email enviado a ${data.email}`); }
-        else { btn.disabled = false; btn.textContent = '📧 Enviar Notificación'; showToast(`❌ ${data.error||'Error.'}`); }
-      } catch { btn.disabled = false; btn.textContent = '📧 Enviar Notificación'; showToast('❌ Error de conexión.'); }
+      panel.innerHTML = `<div style="padding:.3rem 0;">${rows}</div>`;
     }
 
     /* ── INIT ── */
-    window.onload = () => { cargarTiendasAdmin(); cargarSemanas(); };
+    window.onload = () => { cargarTiendasAdmin(); };
   </script>
 </body>
 </html>
