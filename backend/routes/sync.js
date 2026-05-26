@@ -32,7 +32,30 @@ router.post('/resultados', verificarSyncKey, async (req, res) => {
       .maybeSingle();
 
     if (tErr) return res.status(500).json({ error: tErr.message });
-    if (!tienda) return res.status(404).json({ error: `Tienda "${tienda_codigo}" no encontrada.` });
+
+    // Si la tienda no existe, crearla automáticamente con los datos del Sheet
+    if (!tienda) {
+      const { nombre, pais } = req.body;
+      if (!nombre) return res.status(404).json({ error: `Tienda "${tienda_codigo}" no encontrada. Incluye "nombre" en el payload para crearla.` });
+
+      const emailAuto = `${tienda_codigo.toString().trim().toLowerCase()}@sportline.com`;
+      const { data: nueva, error: cErr } = await supabase
+        .from('tiendas')
+        .insert({
+          codigo:        tienda_codigo.toString().trim(),
+          nombre:        nombre.toString().trim(),
+          region:        (pais || 'General').toString().trim(),
+          email:         emailAuto,
+          password_hash: 'sport123',
+          activa:        true,
+          total_empleados: 0
+        })
+        .select('id, nombre, total_empleados')
+        .single();
+
+      if (cErr) return res.status(500).json({ error: 'No se pudo crear la tienda: ' + cErr.message });
+      tienda = nueva;
+    }
 
     // Actualizar total_empleados si viene en el payload y es diferente al actual
     const nuevoTotal = parseInt(total_empleados);
