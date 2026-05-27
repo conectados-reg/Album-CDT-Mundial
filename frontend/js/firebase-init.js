@@ -1,12 +1,12 @@
 // Reemplaza estos valores con los de tu proyecto Firebase
 // Firebase Console → Configuración del proyecto → Tus apps
 const firebaseConfig = {
-  apiKey:            "TU_API_KEY",
-  authDomain:        "TU_PROJECT_ID.firebaseapp.com",
-  projectId:         "TU_PROJECT_ID",
-  storageBucket:     "TU_PROJECT_ID.firebasestorage.app",
-  messagingSenderId: "TU_SENDER_ID",
-  appId:             "TU_APP_ID"
+  apiKey:            "AIzaSyDBrhhvBgi9iEHb_-9AottSSKOjfoM_ECA",
+  authDomain:        "album-metat-mundial-59cad.firebaseapp.com",
+  projectId:         "album-metat-mundial-59cad",
+  storageBucket:     "album-metat-mundial-59cad.firebasestorage.app",
+  messagingSenderId: "233395378351",
+  appId:             "1:233395378351:web:13f82a4cf0c39815fe5c5a"
 };
 
 if (!firebase.apps.length) {
