@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Album CDT Mundial 2026 — Informe Técnico IT</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      font-size: 11pt;
+      color: #1a1a1a;
+      background: #fff;
+      line-height: 1.6;
+    }
+
+    .page {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 48px 56px;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding-bottom: 24px;
+      border-bottom: 3px solid #1a56db;
+      margin-bottom: 32px;
+    }
+    .header-title h1 {
+      font-size: 22pt;
+      color: #1a56db;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    .header-title p {
+      font-size: 10pt;
+      color: #555;
+      margin-top: 4px;
+    }
+    .header-badge {
+      text-align: right;
+      font-size: 9pt;
+      color: #555;
+      line-height: 1.8;
+    }
+    .badge-confidencial {
+      display: inline-block;
+      background: #fef3c7;
+      border: 1px solid #f59e0b;
+      color: #92400e;
+      font-weight: 600;
+      font-size: 8pt;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-bottom: 4px;
+    }
+
+    /* Email fields */
+    .email-meta {
+      background: #f8fafc;
+      border-left: 4px solid #1a56db;
+      padding: 14px 18px;
+      margin-bottom: 32px;
+      font-size: 10.5pt;
+      border-radius: 0 6px 6px 0;
+    }
+    .email-meta table { width: 100%; border-collapse: collapse; }
+    .email-meta td { padding: 2px 0; }
+    .email-meta td:first-child { font-weight: 600; color: #374151; width: 80px; }
+
+    /* Sections */
+    h2 {
+      font-size: 13pt;
+      color: #1a56db;
+      font-weight: 700;
+      margin-top: 32px;
+      margin-bottom: 12px;
+      padding-bottom: 5px;
+      border-bottom: 1px solid #dbeafe;
+    }
+    h3 {
+      font-size: 11pt;
+      font-weight: 600;
+      color: #1e3a5f;
+      margin-top: 18px;
+      margin-bottom: 8px;
+    }
+    p { margin-bottom: 10px; }
+    ul, ol { padding-left: 22px; margin-bottom: 12px; }
+    li { margin-bottom: 4px; }
+
+    /* Tables */
+    table.data {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 10pt;
+      margin-bottom: 16px;
+    }
+    table.data th {
+      background: #1a56db;
+      color: #fff;
+      padding: 7px 12px;
+      text-align: left;
+      font-weight: 600;
+    }
+    table.data td {
+      padding: 6px 12px;
+      border-bottom: 1px solid #e5e7eb;
+      vertical-align: top;
+    }
+    table.data tr:nth-child(even) td { background: #f8fafc; }
+    table.data code {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 3px;
+      padding: 1px 5px;
+      font-size: 9pt;
+      color: #1e40af;
+    }
+
+    /* Code blocks */
+    pre {
+      background: #1e293b;
+      color: #e2e8f0;
+      border-radius: 6px;
+      padding: 14px 18px;
+      font-size: 9pt;
+      line-height: 1.5;
+      overflow-x: auto;
+      margin-bottom: 14px;
+    }
+    code.inline {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 3px;
+      padding: 1px 5px;
+      font-size: 9.5pt;
+      color: #1e40af;
+    }
+
+    /* Info boxes */
+    .box {
+      border-radius: 6px;
+      padding: 12px 16px;
+      margin-bottom: 14px;
+      font-size: 10.5pt;
+    }
+    .box-info { background: #eff6ff; border-left: 4px solid #3b82f6; }
+    .box-warn { background: #fffbeb; border-left: 4px solid #f59e0b; }
+    .box-ok   { background: #f0fdf4; border-left: 4px solid #22c55e; }
+    .box strong { color: #1e3a5f; }
+
+    /* Architecture diagram */
+    .arch {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin: 16px 0;
+    }
+    .arch-card {
+      border: 1.5px solid #bfdbfe;
+      border-radius: 8px;
+      padding: 12px 14px;
+      text-align: center;
+    }
+    .arch-card .layer { font-size: 8pt; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .arch-card .tech { font-size: 10.5pt; font-weight: 700; color: #1e3a5f; }
+    .arch-card .service { font-size: 9pt; color: #3b82f6; margin-top: 2px; }
+
+    /* Footer */
+    .footer {
+      margin-top: 48px;
+      padding-top: 16px;
+      border-top: 1px solid #e5e7eb;
+      font-size: 9pt;
+      color: #9ca3af;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Print */
+    @media print {
+      body { font-size: 10.5pt; }
+      .page { padding: 24px 32px; }
+      h2 { page-break-after: avoid; }
+      table.data { page-break-inside: avoid; }
+      .arch { page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-title">
+      <h1>Album CDT Mundial 2026</h1>
+      <p>Documentación Técnica — Proyecto de Incentivos de Ventas</p>
+    </div>
+    <div class="header-badge">
+      <div class="badge-confidencial">USO INTERNO</div><br>
+      Versión 1.0<br>
+      Junio 2026
+    </div>
+  </div>
+
+  <!-- Email meta -->
+  <div class="email-meta">
+    <table>
+      <tr><td>Para:</td><td>Business Partner de IT — SLA Corp / Sportline</td></tr>
+      <tr><td>De:</td><td>Josué Aguilar</td></tr>
+      <tr><td>Fecha:</td><td>10 de junio de 2026</td></tr>
+      <tr><td>Asunto:</td><td>Proyecto Album CDT Mundial 2026 — Documentación Técnica Completa</td></tr>
+    </table>
+  </div>
+
+  <!-- Intro -->
+  <p>Estimado/a Business Partner de IT,</p>
+  <p>
+    Te presento formalmente el proyecto <strong>Album CDT Mundial 2026</strong>, una aplicación web interna
+    desarrollada para la campaña de incentivos de ventas de la compañía durante el Mundial de Fútbol 2026.
+    El documento cubre arquitectura, seguridad, costos y consideraciones operativas para su evaluación y soporte.
+  </p>
+
+  <!-- 1. Descripción -->
+  <h2>1. Descripción del Proyecto</h2>
+  <p>
+    El sistema es un <strong>álbum de figuritas digital</strong> gamificado. Durante 6 semanas (alineadas con
+    las fases del Mundial), los empleados que cumplan su meta de ventas desbloquean una figurita con su foto
+    en el álbum de su tienda. El objetivo es aumentar el cumplimiento de metas y generar reconocimiento entre colaboradores.
+  </p>
+
+  <h3>Actores del sistema</h3>
+  <ul>
+    <li><strong>Administrador central:</strong> configura tiendas, sube resultados de ventas, gestiona empleados y avanza semanas.</li>
+    <li><strong>Jefe de tienda:</strong> accede con código + contraseña para ver el álbum de su tienda.</li>
+    <li><strong>Automatización (Apps Script):</strong> sincronización semanal de resultados de ventas desde Google Sheets.</li>
+  </ul>
+
+  <div class="box box-info">
+    <strong>Alcance temporal:</strong> Campaña activa del <strong>9 de junio al 19 de julio de 2026</strong> (6 semanas).
+    Posterior al Mundial, la infraestructura puede pausarse o eliminarse.
+  </div>
+
+  <!-- 2. Arquitectura -->
+  <h2>2. Arquitectura Técnica</h2>
+  <p>El sistema está alojado completamente en <strong>Google Cloud Platform (GCP)</strong> bajo el proyecto
+  <code class="inline">album-metat-mundial-59cad</code>.</p>
+
+  <div class="arch">
+    <div class="arch-card">
+      <div class="layer">Frontend</div>
+      <div class="tech">HTML / CSS / JS</div>
+      <div class="service">Firebase Hosting</div>
+    </div>
+    <div class="arch-card">
+      <div class="layer">Backend API</div>
+      <div class="tech">Node.js 20 + Express</div>
+      <div class="service">Cloud Run (Docker)</div>
+    </div>
+    <div class="arch-card">
+      <div class="layer">Base de Datos</div>
+      <div class="tech">PostgreSQL 15</div>
+      <div class="service">Cloud SQL</div>
+    </div>
+    <div class="arch-card">
+      <div class="layer">Fotos Empleados</div>
+      <div class="tech">Imágenes → URL pública</div>
+      <div class="service">Cloud Storage</div>
+    </div>
+    <div class="arch-card">
+      <div class="layer">Autenticación</div>
+      <div class="tech">Custom Tokens</div>
+      <div class="service">Firebase Auth</div>
+    </div>
+    <div class="arch-card">
+      <div class="layer">Automatización</div>
+      <div class="tech">Apps Script</div>
+      <div class="service">Google Sheets</div>
+    </div>
+  </div>
+
+  <h3>Flujo de datos simplificado</h3>
+  <pre>
+Google Sheets (Apps Script)
+    │  POST /api/sync/resultados  (API Key)
+    ▼
+Cloud Run  ──────────────────────────────────── Cloud SQL (PostgreSQL)
+(API Node.js/Express)                           tiendas, empleados,
+    │                                           semanas, resultados,
+    │  URLs públicas de fotos                   espacios_album
+    ▼
+Cloud Storage (fotos empleados)
+
+Firebase Hosting (frontend HTML/JS)
+    │  /api/** rewrite
+    ▼
+Cloud Run (misma instancia)
+    │  verifyIdToken()
+    ▼
+Firebase Auth</pre>
+
+  <!-- 3. Base de datos -->
+  <h2>3. Modelo de Datos</h2>
+  <table class="data">
+    <tr><th>Tabla</th><th>Descripción</th><th>Registros actuales</th></tr>
+    <tr><td><code>tiendas</code></td><td>Código, nombre, región, ciudad, contraseña hasheada</td><td>239 tiendas</td></tr>
+    <tr><td><code>empleados</code></td><td>Nombre, cargo, foto (URL GCS), semana asignada, tienda</td><td>Variable</td></tr>
+    <tr><td><code>semanas</code></td><td>6 semanas del torneo con fechas y estado activa/inactiva</td><td>6 registros fijos</td></tr>
+    <tr><td><code>resultados_ventas</code></td><td>% cumplimiento por empleado por semana</td><td>Crece semanalmente</td></tr>
+    <tr><td><code>espacios_album</code></td><td>Figuritas desbloqueadas (empleado × semana)</td><td>Crece semanalmente</td></tr>
+    <tr><td><code>admins</code></td><td>Usuarios administradores del panel central</td><td>Reducido</td></tr>
+  </table>
+
+  <div class="box box-info">
+    <strong>Sin datos sensibles de clientes finales.</strong> El sistema maneja únicamente datos de empleados internos:
+    nombre, cargo, foto de perfil y resultados de ventas agregados.
+  </div>
+
+  <!-- 4. API -->
+  <h2>4. Endpoints Principales de la API</h2>
+  <table class="data">
+    <tr><th>Método</th><th>Ruta</th><th>Descripción</th><th>Acceso</th></tr>
+    <tr><td>POST</td><td><code>/api/auth/login</code></td><td>Login de tienda → Custom Token Firebase</td><td>Público</td></tr>
+    <tr><td>POST</td><td><code>/api/auth/admin/login</code></td><td>Login de administrador</td><td>Público</td></tr>
+    <tr><td>GET</td><td><code>/api/album/:tiendaId</code></td><td>Álbum completo de una tienda</td><td>Tienda autenticada</td></tr>
+    <tr><td>POST</td><td><code>/api/album/subir-foto</code></td><td>Sube foto de empleado a Cloud Storage</td><td>Admin</td></tr>
+    <tr><td>GET</td><td><code>/api/empleados/:tiendaId</code></td><td>Lista empleados de una tienda</td><td>Admin / Tienda</td></tr>
+    <tr><td>POST</td><td><code>/api/ventas/registrar</code></td><td>Registra resultados de ventas (lote)</td><td>Admin / Apps Script</td></tr>
+    <tr><td>GET</td><td><code>/api/semanas</code></td><td>Lista semanas con estado</td><td>Autenticado</td></tr>
+    <tr><td>POST</td><td><code>/api/semanas/avanzar</code></td><td>Avanza a la siguiente semana</td><td>Admin</td></tr>
+    <tr><td>GET</td><td><code>/api/tiendas</code></td><td>Lista todas las tiendas</td><td>Admin</td></tr>
+    <tr><td>POST</td><td><code>/api/sync/resultados</code></td><td>Sincronización masiva desde Google Sheets</td><td>API Key</td></tr>
+    <tr><td>POST</td><td><code>/api/sync/registrar-tienda</code></td><td>Registra nueva tienda desde Sheets</td><td>API Key</td></tr>
+  </table>
+
+  <!-- 5. Seguridad -->
+  <h2>5. Seguridad y Autenticación</h2>
+
+  <h3>Flujo de autenticación</h3>
+  <ol>
+    <li>La tienda envía código + contraseña al endpoint <code class="inline">POST /api/auth/login</code>.</li>
+    <li>El backend verifica el hash <strong>bcrypt</strong> en Cloud SQL.</li>
+    <li>Si es correcto, el servidor genera un <strong>Firebase Custom Token</strong> firmado con la Service Account.</li>
+    <li>El frontend lo intercambia por un <strong>Firebase ID Token</strong> (válido 1 hora, renovación automática).</li>
+    <li>Cada request subsecuente incluye el ID Token en el header <code class="inline">Authorization: Bearer &lt;token&gt;</code>.</li>
+    <li>El backend llama <code class="inline">admin.auth().verifyIdToken()</code> para validar la firma y los claims.</li>
+  </ol>
+
+  <h3>Apps Script (Google Sheets)</h3>
+  <p>Usa una <strong>API Key independiente</strong> en el header <code class="inline">x-api-key</code> para las rutas de sincronización.
+  No usa Firebase Auth — es una integración server-to-server interna.</p>
+
+  <h3>Prácticas de seguridad aplicadas</h3>
+  <ul>
+    <li>Contraseñas almacenadas con <strong>bcrypt</strong> (10 rondas salt).</li>
+    <li>CORS configurado exclusivamente para el dominio de Firebase Hosting.</li>
+    <li>Variables de entorno sensibles gestionadas en <strong>Cloud Run secrets</strong> (no en código).</li>
+    <li>Service Account con permisos mínimos: <em>Cloud SQL Client</em>, <em>Storage Object Admin</em>, <em>Firebase Admin</em>.</li>
+  </ul>
+
+  <div class="box box-warn">
+    <strong>Recomendación pendiente:</strong> Migrar la clave privada de la Service Account a
+    <strong>Google Secret Manager</strong> para la siguiente iteración. Actualmente se gestiona
+    como variable de entorno en Cloud Run.
+  </div>
+
+  <!-- 6. Variables de entorno -->
+  <h2>6. Variables de Entorno (Cloud Run)</h2>
+  <table class="data">
+    <tr><th>Variable</th><th>Descripción</th></tr>
+    <tr><td><code>DATABASE_URL</code></td><td>Connection string Cloud SQL (postgresql://usuario:pass@host/db)</td></tr>
+    <tr><td><code>FIREBASE_PROJECT_ID</code></td><td>ID del proyecto Firebase (<code>album-metat-mundial-59cad</code>)</td></tr>
+    <tr><td><code>FIREBASE_CLIENT_EMAIL</code></td><td>Email de la Service Account de GCP</td></tr>
+    <tr><td><code>FIREBASE_PRIVATE_KEY</code></td><td>Clave privada RSA de la Service Account</td></tr>
+    <tr><td><code>GCS_BUCKET_NAME</code></td><td>Nombre del bucket de Cloud Storage para fotos</td></tr>
+    <tr><td><code>SYNC_API_KEY</code></td><td>Clave secreta para autenticar Apps Script</td></tr>
+  </table>
+
+  <!-- 7. Repositorio -->
+  <h2>7. Repositorio y Estructura de Código</h2>
+  <p>Repositorio GitHub: <strong>conectados-reg/Album-CDT-Mundial</strong> (rama <code class="inline">main</code>)</p>
+  <pre>
+/
+├── backend/
+│   ├── server.js            # Entry point Express
+│   ├── db.js                # Pool PostgreSQL → Cloud SQL
+│   ├── firebase-admin.js    # Firebase Admin SDK
+│   ├── gcs.js               # Google Cloud Storage helper
+│   ├── Dockerfile           # Imagen Docker para Cloud Run
+│   ├── routes/
+│   │   ├── auth.js          # Login + middleware verificarToken
+│   │   ├── album.js         # Álbum + upload de fotos
+│   │   ├── empleados.js     # CRUD empleados
+│   │   ├── ventas.js        # Registro resultados (batch upsert)
+│   │   ├── semanas.js       # Gestión semanas
+│   │   ├── tiendas.js       # Gestión tiendas
+│   │   └── sync.js          # Sincronización Apps Script
+│   └── services/
+│       └── scheduler.js     # Tarea automática desbloqueo figuritas
+├── frontend/
+│   ├── index.html           # Login de tienda
+│   ├── album.html           # Vista álbum de tienda
+│   ├── admin.html           # Panel administrador
+│   └── js/
+│       └── firebase-init.js # SDK Firebase + renovación automática token
+├── firebase.json            # Hosting + rewrite /api/** → Cloud Run
+└── backend/schema.sql       # DDL completo de la base de datos</pre>
+
+  <!-- 8. Despliegue -->
+  <h2>8. Proceso de Despliegue</h2>
+  <table class="data">
+    <tr><th>Componente</th><th>Comando</th></tr>
+    <tr><td>Backend (Cloud Run)</td><td><code>gcloud run deploy album-cdt-mundial --source ./backend --region us-central1</code></td></tr>
+    <tr><td>Frontend (Firebase Hosting)</td><td><code>firebase deploy --only hosting</code></td></tr>
+    <tr><td>Base de datos</td><td>Cloud SQL PostgreSQL 15 — instancia <code>album-cdt-mundial-db</code></td></tr>
+  </table>
+
+  <!-- 9. Costos -->
+  <h2>9. Costos Estimados</h2>
+  <table class="data">
+    <tr><th>Servicio</th><th>Tier</th><th>Costo estimado/mes</th></tr>
+    <tr><td>Cloud SQL (PostgreSQL 15)</td><td>db-f1-micro, 10 GB SSD</td><td>~$8–15 USD</td></tr>
+    <tr><td>Cloud Run</td><td>Primer millón de requests gratuito</td><td>~$0 USD</td></tr>
+    <tr><td>Firebase Hosting</td><td>Plan gratuito Spark</td><td>$0 USD</td></tr>
+    <tr><td>Cloud Storage</td><td>Primeros 5 GB gratuitos</td><td>~$0 USD</td></tr>
+    <tr><td><strong>Total estimado</strong></td><td></td><td><strong>&lt; $20 USD/mes</strong></td></tr>
+  </table>
+
+  <div class="box box-ok">
+    <strong>Nota de cierre de campaña:</strong> Al terminar el Mundial (19 de julio de 2026), la instancia
+    Cloud SQL puede pausarse para reducir costos a prácticamente $0. Firebase Hosting y Cloud Run no generan
+    costo en ausencia de tráfico.
+  </div>
+
+  <!-- 10. Consideraciones IT -->
+  <h2>10. Consideraciones para IT</h2>
+
+  <h3>Respaldo de datos</h3>
+  <p>Se recomienda activar <strong>backups automáticos diarios</strong> en Cloud SQL desde la consola de GCP.
+  La ventana de retención sugerida es 7 días durante la campaña.</p>
+
+  <h3>Monitoreo</h3>
+  <p>Cloud Run expone métricas de latencia, errores y uso de CPU en <strong>Cloud Monitoring</strong>. No se ha
+  configurado alerting formal — se recomienda agregar una alerta de error rate &gt; 5% a un correo de IT.</p>
+
+  <h3>Rotación de credenciales</h3>
+  <p>La clave privada de la Service Account debe rotarse periódicamente desde
+  <strong>IAM &amp; Admin → Service Accounts</strong> en GCP Console.</p>
+
+  <h3>Acceso de emergencia</h3>
+  <ul>
+    <li>URL de la aplicación: <code class="inline">https://album-metat-mundial-59cad.web.app</code></li>
+    <li>Panel admin: <code class="inline">/admin.html</code></li>
+    <li>Consola GCP: proyecto <code class="inline">album-metat-mundial-59cad</code></li>
+    <li>Las credenciales de administrador residen en la tabla <code class="inline">admins</code> de Cloud SQL.</li>
+  </ul>
+
+  <h3>Sin dependencias de terceros críticos</h3>
+  <p>Todo el stack reside en GCP / Google Cloud. No hay dependencias en servicios externos pagos o de terceros
+  fuera del ecosistema Google.</p>
+
+  <!-- Cierre -->
+  <h2>11. Contacto y Disponibilidad</h2>
+  <p>
+    Quedo disponible para cualquier consulta técnica adicional, demostración del sistema, auditoría de
+    código, o ajustes de arquitectura que IT requiera antes o durante la campaña.
+  </p>
+  <p style="margin-top: 24px;">
+    Saludos cordiales,<br><br>
+    <strong>Josué Aguilar</strong><br>
+    <span style="color:#555">josueagilar81@gmail.com</span>
+  </p>
+
+  <!-- Footer -->
+  <div class="footer">
+    <span>Album CDT Mundial 2026 — Documentación Técnica IT</span>
+    <span>Confidencial — Uso Interno</span>
+  </div>
+
+</div>
+</body>
+</html>
