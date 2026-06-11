@@ -485,10 +485,7 @@
           return;
         }
 
-        // Intercambiar custom token por Firebase ID token
-        const userCredential = await firebase.auth().signInWithCustomToken(data.customToken);
-        const idToken = await userCredential.user.getIdToken();
-        localStorage.setItem('token', idToken);
+        localStorage.setItem('token', data.token);
         localStorage.setItem('esAdmin', data.esAdmin ? 'true' : 'false');
 
         if (!data.esAdmin && data.tienda) {
@@ -576,9 +573,5 @@
       }
     }
   </script>
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-  <script src="js/firebase-init.js"></script>
 </body>
 </html>
