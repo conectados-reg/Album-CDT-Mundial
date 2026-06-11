@@ -21,7 +21,6 @@
       padding: 48px 56px;
     }
 
-    /* Header */
     .header {
       display: flex;
       align-items: flex-start;
@@ -59,7 +58,6 @@
       margin-bottom: 4px;
     }
 
-    /* Email fields */
     .email-meta {
       background: #f8fafc;
       border-left: 4px solid #1a56db;
@@ -72,7 +70,6 @@
     .email-meta td { padding: 2px 0; }
     .email-meta td:first-child { font-weight: 600; color: #374151; width: 80px; }
 
-    /* Sections */
     h2 {
       font-size: 13pt;
       color: #1a56db;
@@ -93,7 +90,6 @@
     ul, ol { padding-left: 22px; margin-bottom: 12px; }
     li { margin-bottom: 4px; }
 
-    /* Tables */
     table.data {
       width: 100%;
       border-collapse: collapse;
@@ -122,7 +118,6 @@
       color: #1e40af;
     }
 
-    /* Code blocks */
     pre {
       background: #1e293b;
       color: #e2e8f0;
@@ -142,7 +137,6 @@
       color: #1e40af;
     }
 
-    /* Info boxes */
     .box {
       border-radius: 6px;
       padding: 12px 16px;
@@ -150,11 +144,9 @@
       font-size: 10.5pt;
     }
     .box-info { background: #eff6ff; border-left: 4px solid #3b82f6; }
-    .box-warn { background: #fffbeb; border-left: 4px solid #f59e0b; }
     .box-ok   { background: #f0fdf4; border-left: 4px solid #22c55e; }
     .box strong { color: #1e3a5f; }
 
-    /* Architecture diagram */
     .arch {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
@@ -171,7 +163,6 @@
     .arch-card .tech { font-size: 10.5pt; font-weight: 700; color: #1e3a5f; }
     .arch-card .service { font-size: 9pt; color: #3b82f6; margin-top: 2px; }
 
-    /* Footer */
     .footer {
       margin-top: 48px;
       padding-top: 16px;
@@ -182,7 +173,6 @@
       justify-content: space-between;
     }
 
-    /* Print */
     @media print {
       body { font-size: 10.5pt; }
       .page { padding: 24px 32px; }
@@ -195,7 +185,6 @@
 <body>
 <div class="page">
 
-  <!-- Header -->
   <div class="header">
     <div class="header-title">
       <h1>Album CDT Mundial 2026</h1>
@@ -208,48 +197,48 @@
     </div>
   </div>
 
-  <!-- Email meta -->
   <div class="email-meta">
     <table>
       <tr><td>Para:</td><td>Business Partner de IT — SLA Corp / Sportline</td></tr>
-      <tr><td>De:</td><td>Josué Aguilar</td></tr>
+      <tr><td>De:</td><td>Área de Desarrollo</td></tr>
       <tr><td>Fecha:</td><td>10 de junio de 2026</td></tr>
       <tr><td>Asunto:</td><td>Proyecto Album CDT Mundial 2026 — Documentación Técnica Completa</td></tr>
     </table>
   </div>
 
-  <!-- Intro -->
   <p>Estimado/a Business Partner de IT,</p>
   <p>
-    Te presento formalmente el proyecto <strong>Album CDT Mundial 2026</strong>, una aplicación web interna
+    Presentamos formalmente el proyecto <strong>Album CDT Mundial 2026</strong>, una aplicación web interna
     desarrollada para la campaña de incentivos de ventas de la compañía durante el Mundial de Fútbol 2026.
-    El documento cubre arquitectura, seguridad, costos y consideraciones operativas para su evaluación y soporte.
+    El documento cubre arquitectura completa, seguridad, integraciones, costos y consideraciones operativas.
   </p>
 
   <!-- 1. Descripción -->
   <h2>1. Descripción del Proyecto</h2>
   <p>
-    El sistema es un <strong>álbum de figuritas digital</strong> gamificado. Durante 6 semanas (alineadas con
+    El sistema es un <strong>álbum de figuritas digital gamificado</strong>. Durante 6 semanas (alineadas con
     las fases del Mundial), los empleados que cumplan su meta de ventas desbloquean una figurita con su foto
-    en el álbum de su tienda. El objetivo es aumentar el cumplimiento de metas y generar reconocimiento entre colaboradores.
+    en el álbum de su tienda. Al desbloquearse, el sistema envía automáticamente un correo de notificación
+    al jefe de tienda para que suba la fotografía del empleado.
   </p>
 
   <h3>Actores del sistema</h3>
   <ul>
-    <li><strong>Administrador central:</strong> configura tiendas, sube resultados de ventas, gestiona empleados y avanza semanas.</li>
-    <li><strong>Jefe de tienda:</strong> accede con código + contraseña para ver el álbum de su tienda.</li>
-    <li><strong>Automatización (Apps Script):</strong> sincronización semanal de resultados de ventas desde Google Sheets.</li>
+    <li><strong>Administrador central:</strong> configura tiendas, carga resultados de ventas, gestiona empleados y avanza semanas.</li>
+    <li><strong>Jefe de tienda:</strong> accede con código + contraseña para ver el álbum de su tienda y subir fotos de empleados.</li>
+    <li><strong>Apps Script (Google Sheets):</strong> sincronización semanal masiva de resultados de ventas al sistema.</li>
+    <li><strong>Brevo:</strong> servicio externo de envío de correos transaccionales de notificación.</li>
   </ul>
 
   <div class="box box-info">
     <strong>Alcance temporal:</strong> Campaña activa del <strong>9 de junio al 19 de julio de 2026</strong> (6 semanas).
-    Posterior al Mundial, la infraestructura puede pausarse o eliminarse.
+    Al finalizar el Mundial, la infraestructura puede pausarse o eliminarse.
   </div>
 
   <!-- 2. Arquitectura -->
-  <h2>2. Arquitectura Técnica</h2>
-  <p>El sistema está alojado completamente en <strong>Google Cloud Platform (GCP)</strong> bajo el proyecto
-  <code class="inline">album-metat-mundial-59cad</code>.</p>
+  <h2>2. Arquitectura Técnica Completa</h2>
+  <p>El sistema está alojado en <strong>Google Cloud Platform (GCP)</strong> bajo el proyecto
+  <code class="inline">album-metat-mundial-59cad</code>, con una integración de correos hacia el servicio externo <strong>Brevo</strong>.</p>
 
   <div class="arch">
     <div class="arch-card">
@@ -270,7 +259,7 @@
     <div class="arch-card">
       <div class="layer">Fotos Empleados</div>
       <div class="tech">Imágenes → URL pública</div>
-      <div class="service">Cloud Storage</div>
+      <div class="service">Cloud Storage (GCS)</div>
     </div>
     <div class="arch-card">
       <div class="layer">Autenticación</div>
@@ -278,205 +267,277 @@
       <div class="service">Firebase Auth</div>
     </div>
     <div class="arch-card">
-      <div class="layer">Automatización</div>
-      <div class="tech">Apps Script</div>
+      <div class="layer">Notificaciones Email</div>
+      <div class="tech">REST API</div>
+      <div class="service">Brevo (externo)</div>
+    </div>
+    <div class="arch-card">
+      <div class="layer">Datos de Ventas</div>
+      <div class="tech">Apps Script + Sheets API</div>
       <div class="service">Google Sheets</div>
+    </div>
+    <div class="arch-card">
+      <div class="layer">Tareas Automáticas</div>
+      <div class="tech">node-cron</div>
+      <div class="service">Cloud Run (scheduler)</div>
+    </div>
+    <div class="arch-card">
+      <div class="layer">Código Fuente</div>
+      <div class="tech">Git</div>
+      <div class="service">GitHub</div>
     </div>
   </div>
 
-  <h3>Flujo de datos simplificado</h3>
+  <h3>Flujo de datos completo</h3>
   <pre>
-Google Sheets (Apps Script)
-    │  POST /api/sync/resultados  (API Key)
-    ▼
-Cloud Run  ──────────────────────────────────── Cloud SQL (PostgreSQL)
-(API Node.js/Express)                           tiendas, empleados,
-    │                                           semanas, resultados,
-    │  URLs públicas de fotos                   espacios_album
-    ▼
-Cloud Storage (fotos empleados)
-
-Firebase Hosting (frontend HTML/JS)
-    │  /api/** rewrite
-    ▼
-Cloud Run (misma instancia)
-    │  verifyIdToken()
-    ▼
-Firebase Auth</pre>
+┌─────────────────────────────────────────────────────────────────┐
+│                      FUENTE DE DATOS                            │
+│  Google Sheets (Apps Script)  ──────► POST /api/sync/resultados │
+│  (resultados de ventas semanales)           (API Key)           │
+└─────────────────────────────────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    BACKEND — Cloud Run                          │
+│  Node.js 20 + Express                                           │
+│  ├── routes/auth.js         Login + Firebase Custom Tokens      │
+│  ├── routes/stores.js       CRUD tiendas                        │
+│  ├── routes/empleados.js    CRUD empleados                      │
+│  ├── routes/ventas.js       Registro resultados (batch)         │
+│  ├── routes/album.js        Álbum + subida de fotos             │
+│  ├── routes/semanas.js      Gestión semanas                     │
+│  ├── routes/notificaciones.js  Emails a tiendas via Brevo       │
+│  ├── routes/sync.js         Sincronización desde Google Sheets  │
+│  └── services/scheduler.js  Cron: desbloqueo automático         │
+└──────┬──────────────┬───────────────┬──────────────────────────┘
+       │              │               │
+       ▼              ▼               ▼
+  Cloud SQL      Cloud Storage     Brevo API
+  PostgreSQL 15  (fotos .jpg)      (emails HTML
+  tiendas,       URL pública       a jefes de
+  empleados,                       tienda)
+  semanas,
+  resultados,
+  espacios_album
+       │
+       ▲
+Firebase Auth  ◄──── frontend verifica ID Token en cada request
+       │
+Firebase Hosting (HTML/JS estático)
+  /api/** rewrite ──► Cloud Run</pre>
 
   <!-- 3. Base de datos -->
   <h2>3. Modelo de Datos</h2>
   <table class="data">
     <tr><th>Tabla</th><th>Descripción</th><th>Registros actuales</th></tr>
-    <tr><td><code>tiendas</code></td><td>Código, nombre, región, ciudad, contraseña hasheada</td><td>239 tiendas</td></tr>
-    <tr><td><code>empleados</code></td><td>Nombre, cargo, foto (URL GCS), semana asignada, tienda</td><td>Variable</td></tr>
-    <tr><td><code>semanas</code></td><td>6 semanas del torneo con fechas y estado activa/inactiva</td><td>6 registros fijos</td></tr>
-    <tr><td><code>resultados_ventas</code></td><td>% cumplimiento por empleado por semana</td><td>Crece semanalmente</td></tr>
-    <tr><td><code>espacios_album</code></td><td>Figuritas desbloqueadas (empleado × semana)</td><td>Crece semanalmente</td></tr>
+    <tr><td><code>tiendas</code></td><td>Código, nombre, región, ciudad, email, contraseña hasheada (bcrypt)</td><td>239 tiendas</td></tr>
+    <tr><td><code>empleados</code></td><td>Nombre, cargo, foto (URL GCS), semana asignada, referencia a tienda</td><td>Variable por tienda</td></tr>
+    <tr><td><code>semanas</code></td><td>6 semanas del torneo con fechas exactas y estado activa/inactiva</td><td>6 registros fijos</td></tr>
+    <tr><td><code>resultados_ventas</code></td><td>% de cumplimiento de meta por empleado por semana</td><td>Crece semanalmente</td></tr>
+    <tr><td><code>espacios_album</code></td><td>Registro de figuritas desbloqueadas (empleado × semana)</td><td>Crece semanalmente</td></tr>
     <tr><td><code>admins</code></td><td>Usuarios administradores del panel central</td><td>Reducido</td></tr>
+  </table>
+
+  <h3>Funciones almacenadas (PostgreSQL)</h3>
+  <table class="data">
+    <tr><th>Función</th><th>Descripción</th></tr>
+    <tr><td><code>avanzar_semana()</code></td><td>Desactiva la semana actual y activa la siguiente (1→2→…→6)</td></tr>
+    <tr><td><code>desbloquear_espacios_automatico()</code></td><td>Inserta registros en <code>espacios_album</code> para empleados que cumplieron meta en la semana activa</td></tr>
   </table>
 
   <div class="box box-info">
     <strong>Sin datos sensibles de clientes finales.</strong> El sistema maneja únicamente datos de empleados internos:
-    nombre, cargo, foto de perfil y resultados de ventas agregados.
+    nombre, cargo, foto de perfil y resultados de ventas agregados (porcentaje).
   </div>
 
   <!-- 4. API -->
-  <h2>4. Endpoints Principales de la API</h2>
+  <h2>4. Endpoints Completos de la API</h2>
   <table class="data">
     <tr><th>Método</th><th>Ruta</th><th>Descripción</th><th>Acceso</th></tr>
-    <tr><td>POST</td><td><code>/api/auth/login</code></td><td>Login de tienda → Custom Token Firebase</td><td>Público</td></tr>
-    <tr><td>POST</td><td><code>/api/auth/admin/login</code></td><td>Login de administrador</td><td>Público</td></tr>
-    <tr><td>GET</td><td><code>/api/album/:tiendaId</code></td><td>Álbum completo de una tienda</td><td>Tienda autenticada</td></tr>
-    <tr><td>POST</td><td><code>/api/album/subir-foto</code></td><td>Sube foto de empleado a Cloud Storage</td><td>Admin</td></tr>
-    <tr><td>GET</td><td><code>/api/empleados/:tiendaId</code></td><td>Lista empleados de una tienda</td><td>Admin / Tienda</td></tr>
-    <tr><td>POST</td><td><code>/api/ventas/registrar</code></td><td>Registra resultados de ventas (lote)</td><td>Admin / Apps Script</td></tr>
-    <tr><td>GET</td><td><code>/api/semanas</code></td><td>Lista semanas con estado</td><td>Autenticado</td></tr>
-    <tr><td>POST</td><td><code>/api/semanas/avanzar</code></td><td>Avanza a la siguiente semana</td><td>Admin</td></tr>
-    <tr><td>GET</td><td><code>/api/tiendas</code></td><td>Lista todas las tiendas</td><td>Admin</td></tr>
-    <tr><td>POST</td><td><code>/api/sync/resultados</code></td><td>Sincronización masiva desde Google Sheets</td><td>API Key</td></tr>
-    <tr><td>POST</td><td><code>/api/sync/registrar-tienda</code></td><td>Registra nueva tienda desde Sheets</td><td>API Key</td></tr>
+    <tr><td>POST</td><td><code>/api/auth/login</code></td><td>Login de tienda → retorna Firebase Custom Token</td><td>Público</td></tr>
+    <tr><td>POST</td><td><code>/api/auth/admin/login</code></td><td>Login de administrador central</td><td>Público</td></tr>
+    <tr><td>GET</td><td><code>/api/tiendas/lista</code></td><td>Lista pública de tiendas (nombre, código, región) para dropdown de login</td><td>Público</td></tr>
+    <tr><td>GET</td><td><code>/api/tiendas/</code></td><td>Lista completa de tiendas con datos sensibles</td><td>Admin</td></tr>
+    <tr><td>GET</td><td><code>/api/album/:tiendaId</code></td><td>Álbum completo de una tienda con estado de figuritas</td><td>Tienda autenticada</td></tr>
+    <tr><td>POST</td><td><code>/api/album/subir-foto</code></td><td>Sube foto base64 de empleado → Google Cloud Storage</td><td>Tienda / Admin</td></tr>
+    <tr><td>GET</td><td><code>/api/empleados/:tiendaId</code></td><td>Lista empleados de una tienda con estado de álbum</td><td>Admin / Tienda</td></tr>
+    <tr><td>POST</td><td><code>/api/empleados/</code></td><td>Crear nuevo empleado</td><td>Admin</td></tr>
+    <tr><td>PUT</td><td><code>/api/empleados/:id</code></td><td>Actualizar datos de empleado</td><td>Admin</td></tr>
+    <tr><td>DELETE</td><td><code>/api/empleados/:id</code></td><td>Desactivar empleado</td><td>Admin</td></tr>
+    <tr><td>POST</td><td><code>/api/ventas/registrar</code></td><td>Registra resultados de ventas en lote (upsert)</td><td>Admin / Apps Script</td></tr>
+    <tr><td>GET</td><td><code>/api/semanas</code></td><td>Lista las 6 semanas con fechas y estado</td><td>Autenticado</td></tr>
+    <tr><td>POST</td><td><code>/api/semanas/avanzar</code></td><td>Avanza a la siguiente semana del torneo</td><td>Admin</td></tr>
+    <tr><td>GET</td><td><code>/api/notificaciones/pendientes</code></td><td>Tiendas con empleados al 100% en la semana activa (listos para notificar)</td><td>Admin</td></tr>
+    <tr><td>POST</td><td><code>/api/notificaciones/enviar/:tienda_id</code></td><td>Envía email HTML de notificación a una tienda via Brevo</td><td>Admin</td></tr>
+    <tr><td>POST</td><td><code>/api/sync/resultados</code></td><td>Sincronización masiva de ventas desde Google Sheets</td><td>API Key</td></tr>
+    <tr><td>POST</td><td><code>/api/sync/registrar-tienda</code></td><td>Registra tienda nueva desde Google Sheets si no existe</td><td>API Key</td></tr>
   </table>
 
-  <!-- 5. Seguridad -->
-  <h2>5. Seguridad y Autenticación</h2>
+  <!-- 5. Integraciones externas -->
+  <h2>5. Integraciones Externas</h2>
+
+  <h3>Google Sheets + Apps Script</h3>
+  <p>El proceso de carga de resultados opera de dos maneras:</p>
+  <ol>
+    <li><strong>Apps Script:</strong> un script en el archivo de Google Sheets llama directamente los endpoints <code class="inline">/api/sync/registrar-tienda</code> y <code class="inline">/api/sync/resultados</code> mediante HTTP, autenticado con la <code class="inline">SYNC_API_KEY</code>.</li>
+    <li><strong>Sheets API directa:</strong> el backend también puede leer el Google Sheet directamente usando la librería <code class="inline">googleapis</code> de Node.js, autenticado con la Service Account de GCP, para lectura de la pestaña de ventas (<code class="inline">Ventas!A2:E</code>).</li>
+  </ol>
+
+  <h3>Brevo (Email transaccional)</h3>
+  <p>
+    Cuando el administrador confirma el desbloqueo de figuritas, el sistema genera un correo HTML personalizado
+    con el nombre de la tienda, la semana y las tarjetas de los empleados que cumplieron meta.
+    El correo se envía via <strong>Brevo REST API</strong> (<code class="inline">api.brevo.com/v3/smtp/email</code>)
+    al email registrado de la tienda. El remitente aparece como <em>"Álbum Estrellas · SLA Corp."</em>.
+  </p>
+  <table class="data">
+    <tr><th>Variable</th><th>Descripción</th></tr>
+    <tr><td><code>BREVO_API_KEY</code></td><td>Clave API de la cuenta Brevo</td></tr>
+    <tr><td><code>BREVO_SENDER</code></td><td>Email remitente (ej. conectados@sportline.com.pa)</td></tr>
+    <tr><td><code>NOTIFY_OVERRIDE_EMAIL</code></td><td>Email de prueba para redirigir todas las notificaciones (opcional, para testing)</td></tr>
+    <tr><td><code>FRONTEND_URL</code></td><td>URL del frontend para el botón CTA del correo</td></tr>
+  </table>
+
+  <!-- 6. Seguridad -->
+  <h2>6. Seguridad y Autenticación</h2>
 
   <h3>Flujo de autenticación</h3>
   <ol>
     <li>La tienda envía código + contraseña al endpoint <code class="inline">POST /api/auth/login</code>.</li>
-    <li>El backend verifica el hash <strong>bcrypt</strong> en Cloud SQL.</li>
+    <li>El backend verifica el hash <strong>bcrypt</strong> (10 rondas) en Cloud SQL.</li>
     <li>Si es correcto, el servidor genera un <strong>Firebase Custom Token</strong> firmado con la Service Account.</li>
     <li>El frontend lo intercambia por un <strong>Firebase ID Token</strong> (válido 1 hora, renovación automática).</li>
-    <li>Cada request subsecuente incluye el ID Token en el header <code class="inline">Authorization: Bearer &lt;token&gt;</code>.</li>
-    <li>El backend llama <code class="inline">admin.auth().verifyIdToken()</code> para validar la firma y los claims.</li>
+    <li>Cada request incluye el ID Token en el header <code class="inline">Authorization: Bearer &lt;token&gt;</code>.</li>
+    <li>El backend llama <code class="inline">admin.auth().verifyIdToken()</code> para validar firma y claims de rol.</li>
   </ol>
 
-  <h3>Apps Script (Google Sheets)</h3>
-  <p>Usa una <strong>API Key independiente</strong> en el header <code class="inline">x-api-key</code> para las rutas de sincronización.
-  No usa Firebase Auth — es una integración server-to-server interna.</p>
+  <h3>Apps Script</h3>
+  <p>Usa una <strong>API Key independiente</strong> en el header <code class="inline">x-api-key</code>. No usa Firebase Auth.</p>
 
   <h3>Prácticas de seguridad aplicadas</h3>
   <ul>
     <li>Contraseñas almacenadas con <strong>bcrypt</strong> (10 rondas salt).</li>
     <li>CORS configurado exclusivamente para el dominio de Firebase Hosting.</li>
-    <li>Variables de entorno sensibles gestionadas en <strong>Cloud Run secrets</strong> (no en código).</li>
+    <li>Variables de entorno sensibles gestionadas como secrets en Cloud Run (no en código fuente).</li>
     <li>Service Account con permisos mínimos: <em>Cloud SQL Client</em>, <em>Storage Object Admin</em>, <em>Firebase Admin</em>.</li>
+    <li>Fotos de empleados almacenadas en bucket privado con URL pública por objeto (no acceso de lista).</li>
   </ul>
 
-  <div class="box box-warn">
-    <strong>Recomendación pendiente:</strong> Migrar la clave privada de la Service Account a
-    <strong>Google Secret Manager</strong> para la siguiente iteración. Actualmente se gestiona
-    como variable de entorno en Cloud Run.
-  </div>
-
-  <!-- 6. Variables de entorno -->
-  <h2>6. Variables de Entorno (Cloud Run)</h2>
+  <!-- 7. Variables de entorno -->
+  <h2>7. Variables de Entorno (Cloud Run)</h2>
   <table class="data">
     <tr><th>Variable</th><th>Descripción</th></tr>
     <tr><td><code>DATABASE_URL</code></td><td>Connection string Cloud SQL (postgresql://usuario:pass@host/db)</td></tr>
     <tr><td><code>FIREBASE_PROJECT_ID</code></td><td>ID del proyecto Firebase (<code>album-metat-mundial-59cad</code>)</td></tr>
     <tr><td><code>FIREBASE_CLIENT_EMAIL</code></td><td>Email de la Service Account de GCP</td></tr>
     <tr><td><code>FIREBASE_PRIVATE_KEY</code></td><td>Clave privada RSA de la Service Account</td></tr>
-    <tr><td><code>GCS_BUCKET_NAME</code></td><td>Nombre del bucket de Cloud Storage para fotos</td></tr>
+    <tr><td><code>GCS_BUCKET_NAME</code></td><td>Nombre del bucket de Cloud Storage para fotos de empleados</td></tr>
     <tr><td><code>SYNC_API_KEY</code></td><td>Clave secreta para autenticar Apps Script</td></tr>
+    <tr><td><code>BREVO_API_KEY</code></td><td>Clave API del servicio de emails Brevo</td></tr>
+    <tr><td><code>BREVO_SENDER</code></td><td>Email remitente para notificaciones</td></tr>
+    <tr><td><code>FRONTEND_URL</code></td><td>URL pública del frontend (Firebase Hosting)</td></tr>
+    <tr><td><code>GOOGLE_SHEET_ID</code></td><td>ID del Google Sheet de ventas (lectura directa via Sheets API)</td></tr>
+    <tr><td><code>GOOGLE_SERVICE_ACCOUNT_FILE</code></td><td>Ruta al archivo JSON de credenciales para Sheets API</td></tr>
   </table>
 
-  <!-- 7. Repositorio -->
-  <h2>7. Repositorio y Estructura de Código</h2>
+  <!-- 8. Repositorio -->
+  <h2>8. Repositorio y Estructura de Código</h2>
   <p>Repositorio GitHub: <strong>conectados-reg/Album-CDT-Mundial</strong> (rama <code class="inline">main</code>)</p>
   <pre>
 /
 ├── backend/
-│   ├── server.js            # Entry point Express
-│   ├── db.js                # Pool PostgreSQL → Cloud SQL
-│   ├── firebase-admin.js    # Firebase Admin SDK
-│   ├── gcs.js               # Google Cloud Storage helper
-│   ├── Dockerfile           # Imagen Docker para Cloud Run
+│   ├── server.js                # Entry point Express — registra todas las rutas
+│   ├── db.js                    # Pool de conexiones PostgreSQL → Cloud SQL
+│   ├── firebase-admin.js        # Firebase Admin SDK (token creation + verification)
+│   ├── gcs.js                   # Google Cloud Storage — upload de fotos base64
+│   ├── Dockerfile               # Imagen Docker para Cloud Run (node:20-alpine)
+│   ├── package.json
+│   ├── schema.sql               # DDL completo de la base de datos
+│   ├── .env.example             # Plantilla de variables de entorno
 │   ├── routes/
-│   │   ├── auth.js          # Login + middleware verificarToken
-│   │   ├── album.js         # Álbum + upload de fotos
-│   │   ├── empleados.js     # CRUD empleados
-│   │   ├── ventas.js        # Registro resultados (batch upsert)
-│   │   ├── semanas.js       # Gestión semanas
-│   │   ├── tiendas.js       # Gestión tiendas
-│   │   └── sync.js          # Sincronización Apps Script
+│   │   ├── auth.js              # Login tienda/admin + middleware verificarToken
+│   │   ├── stores.js            # CRUD tiendas (lista pública + gestión admin)
+│   │   ├── album.js             # Álbum de tienda + subida de fotos a GCS
+│   │   ├── empleados.js         # CRUD empleados con estado de álbum (JOIN)
+│   │   ├── ventas.js            # Registro de resultados en lote (batch upsert)
+│   │   ├── semanas.js           # Gestión y avance de semanas
+│   │   ├── notificaciones.js    # Emails HTML a tiendas via Brevo API
+│   │   └── sync.js              # Sincronización masiva desde Google Sheets
 │   └── services/
-│       └── scheduler.js     # Tarea automática desbloqueo figuritas
+│       ├── scheduler.js         # Cron job: desbloqueo automático de figuritas
+│       └── googlesheets.js      # Lectura directa del Google Sheet via googleapis
 ├── frontend/
-│   ├── index.html           # Login de tienda
-│   ├── album.html           # Vista álbum de tienda
-│   ├── admin.html           # Panel administrador
+│   ├── index.html               # Pantalla de login de tienda
+│   ├── album.html               # Vista del álbum de tienda
+│   ├── admin.html               # Panel administrador completo
+│   ├── olvide-clave.html        # Recuperación de contraseña
+│   ├── cambiar-clave.html       # Cambio de contraseña
 │   └── js/
-│       └── firebase-init.js # SDK Firebase + renovación automática token
-├── firebase.json            # Hosting + rewrite /api/** → Cloud Run
-└── backend/schema.sql       # DDL completo de la base de datos</pre>
+│       └── firebase-init.js     # SDK Firebase + renovación automática de token
+├── firebase.json                # Firebase Hosting config + rewrite /api/** → Cloud Run
+└── .firebaserc                  # Proyecto Firebase activo</pre>
 
-  <!-- 8. Despliegue -->
-  <h2>8. Proceso de Despliegue</h2>
+  <!-- 9. Despliegue -->
+  <h2>9. Proceso de Despliegue</h2>
   <table class="data">
-    <tr><th>Componente</th><th>Comando</th></tr>
+    <tr><th>Componente</th><th>Comando / Acción</th></tr>
     <tr><td>Backend (Cloud Run)</td><td><code>gcloud run deploy album-cdt-mundial --source ./backend --region us-central1</code></td></tr>
     <tr><td>Frontend (Firebase Hosting)</td><td><code>firebase deploy --only hosting</code></td></tr>
-    <tr><td>Base de datos</td><td>Cloud SQL PostgreSQL 15 — instancia <code>album-cdt-mundial-db</code></td></tr>
+    <tr><td>Base de datos</td><td>Cloud SQL PostgreSQL 15 — instancia <code>album-cdt-mundial-db</code>, región <code>us-central1</code></td></tr>
+    <tr><td>Variables de entorno</td><td>Configuradas en Cloud Run Console → Edit &amp; Deploy → Variables &amp; Secrets</td></tr>
   </table>
 
-  <!-- 9. Costos -->
-  <h2>9. Costos Estimados</h2>
+  <!-- 10. Costos -->
+  <h2>10. Costos Estimados</h2>
   <table class="data">
     <tr><th>Servicio</th><th>Tier</th><th>Costo estimado/mes</th></tr>
-    <tr><td>Cloud SQL (PostgreSQL 15)</td><td>db-f1-micro, 10 GB SSD</td><td>~$8–15 USD</td></tr>
+    <tr><td>Cloud SQL (PostgreSQL 15)</td><td>db-f1-micro, 10 GB SSD, us-central1</td><td>~$8–15 USD</td></tr>
     <tr><td>Cloud Run</td><td>Primer millón de requests gratuito</td><td>~$0 USD</td></tr>
     <tr><td>Firebase Hosting</td><td>Plan gratuito Spark</td><td>$0 USD</td></tr>
     <tr><td>Cloud Storage</td><td>Primeros 5 GB gratuitos</td><td>~$0 USD</td></tr>
+    <tr><td>Firebase Auth</td><td>Gratuito ilimitado para Custom Tokens</td><td>$0 USD</td></tr>
+    <tr><td>Brevo</td><td>Plan gratuito (300 emails/día)</td><td>$0 USD</td></tr>
     <tr><td><strong>Total estimado</strong></td><td></td><td><strong>&lt; $20 USD/mes</strong></td></tr>
   </table>
 
   <div class="box box-ok">
-    <strong>Nota de cierre de campaña:</strong> Al terminar el Mundial (19 de julio de 2026), la instancia
-    Cloud SQL puede pausarse para reducir costos a prácticamente $0. Firebase Hosting y Cloud Run no generan
-    costo en ausencia de tráfico.
+    <strong>Nota de cierre de campaña:</strong> Al finalizar el Mundial (19 de julio de 2026), la instancia
+    Cloud SQL puede pausarse para reducir el costo a prácticamente $0. Cloud Run y Firebase Hosting
+    no generan costo en ausencia de tráfico.
   </div>
 
-  <!-- 10. Consideraciones IT -->
-  <h2>10. Consideraciones para IT</h2>
+  <!-- 11. Consideraciones IT -->
+  <h2>11. Consideraciones para IT</h2>
 
   <h3>Respaldo de datos</h3>
-  <p>Se recomienda activar <strong>backups automáticos diarios</strong> en Cloud SQL desde la consola de GCP.
-  La ventana de retención sugerida es 7 días durante la campaña.</p>
-
-  <h3>Monitoreo</h3>
-  <p>Cloud Run expone métricas de latencia, errores y uso de CPU en <strong>Cloud Monitoring</strong>. No se ha
-  configurado alerting formal — se recomienda agregar una alerta de error rate &gt; 5% a un correo de IT.</p>
-
-  <h3>Rotación de credenciales</h3>
-  <p>La clave privada de la Service Account debe rotarse periódicamente desde
-  <strong>IAM &amp; Admin → Service Accounts</strong> en GCP Console.</p>
+  <p>Se recomienda activar <strong>backups automáticos diarios</strong> en Cloud SQL desde la consola de GCP,
+  con retención de 7 días durante la campaña.</p>
 
   <h3>Acceso de emergencia</h3>
   <ul>
     <li>URL de la aplicación: <code class="inline">https://album-metat-mundial-59cad.web.app</code></li>
-    <li>Panel admin: <code class="inline">/admin.html</code></li>
+    <li>Panel administrador: <code class="inline">/admin.html</code></li>
     <li>Consola GCP: proyecto <code class="inline">album-metat-mundial-59cad</code></li>
-    <li>Las credenciales de administrador residen en la tabla <code class="inline">admins</code> de Cloud SQL.</li>
+    <li>Credenciales de admin en la tabla <code class="inline">admins</code> de Cloud SQL.</li>
   </ul>
 
-  <h3>Sin dependencias de terceros críticos</h3>
-  <p>Todo el stack reside en GCP / Google Cloud. No hay dependencias en servicios externos pagos o de terceros
-  fuera del ecosistema Google.</p>
+  <h3>Sin dependencias de terceros críticos en GCP</h3>
+  <p>Todo el stack principal (frontend, backend, base de datos, almacenamiento, autenticación) reside en
+  Google Cloud / Firebase. La única dependencia externa es <strong>Brevo</strong> para el envío de emails,
+  cuya caída no afecta la operación del álbum ni el registro de ventas.</p>
 
   <!-- Cierre -->
-  <h2>11. Contacto y Disponibilidad</h2>
+  <h2>12. Contacto</h2>
   <p>
-    Quedo disponible para cualquier consulta técnica adicional, demostración del sistema, auditoría de
-    código, o ajustes de arquitectura que IT requiera antes o durante la campaña.
+    Quedamos disponibles para cualquier consulta técnica adicional, demostración del sistema o
+    auditoría de código que IT requiera antes o durante la campaña.
   </p>
   <p style="margin-top: 24px;">
     Saludos cordiales,<br><br>
-    <strong>Josué Aguilar</strong><br>
-    <span style="color:#555">josueagilar81@gmail.com</span>
+    <strong>Área de Desarrollo</strong><br>
+    <span style="color:#555">SLA Corp. / Sportline</span>
   </p>
 
-  <!-- Footer -->
   <div class="footer">
     <span>Album CDT Mundial 2026 — Documentación Técnica IT</span>
     <span>Confidencial — Uso Interno</span>
