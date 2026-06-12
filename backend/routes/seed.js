@@ -319,7 +319,10 @@ router.get('/', async (req, res) => {
             numero_ficha: totalExist + i + 1,
             desbloqueado: false,
           }));
-          const { error } = await supabase.from('fichas_tienda').insert(nuevas);
+          const { error } = await supabase.from('fichas_tienda').upsert(nuevas, {
+            onConflict: 'tienda_id,semana_id,numero_ficha',
+            ignoreDuplicates: true,
+          });
           if (error) throw new Error(`Insert fichas ${codigo} semana ${sn}: ${error.message}`);
           fichasCreadas += diff;
         }
