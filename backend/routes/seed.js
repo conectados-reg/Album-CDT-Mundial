@@ -253,20 +253,21 @@ router.get('/', async (req, res) => {
   const log = [];
 
   try {
-    // Crear semanas 1-6 si no existen (fecha_inicio requerida por la tabla)
+    // Crear semanas 1-6 solo si no existen
     const fechasInicioSemana = [
       '2026-06-01','2026-06-08','2026-06-15','2026-06-22','2026-06-29','2026-07-06'
     ];
+    const { data: semanasExist } = await supabase.from('semanas').select('numero');
+    const numerosExist = new Set((semanasExist || []).map(s => s.numero));
     for (let n = 1; n <= 6; n++) {
-      const { error } = await supabase
-        .from('semanas')
-        .upsert({
-          numero: n,
-          nombre: `Semana ${n}`,
-          activa: n === 1,
-          fecha_inicio: fechasInicioSemana[n - 1],
-        }, { onConflict: 'numero', ignoreDuplicates: true });
-      if (error && !error.message.includes('duplicate')) throw error;
+      if (numerosExist.has(n)) continue;
+      const { error } = await supabase.from('semanas').insert({
+        numero: n,
+        nombre: `Semana ${n}`,
+        activa: n === 1,
+        fecha_inicio: fechasInicioSemana[n - 1],
+      });
+      if (error) throw new Error(`Crear semana ${n}: ${error.message}`);
     }
     log.push('✓ Semanas 1-6 verificadas');
 
