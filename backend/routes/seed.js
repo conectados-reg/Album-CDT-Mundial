@@ -257,86 +257,69 @@ router.get('/', async (req, res) => {
     return res.status(403).json({ error: 'Clave incorrecta.' });
   }
 
-  // Responde de inmediato para evitar timeout; procesa en background
-  res.json({ ok: true, mensaje: 'Seed iniciado. Espera 2 minutos y abre /api/seed/status para ver el resultado.' });
-
   const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
   try {
-    // 1. Semanas — insertar solo las que faltan
+    // 1. Semanas
     const fechasInicio = ['2026-06-01','2026-06-08','2026-06-15','2026-06-22','2026-06-29','2026-07-06'];
     const { data: semanasExist } = await supabase.from('semanas').select('numero');
     const numerosExist = new Set((semanasExist || []).map(s => s.numero));
     for (let n = 1; n <= 6; n++) {
-      if (!numerosExist.has(n)) {
+      if (!numerosExist.has(n))
         await supabase.from('semanas').insert({ numero: n, nombre: `Semana ${n}`, activa: n === 1, fecha_inicio: fechasInicio[n-1] });
-      }
     }
     const { data: semanas } = await supabase.from('semanas').select('id, numero').order('numero');
     const semanaMap = {};
     for (const s of semanas) semanaMap[s.numero] = s.id;
-    console.log('[Seed] Semanas listas');
 
-    // 2. Tiendas — obtener todas de una vez y hacer insert en lote
+    // 2. Tiendas en un solo insert bulk
     const { data: tiendasExist } = await supabase.from('tiendas').select('id, codigo, total_empleados');
     const tiendaMap = {};
     for (const t of (tiendasExist || [])) tiendaMap[t.codigo] = t;
 
     const nuevasTiendas = TIENDAS
-      .filter(([codigo]) => !tiendaMap[codigo])
-      .map(([codigo, nombre, pais, hc]) => ({
-        codigo, nombre: nombre.trim(), region: pais,
-        email: `${codigo}@sportline.com`,
-        password_hash: 'sport123', activa: true, total_empleados: hc,
-      }));
+      .filter(([c]) => !tiendaMap[c])
+      .map(([c, n, p, h]) => ({ codigo: c, nombre: n.trim(), region: p, email: `${c}@sportline.com`, password_hash: 'sport123', activa: true, total_empleados: h }));
 
     if (nuevasTiendas.length) {
       const { data: ins, error } = await supabase.from('tiendas').insert(nuevasTiendas).select('id, codigo, total_empleados');
-      if (error) { console.error('[Seed] Error tiendas:', error.message); return; }
+      if (error) return res.status(500).json({ ok: false, error: 'Tiendas: ' + error.message });
       for (const t of (ins || [])) tiendaMap[t.codigo] = t;
     }
-    console.log(`[Seed] Tiendas: ${nuevasTiendas.length} nuevas`);
 
-    // 3. Fichas — cargar todas las existentes en memoria (1 query por lote de 200 tiendas)
+    // 3. Fichas — leer todas existentes en 2 queries, insertar en lotes de 1000
     const todosIds = TIENDAS.map(([c]) => tiendaMap[c]?.id).filter(Boolean);
     const fichasExistSet = new Set();
     for (let i = 0; i < todosIds.length; i += 200) {
-      const { data: fEx } = await supabase
-        .from('fichas_tienda').select('tienda_id, semana_id, numero_ficha')
-        .in('tienda_id', todosIds.slice(i, i + 200));
+      const { data: fEx } = await supabase.from('fichas_tienda')
+        .select('tienda_id, semana_id, numero_ficha').in('tienda_id', todosIds.slice(i, i + 200));
       for (const f of (fEx || [])) fichasExistSet.add(`${f.tienda_id}|${f.semana_id}|${f.numero_ficha}`);
     }
-    console.log('[Seed] Fichas existentes:', fichasExistSet.size);
 
-    // Construir fichas faltantes en memoria
     const fichasNuevas = [];
-    for (const [codigo, , , hc] of TIENDAS) {
-      const t = tiendaMap[codigo];
-      if (!t) continue;
+    for (const [c, , , hc] of TIENDAS) {
+      const t = tiendaMap[c]; if (!t) continue;
       const fps = Math.round(6 + hc / 6);
       for (let sn = 1; sn <= 6; sn++) {
-        const semanaId = semanaMap[sn];
-        if (!semanaId) continue;
+        const sid = semanaMap[sn]; if (!sid) continue;
         for (let num = 1; num <= fps; num++) {
-          if (!fichasExistSet.has(`${t.id}|${semanaId}|${num}`)) {
-            fichasNuevas.push({ tienda_id: t.id, semana_id: semanaId, numero_ficha: num, desbloqueado: false });
-          }
+          if (!fichasExistSet.has(`${t.id}|${sid}|${num}`))
+            fichasNuevas.push({ tienda_id: t.id, semana_id: sid, numero_ficha: num, desbloqueado: false });
         }
       }
     }
-    console.log('[Seed] Fichas a insertar:', fichasNuevas.length);
 
-    // Insertar fichas en lotes de 500
-    let insertadas = 0;
-    for (let i = 0; i < fichasNuevas.length; i += 500) {
-      const { error } = await supabase.from('fichas_tienda').insert(fichasNuevas.slice(i, i + 500));
-      if (error) { console.error('[Seed] Error fichas lote', i, ':', error.message); break; }
-      insertadas += Math.min(500, fichasNuevas.length - i);
+    let fichasInsertadas = 0;
+    for (let i = 0; i < fichasNuevas.length; i += 1000) {
+      const { error } = await supabase.from('fichas_tienda').insert(fichasNuevas.slice(i, i + 1000));
+      if (error) return res.status(500).json({ ok: false, fichas_insertadas: fichasInsertadas, error: 'Fichas: ' + error.message });
+      fichasInsertadas += Math.min(1000, fichasNuevas.length - i);
     }
 
-    console.log(`[Seed] COMPLETADO — tiendas nuevas: ${nuevasTiendas.length}, fichas insertadas: ${insertadas}`);
+    res.json({ ok: true, tiendas_nuevas: nuevasTiendas.length, fichas_insertadas: fichasInsertadas, total_tiendas: TIENDAS.length });
+
   } catch (err) {
-    console.error('[Seed] Error fatal:', err.message);
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 
