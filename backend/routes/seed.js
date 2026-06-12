@@ -332,7 +332,7 @@ router.get('/fix', async (req, res) => {
     const codigosCanonicos = new Set(TIENDAS.map(([c]) => c));
     const codigosHCbajo = new Set(TIENDAS.filter(([,,,h]) => h <= 6).map(([c]) => c));
 
-    const { data: todasTiendas } = await supabase.from('tiendas').select('id, codigo');
+    const { data: todasTiendas } = await supabase.from('tiendas').select('id, codigo, total_empleados');
     const todas = todasTiendas || [];
 
     // 1. Borrar tiendas que no están en el listado canónico
@@ -347,7 +347,18 @@ router.get('/fix', async (req, res) => {
       tiendasEliminadas = idsExtra.length;
     }
 
-    // 2. Borrar ficha numero_ficha=7 de tiendas con HC<=6 (la fórmula antes daba 7 para HC 3-6)
+    // 2. Actualizar total_empleados de todas las tiendas según el listado canónico
+    const hcMap = Object.fromEntries(TIENDAS.map(([c,,,h]) => [c, h]));
+    let hcActualizadas = 0;
+    for (const t of todas) {
+      const hcCanonico = hcMap[t.codigo];
+      if (hcCanonico !== undefined && t.total_empleados !== hcCanonico) {
+        await supabase.from('tiendas').update({ total_empleados: hcCanonico }).eq('id', t.id);
+        hcActualizadas++;
+      }
+    }
+
+    // 3. Borrar ficha numero_ficha=7 de tiendas con HC<=6 (la fórmula antes daba 7 para HC 3-6)
     const idsHCbajo = todas.filter(t => codigosHCbajo.has(t.codigo)).map(t => t.id);
     let fichasCorregidas = 0;
     if (idsHCbajo.length) {
@@ -363,7 +374,7 @@ router.get('/fix', async (req, res) => {
     const { count: totalTiendas } = await supabase.from('tiendas').select('*', { count: 'exact', head: true });
     const { count: totalFichas } = await supabase.from('fichas_tienda').select('*', { count: 'exact', head: true });
 
-    res.json({ ok: true, tiendas_eliminadas: tiendasEliminadas, tiendas_hc_bajo_corregidas: fichasCorregidas, total_tiendas: totalTiendas, total_fichas: totalFichas });
+    res.json({ ok: true, tiendas_eliminadas: tiendasEliminadas, hc_actualizadas: hcActualizadas, tiendas_hc_bajo_corregidas: fichasCorregidas, total_tiendas: totalTiendas, total_fichas: totalFichas });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
