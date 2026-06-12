@@ -369,4 +369,24 @@ router.get('/fix', async (req, res) => {
   }
 });
 
+// GET /api/seed/reset?key=sla2026mundial — borra resultados y bloquea todas las fichas
+router.get('/reset', async (req, res) => {
+  if (req.query.key !== SEED_KEY) return res.status(403).json({ error: 'Clave incorrecta.' });
+  const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+
+  try {
+    const { error: e1 } = await supabase.from('resultados_tienda').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    if (e1) return res.status(500).json({ ok: false, error: 'Borrar resultados: ' + e1.message });
+
+    const { error: e2 } = await supabase.from('fichas_tienda')
+      .update({ desbloqueado: false, fecha_desbloqueo: null, foto_url: null })
+      .eq('desbloqueado', true);
+    if (e2) return res.status(500).json({ ok: false, error: 'Resetear fichas: ' + e2.message });
+
+    res.json({ ok: true, mensaje: 'Resultados borrados y todas las fichas reseteadas a bloqueadas.' });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 module.exports = router;
