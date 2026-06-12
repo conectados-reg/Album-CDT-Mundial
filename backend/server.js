@@ -27,6 +27,7 @@ app.use('/api/ventas', require('./routes/ventas.js'));
 app.use('/api/semanas', require('./routes/semanas.js'));
 app.use('/api/notificaciones', require('./routes/notificaciones.js'));
 app.use('/api/sync', require('./routes/sync.js'));
+app.use('/api/seed', require('./routes/seed.js'));
 
 // Control de rutas globales no encontradas
 app.use((req, res) => {
