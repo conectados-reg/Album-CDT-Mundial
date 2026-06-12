@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { Pool } = require('pg');
+const { createClient } = require('@supabase/supabase-js');
 
 const SEED_KEY = 'sla2026mundial';
 
@@ -249,91 +249,85 @@ router.get('/', async (req, res) => {
     return res.status(403).json({ error: 'Clave incorrecta.' });
   }
 
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
   const log = [];
 
   try {
-    const client = await pool.connect();
-    try {
-      // Migration
-      await client.query(`ALTER TABLE tiendas ADD COLUMN IF NOT EXISTS password_changed_at TIMESTAMPTZ`);
-      log.push('✓ Columna password_changed_at verificada');
-
-      // Semanas
-      for (let n = 1; n <= 6; n++) {
-        await client.query(
-          `INSERT INTO semanas (numero, nombre, activa) VALUES ($1,$2,$3) ON CONFLICT DO NOTHING`,
-          [n, `Semana ${n}`, n === 1]
-        );
-      }
-      log.push('✓ Semanas 1-6 verificadas');
-
-      const { rows: semanas } = await client.query('SELECT id, numero FROM semanas ORDER BY numero');
-      const semanaMap = {};
-      for (const s of semanas) semanaMap[s.numero] = s.id;
-
-      let creadas = 0, actualizadas = 0, fichasCreadas = 0;
-
-      for (const [codigo, nombre, pais, hc] of TIENDAS) {
-        const email = `${codigo}@sportline.com`;
-        const fps   = Math.round(6 + hc / 6);
-
-        const { rows: ex } = await client.query(
-          'SELECT id, total_empleados FROM tiendas WHERE codigo=$1', [codigo]
-        );
-
-        let tiendaId;
-        if (!ex.length) {
-          const { rows: n } = await client.query(
-            `INSERT INTO tiendas (codigo,nombre,region,email,password_hash,activa,total_empleados)
-             VALUES ($1,$2,$3,$4,'sport123',true,$5) RETURNING id`,
-            [codigo, nombre.trim(), pais, email, hc]
-          );
-          tiendaId = n[0].id;
-          creadas++;
-        } else {
-          tiendaId = ex[0].id;
-          if (ex[0].total_empleados !== hc) {
-            await client.query('UPDATE tiendas SET total_empleados=$1 WHERE id=$2', [hc, tiendaId]);
-            actualizadas++;
-          }
-        }
-
-        for (let sn = 1; sn <= 6; sn++) {
-          const semanaId = semanaMap[sn];
-          if (!semanaId) continue;
-          const { rows: fi } = await client.query(
-            'SELECT id FROM fichas_tienda WHERE tienda_id=$1 AND semana_id=$2',
-            [tiendaId, semanaId]
-          );
-          const diff = fps - fi.length;
-          for (let i = 0; i < diff; i++) {
-            await client.query(
-              `INSERT INTO fichas_tienda (tienda_id,semana_id,numero_ficha,desbloqueado)
-               VALUES ($1,$2,$3,false)`,
-              [tiendaId, semanaId, fi.length + i + 1]
-            );
-            fichasCreadas++;
-          }
-        }
-      }
-
-      log.push(`✓ Tiendas creadas: ${creadas}`);
-      log.push(`✓ Tiendas actualizadas: ${actualizadas}`);
-      log.push(`✓ Fichas creadas: ${fichasCreadas}`);
-      log.push(`✓ Total procesadas: ${TIENDAS.length}`);
-
-    } finally {
-      client.release();
+    // Crear semanas 1-6 si no existen
+    for (let n = 1; n <= 6; n++) {
+      const { error } = await supabase
+        .from('semanas')
+        .upsert({ numero: n, nombre: `Semana ${n}`, activa: n === 1 }, { onConflict: 'numero', ignoreDuplicates: true });
+      if (error && !error.message.includes('duplicate')) throw error;
     }
+    log.push('✓ Semanas 1-6 verificadas');
+
+    const { data: semanas } = await supabase.from('semanas').select('id, numero').order('numero');
+    const semanaMap = {};
+    for (const s of semanas) semanaMap[s.numero] = s.id;
+
+    let creadas = 0, actualizadas = 0, fichasCreadas = 0;
+
+    for (const [codigo, nombre, pais, hc] of TIENDAS) {
+      const email = `${codigo}@sportline.com`;
+      const fps   = Math.round(6 + hc / 6);
+
+      // Buscar tienda existente
+      const { data: existente } = await supabase
+        .from('tiendas').select('id, total_empleados').eq('codigo', codigo).maybeSingle();
+
+      let tiendaId;
+      if (!existente) {
+        const { data: nueva, error } = await supabase
+          .from('tiendas')
+          .insert({ codigo, nombre: nombre.trim(), region: pais, email, password_hash: 'sport123', activa: true, total_empleados: hc })
+          .select('id').single();
+        if (error) throw new Error(`Insert tienda ${codigo}: ${error.message}`);
+        tiendaId = nueva.id;
+        creadas++;
+      } else {
+        tiendaId = existente.id;
+        if (existente.total_empleados !== hc) {
+          await supabase.from('tiendas').update({ total_empleados: hc }).eq('id', tiendaId);
+          actualizadas++;
+        }
+      }
+
+      // Crear fichas faltantes por semana
+      for (let sn = 1; sn <= 6; sn++) {
+        const semanaId = semanaMap[sn];
+        if (!semanaId) continue;
+
+        const { data: fichasExist } = await supabase
+          .from('fichas_tienda').select('id').eq('tienda_id', tiendaId).eq('semana_id', semanaId);
+
+        const totalExist = (fichasExist || []).length;
+        const diff = fps - totalExist;
+        if (diff > 0) {
+          const nuevas = Array.from({ length: diff }, (_, i) => ({
+            tienda_id: tiendaId,
+            semana_id: semanaId,
+            numero_ficha: totalExist + i + 1,
+            desbloqueado: false,
+          }));
+          const { error } = await supabase.from('fichas_tienda').insert(nuevas);
+          if (error) throw new Error(`Insert fichas ${codigo} semana ${sn}: ${error.message}`);
+          fichasCreadas += diff;
+        }
+      }
+    }
+
+    log.push(`✓ Tiendas creadas: ${creadas}`);
+    log.push(`✓ Tiendas actualizadas: ${actualizadas}`);
+    log.push(`✓ Fichas creadas: ${fichasCreadas}`);
+    log.push(`✓ Total procesadas: ${TIENDAS.length}`);
+
+    res.json({ ok: true, log });
+
   } catch (err) {
     log.push('❌ Error: ' + err.message);
-    return res.status(500).json({ ok: false, log });
-  } finally {
-    await pool.end();
+    res.status(500).json({ ok: false, log });
   }
-
-  res.json({ ok: true, log });
 });
 
 module.exports = router;
