@@ -130,6 +130,83 @@ router.get('/admin/:tienda_id', verificarToken, async (req, res) => {
   }
 });
 
+// GET /api/album/simulacro/:tienda_id — fichas completas con IDs para el simulacro
+router.get('/simulacro/:tienda_id', verificarToken, async (req, res) => {
+  if (req.usuario.rol !== 'admin') return res.status(403).json({ error: 'Solo para administradores.' });
+  try {
+    const { data: semanas } = await supabase.from('semanas').select('id, numero, nombre').order('numero');
+    const semanaMap = {};
+    for (const s of (semanas || [])) semanaMap[s.id] = s;
+
+    const { data: fichas } = await supabase.from('fichas_tienda')
+      .select('id, semana_id, numero_ficha, desbloqueado, foto_url')
+      .eq('tienda_id', req.params.tienda_id)
+      .order('semana_id').order('numero_ficha');
+
+    const fichasConInfo = (fichas || []).map(f => ({
+      id: f.id,
+      semana_id: f.semana_id,
+      semana_numero: (semanaMap[f.semana_id] || {}).numero || null,
+      semana_nombre: (semanaMap[f.semana_id] || {}).nombre || null,
+      numero_ficha: f.numero_ficha,
+      desbloqueado: f.desbloqueado,
+      foto_url: f.foto_url || null,
+    }));
+    res.json({ fichas: fichasConInfo });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/album/simulacro/toggle — desbloquea o bloquea fichas de una semana para una tienda
+router.post('/simulacro/toggle', verificarToken, async (req, res) => {
+  if (req.usuario.rol !== 'admin') return res.status(403).json({ error: 'Solo para administradores.' });
+  const { tienda_id, semana_numero, desbloquear } = req.body;
+  if (!tienda_id || semana_numero == null) return res.status(400).json({ error: 'Faltan campos.' });
+  try {
+    const { data: semana } = await supabase.from('semanas').select('id').eq('numero', semana_numero).maybeSingle();
+    if (!semana) return res.status(404).json({ error: 'Semana no encontrada.' });
+
+    const update = desbloquear
+      ? { desbloqueado: true }
+      : { desbloqueado: false, foto_url: null };
+
+    await supabase.from('fichas_tienda').update(update)
+      .eq('tienda_id', tienda_id).eq('semana_id', semana.id);
+
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/album/simulacro/foto — admin sube foto a cualquier ficha
+router.post('/simulacro/foto', verificarToken, async (req, res) => {
+  if (req.usuario.rol !== 'admin') return res.status(403).json({ error: 'Solo para administradores.' });
+  const { ficha_id, foto_base64, tipo } = req.body;
+  if (!ficha_id || !foto_base64) return res.status(400).json({ error: 'Datos incompletos.' });
+  try {
+    const { data: ficha } = await supabase.from('fichas_tienda').select('id, desbloqueado').eq('id', ficha_id).single();
+    if (!ficha) return res.status(404).json({ error: 'Ficha no encontrada.' });
+    if (!ficha.desbloqueado) return res.status(403).json({ error: 'Ficha no desbloqueada.' });
+
+    const buffer = Buffer.from(foto_base64, 'base64');
+    const ext = (tipo || '').includes('png') ? 'png' : 'jpg';
+    const filename = `ficha-${ficha_id}.${ext}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('fotos-empleados').upload(filename, buffer, { contentType: tipo || 'image/jpeg', upsert: true });
+    if (uploadError) throw uploadError;
+
+    const { data: urlData } = supabase.storage.from('fotos-empleados').getPublicUrl(filename);
+    await supabase.from('fichas_tienda').update({ foto_url: urlData.publicUrl }).eq('id', ficha_id);
+
+    res.json({ ok: true, foto_url: urlData.publicUrl });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // POST /api/album/foto — subir foto a una ficha desbloqueada
 router.post('/foto', verificarToken, async (req, res) => {
   if (req.usuario.rol !== 'tienda') return res.status(403).json({ error: 'Solo para sucursales.' });
