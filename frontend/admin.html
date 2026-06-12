@@ -408,8 +408,8 @@
 
       <!-- Selector de tienda -->
       <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.5rem;">
-        <select id="simTiendaSelect" style="flex:1;min-width:220px;max-width:420px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.15);border-radius:9px;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:.95rem;padding:.55rem .9rem;outline:none;">
-          <option value="">— Selecciona una tienda —</option>
+        <select id="simTiendaSelect" style="flex:1;min-width:220px;max-width:420px;background:#0d1f3c;border:1.5px solid rgba(255,255,255,.15);border-radius:9px;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:.95rem;padding:.55rem .9rem;outline:none;">
+          <option value="" style="background:#0d1f3c;color:#fff;">— Selecciona una tienda —</option>
         </select>
         <button onclick="cargarSimulacro()" style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;background:rgba(0,70,173,.3);color:rgba(100,160,255,.9);border:1.5px solid rgba(0,70,173,.5);border-radius:8px;padding:.5rem 1.1rem;cursor:pointer;">
           <i class="fa-solid fa-magnifying-glass" style="margin-right:5px;"></i>Cargar
@@ -722,6 +722,8 @@
         const opt = document.createElement('option');
         opt.value = t.id;
         opt.textContent = `${t.codigo} · ${t.nombre}`;
+        opt.style.background = '#0d1f3c';
+        opt.style.color = '#fff';
         sel.appendChild(opt);
       });
     }
