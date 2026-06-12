@@ -91,7 +91,7 @@
       margin: 2.5rem auto 2rem;
       padding: 0 1.5rem;
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 1rem;
     }
     .stat-card {
@@ -328,7 +328,7 @@
     }
 
     @media (max-width: 600px) {
-      .hero-stats { grid-template-columns: repeat(3,1fr); gap: .6rem; }
+      .hero-stats { grid-template-columns: repeat(2,1fr); gap: .6rem; }
       .stat-n { font-size: 2rem; }
       .album-grid { grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); gap: .8rem; }
       nav { padding: .5rem 1rem; }
@@ -445,7 +445,7 @@
       <div class="stat-l">Cumplimiento de Tienda</div>
     </div>
     <div class="stat-card">
-      <div class="stat-n">S8</div>
+      <div class="stat-n" id="valPeriodo">S8</div>
       <div class="stat-l">Periodo de Medición</div>
     </div>
     <div class="stat-card">
@@ -594,7 +594,7 @@
       document.getElementById('valDesbloqueadas').textContent = desbloq;
       document.getElementById('valMeta').textContent = pctTienda != null ? Math.round(pctTienda) + '%' : '—';
       document.getElementById('badgeCount').textContent = `${total} ficha${total !== 1 ? 's' : ''}`;
-      const periodoEl = document.querySelector('.stat-card:last-child .stat-n');
+      const periodoEl = document.getElementById('valPeriodo');
       if (periodoEl) periodoEl.textContent = semLabel;
 
       if (!total) {
