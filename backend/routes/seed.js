@@ -243,99 +243,100 @@ const TIENDAS = [
   ['6014','SPORTLINE SANTIAGO DE LOS CABALLEROS','Rep.Dominicana',6],
 ];
 
+// GET /api/seed/status — cuántas tiendas y fichas hay en la BD
+router.get('/status', async (req, res) => {
+  const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+  const { count: ct } = await supabase.from('tiendas').select('*', { count: 'exact', head: true });
+  const { count: cf } = await supabase.from('fichas_tienda').select('*', { count: 'exact', head: true });
+  res.json({ tiendas: ct, fichas: cf });
+});
+
 // GET /api/seed?key=sla2026mundial
 router.get('/', async (req, res) => {
   if (req.query.key !== SEED_KEY) {
     return res.status(403).json({ error: 'Clave incorrecta.' });
   }
 
+  // Responde de inmediato para evitar timeout; procesa en background
+  res.json({ ok: true, mensaje: 'Seed iniciado. Espera 2 minutos y abre /api/seed/status para ver el resultado.' });
+
   const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
-  const log = [];
 
   try {
-    // Crear semanas 1-6 solo si no existen
-    const fechasInicioSemana = [
-      '2026-06-01','2026-06-08','2026-06-15','2026-06-22','2026-06-29','2026-07-06'
-    ];
+    // 1. Semanas — insertar solo las que faltan
+    const fechasInicio = ['2026-06-01','2026-06-08','2026-06-15','2026-06-22','2026-06-29','2026-07-06'];
     const { data: semanasExist } = await supabase.from('semanas').select('numero');
     const numerosExist = new Set((semanasExist || []).map(s => s.numero));
     for (let n = 1; n <= 6; n++) {
-      if (numerosExist.has(n)) continue;
-      const { error } = await supabase.from('semanas').insert({
-        numero: n,
-        nombre: `Semana ${n}`,
-        activa: n === 1,
-        fecha_inicio: fechasInicioSemana[n - 1],
-      });
-      if (error) throw new Error(`Crear semana ${n}: ${error.message}`);
+      if (!numerosExist.has(n)) {
+        await supabase.from('semanas').insert({ numero: n, nombre: `Semana ${n}`, activa: n === 1, fecha_inicio: fechasInicio[n-1] });
+      }
     }
-    log.push('✓ Semanas 1-6 verificadas');
-
     const { data: semanas } = await supabase.from('semanas').select('id, numero').order('numero');
     const semanaMap = {};
     for (const s of semanas) semanaMap[s.numero] = s.id;
+    console.log('[Seed] Semanas listas');
 
-    let creadas = 0, actualizadas = 0, fichasCreadas = 0;
+    // 2. Tiendas — obtener todas de una vez y hacer insert en lote
+    const { data: tiendasExist } = await supabase.from('tiendas').select('id, codigo, total_empleados');
+    const tiendaMap = {};
+    for (const t of (tiendasExist || [])) tiendaMap[t.codigo] = t;
 
-    for (const [codigo, nombre, pais, hc] of TIENDAS) {
-      const email = `${codigo}@sportline.com`;
-      const fps   = Math.round(6 + hc / 6);
+    const nuevasTiendas = TIENDAS
+      .filter(([codigo]) => !tiendaMap[codigo])
+      .map(([codigo, nombre, pais, hc]) => ({
+        codigo, nombre: nombre.trim(), region: pais,
+        email: `${codigo}@sportline.com`,
+        password_hash: 'sport123', activa: true, total_empleados: hc,
+      }));
 
-      // Buscar tienda existente
-      const { data: existente } = await supabase
-        .from('tiendas').select('id, total_empleados').eq('codigo', codigo).maybeSingle();
+    if (nuevasTiendas.length) {
+      const { data: ins, error } = await supabase.from('tiendas').insert(nuevasTiendas).select('id, codigo, total_empleados');
+      if (error) { console.error('[Seed] Error tiendas:', error.message); return; }
+      for (const t of (ins || [])) tiendaMap[t.codigo] = t;
+    }
+    console.log(`[Seed] Tiendas: ${nuevasTiendas.length} nuevas`);
 
-      let tiendaId;
-      if (!existente) {
-        const { data: nueva, error } = await supabase
-          .from('tiendas')
-          .insert({ codigo, nombre: nombre.trim(), region: pais, email, password_hash: 'sport123', activa: true, total_empleados: hc })
-          .select('id').single();
-        if (error) throw new Error(`Insert tienda ${codigo}: ${error.message}`);
-        tiendaId = nueva.id;
-        creadas++;
-      } else {
-        tiendaId = existente.id;
-        if (existente.total_empleados !== hc) {
-          await supabase.from('tiendas').update({ total_empleados: hc }).eq('id', tiendaId);
-          actualizadas++;
-        }
-      }
+    // 3. Fichas — cargar todas las existentes en memoria (1 query por lote de 200 tiendas)
+    const todosIds = TIENDAS.map(([c]) => tiendaMap[c]?.id).filter(Boolean);
+    const fichasExistSet = new Set();
+    for (let i = 0; i < todosIds.length; i += 200) {
+      const { data: fEx } = await supabase
+        .from('fichas_tienda').select('tienda_id, semana_id, numero_ficha')
+        .in('tienda_id', todosIds.slice(i, i + 200));
+      for (const f of (fEx || [])) fichasExistSet.add(`${f.tienda_id}|${f.semana_id}|${f.numero_ficha}`);
+    }
+    console.log('[Seed] Fichas existentes:', fichasExistSet.size);
 
-      // Crear fichas faltantes por semana
+    // Construir fichas faltantes en memoria
+    const fichasNuevas = [];
+    for (const [codigo, , , hc] of TIENDAS) {
+      const t = tiendaMap[codigo];
+      if (!t) continue;
+      const fps = Math.round(6 + hc / 6);
       for (let sn = 1; sn <= 6; sn++) {
         const semanaId = semanaMap[sn];
         if (!semanaId) continue;
-
-        const { data: fichasExist } = await supabase
-          .from('fichas_tienda').select('numero_ficha')
-          .eq('tienda_id', tiendaId).eq('semana_id', semanaId);
-
-        const existingNums = new Set((fichasExist || []).map(f => f.numero_ficha));
-        const nuevas = [];
-        for (let i = 1; i <= fps; i++) {
-          if (!existingNums.has(i)) {
-            nuevas.push({ tienda_id: tiendaId, semana_id: semanaId, numero_ficha: i, desbloqueado: false });
+        for (let num = 1; num <= fps; num++) {
+          if (!fichasExistSet.has(`${t.id}|${semanaId}|${num}`)) {
+            fichasNuevas.push({ tienda_id: t.id, semana_id: semanaId, numero_ficha: num, desbloqueado: false });
           }
-        }
-        if (nuevas.length > 0) {
-          const { error } = await supabase.from('fichas_tienda').insert(nuevas);
-          if (error) throw new Error(`Insert fichas ${codigo} semana ${sn}: ${error.message}`);
-          fichasCreadas += nuevas.length;
         }
       }
     }
+    console.log('[Seed] Fichas a insertar:', fichasNuevas.length);
 
-    log.push(`✓ Tiendas creadas: ${creadas}`);
-    log.push(`✓ Tiendas actualizadas: ${actualizadas}`);
-    log.push(`✓ Fichas creadas: ${fichasCreadas}`);
-    log.push(`✓ Total procesadas: ${TIENDAS.length}`);
+    // Insertar fichas en lotes de 500
+    let insertadas = 0;
+    for (let i = 0; i < fichasNuevas.length; i += 500) {
+      const { error } = await supabase.from('fichas_tienda').insert(fichasNuevas.slice(i, i + 500));
+      if (error) { console.error('[Seed] Error fichas lote', i, ':', error.message); break; }
+      insertadas += Math.min(500, fichasNuevas.length - i);
+    }
 
-    res.json({ ok: true, log });
-
+    console.log(`[Seed] COMPLETADO — tiendas nuevas: ${nuevasTiendas.length}, fichas insertadas: ${insertadas}`);
   } catch (err) {
-    log.push('❌ Error: ' + err.message);
-    res.status(500).json({ ok: false, log });
+    console.error('[Seed] Error fatal:', err.message);
   }
 });
 
