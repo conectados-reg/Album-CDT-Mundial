@@ -333,6 +333,7 @@
   <!-- TABS BAR -->
   <div class="tabs-bar">
     <button class="tab-btn active" data-tab="sucursales"><i class="fa-solid fa-store"></i> Sucursales</button>
+    <button class="tab-btn" data-tab="claves"><i class="fa-solid fa-key"></i> Cambios de Clave</button>
   </div>
 
   <div class="container">
@@ -360,6 +361,37 @@
           <i class="fa-solid fa-circle-notch fa-spin" style="font-size:1.4rem;color:var(--p-orange);"></i><br>Cargando directorio SLA Corp...
         </div>
         <div id="acordeonTiendas" style="display:none;"></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════ TAB 2: CAMBIOS DE CLAVE ══════════════════════ -->
+    <div class="tab-panel" id="tab-claves">
+      <div class="info-card">
+        <span class="info-card-icon"><i class="fa-solid fa-key"></i></span>
+        <div class="info-card-text">
+          <h2>Historial de Contraseñas</h2>
+          <p>Sucursales que han cambiado su contraseña genérica (sport123) desde la primera vez que ingresaron.</p>
+        </div>
+      </div>
+      <div class="table-card">
+        <div class="table-card-header">
+          <h3><i class="fa-solid fa-shield-halved" style="color:var(--p-orange);margin-right:.4rem;font-size:.9rem;"></i>Registro de cambios</h3>
+          <span class="table-count" id="badge-claves">Cargando...</span>
+        </div>
+        <div id="loadingClaves" class="state-msg">
+          <i class="fa-solid fa-circle-notch fa-spin" style="font-size:1.4rem;color:var(--p-orange);"></i><br>Cargando historial...
+        </div>
+        <div class="table-wrapper" id="tablaClavesWrap" style="display:none;">
+          <table id="tablaClaves">
+            <thead><tr>
+              <th>País</th>
+              <th>Código</th>
+              <th>Tienda</th>
+              <th>Fecha de cambio</th>
+            </tr></thead>
+            <tbody id="clavesBody"></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -441,6 +473,7 @@
               <button class="store-acc-btn" id="store-btn-${t.id}" onclick="toggleStoreAcc('${t.id}')">
                 <i class="fa-solid fa-store" style="color:var(--p-orange);font-size:.8rem;margin-right:4px;"></i>
                 <span style="font-family:'Barlow Condensed',sans-serif;font-size:.72rem;color:var(--p-orange);margin-right:4px;letter-spacing:.04em;">${t.codigo||''}</span>${t.nombre}
+                <span style="font-family:'Barlow Condensed',sans-serif;font-size:.68rem;font-weight:700;color:rgba(255,255,255,.4);background:rgba(255,255,255,.07);border-radius:5px;padding:.1rem .45rem;margin-left:.4rem;">HC&nbsp;${t.total_empleados ?? '—'}</span>
                 <span class="acc-arrow">▶</span>
               </button>
               <div class="store-acc-panel" id="store-acc-${t.id}" style="display:none;">
@@ -512,12 +545,7 @@
       const panel   = document.getElementById(`store-acc-${tiendaId}`);
       const semanas = data.semanas || [];
 
-      if (!semanas.length) {
-        panel.innerHTML = '<span class="emp-loading">Sin fichas registradas para esta tienda.</span>';
-        return;
-      }
-
-      const rows = semanas.map(s => {
+      const rows = semanas.length ? semanas.map(s => {
         const pct      = s.porcentaje;
         const pctStr   = pct != null ? Math.round(pct) + '%' : '—';
         const pctOk    = pct != null && pct >= 100;
@@ -530,13 +558,109 @@
           <span style="font-family:'Barlow Condensed',sans-serif;font-size:.72rem;color:rgba(255,255,255,.3);">${s.desbloqueadas}/${s.total} fichas</span>
           ${fotosBadge}
         </div>`;
-      }).join('');
+      }).join('') : '<span class="emp-loading">Sin fichas registradas aún.</span>';
 
-      panel.innerHTML = `<div style="padding:.3rem 0;">${rows}</div>`;
+      panel.innerHTML = `
+        <div style="padding:.3rem 0;">${rows}</div>
+        <div style="margin-top:.8rem;padding-top:.6rem;border-top:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;">
+          <span style="font-family:'Barlow Condensed',sans-serif;font-size:.72rem;color:rgba(255,255,255,.35);">HC actual: <strong style="color:var(--p-orange);" id="hc-actual-${tiendaId}">${(_todasTiendas.find(x=>x.id===tiendaId)||{}).total_empleados ?? '—'}</strong></span>
+          <label style="font-family:'Barlow Condensed',sans-serif;font-size:.72rem;letter-spacing:.08em;color:rgba(255,255,255,.4);text-transform:uppercase;">Nuevo HC:</label>
+          <input type="number" id="hc-input-${tiendaId}" min="0" max="200" placeholder="Ej: 12"
+            style="width:80px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.12);border-radius:7px;
+            color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:.9rem;padding:.3rem .6rem;outline:none;">
+          <button onclick="recalcularFichas('${tiendaId}')"
+            style="font-family:'Barlow Condensed',sans-serif;font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+            background:rgba(0,70,173,.25);color:rgba(100,160,255,.9);border:1.5px solid rgba(0,70,173,.4);
+            border-radius:7px;padding:.32rem .85rem;cursor:pointer;transition:all .2s;"
+            onmouseover="this.style.background='rgba(0,70,173,.5)'" onmouseout="this.style.background='rgba(0,70,173,.25)'">
+            <i class="fa-solid fa-calculator" style="margin-right:4px;"></i>Recalcular Fichas
+          </button>
+          <span id="recap-msg-${tiendaId}" style="font-family:'Barlow Condensed',sans-serif;font-size:.75rem;color:var(--p-green);display:none;"></span>
+        </div>`;
+    }
+
+    async function recalcularFichas(tiendaId) {
+      const input = document.getElementById(`hc-input-${tiendaId}`);
+      const msg   = document.getElementById(`recap-msg-${tiendaId}`);
+      const hcVal = input ? input.value.trim() : '';
+
+      const body = {};
+      if (hcVal !== '') body.total_empleados = parseInt(hcVal);
+
+      msg.style.display = 'none';
+      try {
+        const res  = await fetch(`${API_URL}/tiendas/${tiendaId}/recalcular-fichas`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json();
+        if (!res.ok) { showToast('❌ ' + (data.error || 'Error')); return; }
+
+        msg.textContent = `✓ ${data.fichas_por_semana} fichas/sem · +${data.fichas_agregadas} agregadas · −${data.fichas_eliminadas} eliminadas`;
+        msg.style.display = 'inline';
+        delete empCache[tiendaId];
+        showToast(`✓ ${data.tienda}: ${data.fichas_por_semana} fichas/semana (HC=${data.hc_nuevo})`);
+      } catch {
+        showToast('❌ Error de conexión al recalcular.');
+      }
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       TAB 2 — CAMBIOS DE CLAVE
+    ══════════════════════════════════════════════════════════ */
+    function banderaClaves(region) {
+      const r = (region || '').toLowerCase();
+      const mapa = [
+        ['panam','pa'],['colom','co'],['costa','cr'],['guatem','gt'],
+        ['domini','do'],['hondur','hn'],['salvad','sv'],['nicara','ni'],
+      ];
+      for (const [key, code] of mapa)
+        if (r.includes(key))
+          return `<img src="https://flagcdn.com/16x12/${code}.png" style="width:16px;height:12px;border-radius:2px;vertical-align:middle;margin-right:4px;box-shadow:0 1px 2px rgba(0,0,0,.3);">`;
+      return '🌎 ';
+    }
+
+    async function cargarHistorialClaves() {
+      try {
+        const res  = await fetch(`${API_URL}/tiendas/historial-claves`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+
+        document.getElementById('loadingClaves').style.display = 'none';
+
+        if (!res.ok || !data.cambios || !data.cambios.length) {
+          document.getElementById('tablaClavesWrap').innerHTML = '<div class="state-msg">Ninguna sucursal ha cambiado su contraseña todavía.</div>';
+          document.getElementById('tablaClavesWrap').style.display = 'block';
+          document.getElementById('badge-claves').textContent = '0 cambios';
+          return;
+        }
+
+        const tbody = document.getElementById('clavesBody');
+        tbody.innerHTML = data.cambios.map(c => {
+          const fecha = c.password_changed_at
+            ? new Date(c.password_changed_at).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' })
+            : '—';
+          return `<tr>
+            <td><span style="font-family:'Barlow Condensed',sans-serif;font-size:.82rem;">${banderaClaves(c.region)}${c.region || '—'}</span></td>
+            <td><span class="txt-clave">${c.codigo}</span></td>
+            <td class="td-nombre"><strong>${c.nombre}</strong></td>
+            <td style="font-family:'Barlow Condensed',sans-serif;font-size:.82rem;color:var(--p-green);">${fecha}</td>
+          </tr>`;
+        }).join('');
+
+        document.getElementById('badge-claves').textContent = `${data.cambios.length} sucursales`;
+        document.getElementById('tablaClavesWrap').style.display = 'block';
+      } catch (err) {
+        console.error(err);
+        document.getElementById('loadingClaves').innerHTML = '❌ Error al cargar historial.';
+      }
     }
 
     /* ── INIT ── */
-    window.onload = () => { cargarTiendasAdmin(); };
+    window.onload = () => {
+      cargarTiendasAdmin();
+      cargarHistorialClaves();
+    };
   </script>
 </body>
 </html>
