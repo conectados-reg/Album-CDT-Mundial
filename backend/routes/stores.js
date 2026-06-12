@@ -67,4 +67,103 @@ router.get('/', verificarToken, async (req, res) => {
   }
 });
 
+// GET /api/tiendas/historial-claves — admin: tiendas que cambiaron su contraseña
+router.get('/historial-claves', verificarToken, async (req, res) => {
+  if (req.usuario.rol !== 'admin') {
+    return res.status(403).json({ error: 'No eres administrador.' });
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('tiendas')
+      .select('id, codigo, nombre, region, password_changed_at')
+      .not('password_changed_at', 'is', null)
+      .order('password_changed_at', { ascending: false });
+
+    if (error) throw error;
+    res.json({ cambios: data || [] });
+  } catch (err) {
+    console.error('[Historial Claves]', err.message);
+    res.status(500).json({ error: 'Error al obtener historial.' });
+  }
+});
+
+// POST /api/tiendas/:id/recalcular-fichas — admin: recalcula fichas sin tocar desbloqueadas
+router.post('/:id/recalcular-fichas', verificarToken, async (req, res) => {
+  if (req.usuario.rol !== 'admin') {
+    return res.status(403).json({ error: 'No eres administrador.' });
+  }
+
+  const tiendaId = req.params.id;
+  const nuevoHC = req.body.total_empleados != null ? parseInt(req.body.total_empleados) : null;
+
+  try {
+    const { data: tienda, error: tErr } = await supabase
+      .from('tiendas')
+      .select('id, codigo, nombre, total_empleados')
+      .eq('id', tiendaId)
+      .maybeSingle();
+
+    if (tErr || !tienda) return res.status(404).json({ error: 'Tienda no encontrada.' });
+
+    const hc = nuevoHC != null && !isNaN(nuevoHC) ? nuevoHC : tienda.total_empleados;
+
+    if (nuevoHC != null && !isNaN(nuevoHC) && nuevoHC !== tienda.total_empleados) {
+      await supabase.from('tiendas').update({ total_empleados: hc }).eq('id', tiendaId);
+    }
+
+    const fichasPorSemana = Math.round(6 + hc / 6);
+
+    const { data: semanas } = await supabase
+      .from('semanas').select('id, numero').order('numero');
+
+    let fichasAgregadas = 0, fichasEliminadas = 0;
+
+    for (const semana of (semanas || [])) {
+      const { data: fichasExist } = await supabase
+        .from('fichas_tienda')
+        .select('id, desbloqueado')
+        .eq('tienda_id', tiendaId)
+        .eq('semana_id', semana.id);
+
+      const existentes = fichasExist || [];
+      const totalExist = existentes.length;
+      const diff = fichasPorSemana - totalExist;
+
+      if (diff > 0) {
+        const nuevas = Array.from({ length: diff }, (_, i) => ({
+          tienda_id: tiendaId,
+          semana_id: semana.id,
+          numero_ficha: totalExist + i + 1,
+          desbloqueado: false,
+        }));
+        await supabase.from('fichas_tienda').insert(nuevas);
+        fichasAgregadas += diff;
+      } else if (diff < 0) {
+        const bloqueadas = existentes.filter(f => !f.desbloqueado);
+        const aEliminar = Math.min(-diff, bloqueadas.length);
+        if (aEliminar > 0) {
+          const ids = bloqueadas.slice(-aEliminar).map(f => f.id);
+          await supabase.from('fichas_tienda').delete().in('id', ids);
+          fichasEliminadas += aEliminar;
+        }
+      }
+    }
+
+    res.json({
+      ok: true,
+      tienda: tienda.nombre,
+      hc_nuevo: hc,
+      fichas_por_semana: fichasPorSemana,
+      fichas_total: fichasPorSemana * 6,
+      fichas_agregadas: fichasAgregadas,
+      fichas_eliminadas: fichasEliminadas,
+    });
+
+  } catch (err) {
+    console.error('[Recalcular Fichas]', err.message);
+    res.status(500).json({ error: 'Error al recalcular fichas: ' + err.message });
+  }
+});
+
 module.exports = router;

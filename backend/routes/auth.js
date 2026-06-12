@@ -115,7 +115,7 @@ router.put('/cambiar-clave', async (req, res) => {
 
     const { error: updateError } = await supabase
       .from('tiendas')
-      .update({ password_hash: passwordNueva })
+      .update({ password_hash: passwordNueva, password_changed_at: new Date().toISOString() })
       .eq('id', tienda.id);
 
     if (updateError) throw updateError;
