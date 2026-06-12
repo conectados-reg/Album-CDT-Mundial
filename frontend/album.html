@@ -448,6 +448,10 @@
       <div class="stat-n">S8</div>
       <div class="stat-l">Periodo de Medición</div>
     </div>
+    <div class="stat-card">
+      <div class="stat-n" id="valHC">—</div>
+      <div class="stat-l">Colaboradores (HC)</div>
+    </div>
   </div>
 
   <!-- ALBUM -->
@@ -681,6 +685,8 @@
         _todasFichas      = data.fichas || [];
         _semanaActual     = data.semana;
         _porcentajeTienda = data.porcentaje_tienda;
+        const hcEl = document.getElementById('valHC');
+        if (hcEl) hcEl.textContent = data.hc != null ? data.hc : '—';
         renderFichas(_todasFichas, _semanaActual, _porcentajeTienda);
       } catch {
         document.getElementById('wrapperAlbum').innerHTML =

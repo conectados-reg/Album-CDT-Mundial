@@ -473,6 +473,7 @@
               <button class="store-acc-btn" id="store-btn-${t.id}" onclick="toggleStoreAcc('${t.id}')">
                 <i class="fa-solid fa-store" style="color:var(--p-orange);font-size:.8rem;margin-right:4px;"></i>
                 <span style="font-family:'Barlow Condensed',sans-serif;font-size:.72rem;color:var(--p-orange);margin-right:4px;letter-spacing:.04em;">${t.codigo||''}</span>${t.nombre}
+                <span style="font-family:'Barlow Condensed',sans-serif;font-size:.68rem;font-weight:700;color:rgba(255,255,255,.4);background:rgba(255,255,255,.07);border-radius:5px;padding:.1rem .45rem;margin-left:.4rem;">HC&nbsp;${t.total_empleados ?? '—'}</span>
                 <span class="acc-arrow">▶</span>
               </button>
               <div class="store-acc-panel" id="store-acc-${t.id}" style="display:none;">
@@ -562,6 +563,7 @@
       panel.innerHTML = `
         <div style="padding:.3rem 0;">${rows}</div>
         <div style="margin-top:.8rem;padding-top:.6rem;border-top:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;">
+          <span style="font-family:'Barlow Condensed',sans-serif;font-size:.72rem;color:rgba(255,255,255,.35);">HC actual: <strong style="color:var(--p-orange);" id="hc-actual-${tiendaId}">${(_todasTiendas.find(x=>x.id===tiendaId)||{}).total_empleados ?? '—'}</strong></span>
           <label style="font-family:'Barlow Condensed',sans-serif;font-size:.72rem;letter-spacing:.08em;color:rgba(255,255,255,.4);text-transform:uppercase;">Nuevo HC:</label>
           <input type="number" id="hc-input-${tiendaId}" min="0" max="200" placeholder="Ej: 12"
             style="width:80px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.12);border-radius:7px;

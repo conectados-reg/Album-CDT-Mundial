@@ -22,6 +22,9 @@ router.get('/', verificarToken, async (req, res) => {
   try {
     const tiendaId = req.usuario.id;
 
+    const { data: tiendaInfo } = await supabase
+      .from('tiendas').select('total_empleados').eq('id', tiendaId).maybeSingle();
+
     const { data: semanaActiva } = await supabase
       .from('semanas').select('id, numero, nombre').eq('activa', true).maybeSingle();
 
@@ -68,6 +71,7 @@ router.get('/', verificarToken, async (req, res) => {
       fichas: fichasConInfo,
       semana: semanaActiva || null,
       porcentaje_tienda: pctTienda,
+      hc: tiendaInfo?.total_empleados ?? null,
       total: fichasConInfo.length,
       desbloqueadas: fichasConInfo.filter(f => f.desbloqueado).length,
     });
