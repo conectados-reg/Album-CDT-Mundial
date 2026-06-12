@@ -308,23 +308,20 @@ router.get('/', async (req, res) => {
         if (!semanaId) continue;
 
         const { data: fichasExist } = await supabase
-          .from('fichas_tienda').select('id').eq('tienda_id', tiendaId).eq('semana_id', semanaId);
+          .from('fichas_tienda').select('numero_ficha')
+          .eq('tienda_id', tiendaId).eq('semana_id', semanaId);
 
-        const totalExist = (fichasExist || []).length;
-        const diff = fps - totalExist;
-        if (diff > 0) {
-          const nuevas = Array.from({ length: diff }, (_, i) => ({
-            tienda_id: tiendaId,
-            semana_id: semanaId,
-            numero_ficha: totalExist + i + 1,
-            desbloqueado: false,
-          }));
-          const { error } = await supabase.from('fichas_tienda').upsert(nuevas, {
-            onConflict: 'tienda_id,semana_id,numero_ficha',
-            ignoreDuplicates: true,
-          });
+        const existingNums = new Set((fichasExist || []).map(f => f.numero_ficha));
+        const nuevas = [];
+        for (let i = 1; i <= fps; i++) {
+          if (!existingNums.has(i)) {
+            nuevas.push({ tienda_id: tiendaId, semana_id: semanaId, numero_ficha: i, desbloqueado: false });
+          }
+        }
+        if (nuevas.length > 0) {
+          const { error } = await supabase.from('fichas_tienda').insert(nuevas);
           if (error) throw new Error(`Insert fichas ${codigo} semana ${sn}: ${error.message}`);
-          fichasCreadas += diff;
+          fichasCreadas += nuevas.length;
         }
       }
     }
