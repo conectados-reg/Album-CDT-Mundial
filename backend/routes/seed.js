@@ -299,7 +299,7 @@ router.get('/', async (req, res) => {
     const fichasNuevas = [];
     for (const [c, , , hc] of TIENDAS) {
       const t = tiendaMap[c]; if (!t) continue;
-      const fps = Math.round(6 + hc / 6);
+      const fps = hc <= 6 ? 6 : Math.round(6 + hc / 6);
       for (let sn = 1; sn <= 6; sn++) {
         const sid = semanaMap[sn]; if (!sid) continue;
         for (let num = 1; num <= fps; num++) {
@@ -318,6 +318,52 @@ router.get('/', async (req, res) => {
 
     res.json({ ok: true, tiendas_nuevas: nuevasTiendas.length, fichas_insertadas: fichasInsertadas, total_tiendas: TIENDAS.length });
 
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// GET /api/seed/fix?key=sla2026mundial — elimina tiendas extra y fichas incorrectas
+router.get('/fix', async (req, res) => {
+  if (req.query.key !== SEED_KEY) return res.status(403).json({ error: 'Clave incorrecta.' });
+  const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+
+  try {
+    const codigosCanonicos = new Set(TIENDAS.map(([c]) => c));
+    const codigosHCbajo = new Set(TIENDAS.filter(([,,,h]) => h <= 6).map(([c]) => c));
+
+    const { data: todasTiendas } = await supabase.from('tiendas').select('id, codigo');
+    const todas = todasTiendas || [];
+
+    // 1. Borrar tiendas que no están en el listado canónico
+    const idsExtra = todas.filter(t => !codigosCanonicos.has(t.codigo)).map(t => t.id);
+    let tiendasEliminadas = 0;
+    if (idsExtra.length) {
+      for (let i = 0; i < idsExtra.length; i += 100) {
+        await supabase.from('fichas_tienda').delete().in('tienda_id', idsExtra.slice(i, i + 100));
+      }
+      const { error: errT } = await supabase.from('tiendas').delete().in('id', idsExtra);
+      if (errT) return res.status(500).json({ ok: false, error: 'Borrar tiendas: ' + errT.message });
+      tiendasEliminadas = idsExtra.length;
+    }
+
+    // 2. Borrar ficha numero_ficha=7 de tiendas con HC<=6 (la fórmula antes daba 7 para HC 3-6)
+    const idsHCbajo = todas.filter(t => codigosHCbajo.has(t.codigo)).map(t => t.id);
+    let fichasCorregidas = 0;
+    if (idsHCbajo.length) {
+      for (let i = 0; i < idsHCbajo.length; i += 100) {
+        const { error } = await supabase.from('fichas_tienda').delete()
+          .in('tienda_id', idsHCbajo.slice(i, i + 100))
+          .eq('numero_ficha', 7);
+        if (error) return res.status(500).json({ ok: false, error: 'Corregir fichas: ' + error.message });
+      }
+      fichasCorregidas = idsHCbajo.length;
+    }
+
+    const { count: totalTiendas } = await supabase.from('tiendas').select('*', { count: 'exact', head: true });
+    const { count: totalFichas } = await supabase.from('fichas_tienda').select('*', { count: 'exact', head: true });
+
+    res.json({ ok: true, tiendas_eliminadas: tiendasEliminadas, tiendas_hc_bajo_corregidas: fichasCorregidas, total_tiendas: totalTiendas, total_fichas: totalFichas });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
