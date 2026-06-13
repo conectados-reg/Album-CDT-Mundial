@@ -700,7 +700,8 @@
       fichaIdFoto = fichaId; fotoBase64 = null; fotoTipo = null;
       document.getElementById('modalNombre').textContent = label;
       document.getElementById('fotoPreview').style.display = 'none';
-      document.getElementById('btnSubir').style.display = 'none';
+      const btn = document.getElementById('btnSubir');
+      btn.textContent = '⬆️ Subir al Álbum'; btn.disabled = false; btn.style.display = 'none';
       document.getElementById('alertFoto').style.display = 'none';
       document.getElementById('fileInput').value = '';
       document.getElementById('modalFoto').style.display = 'flex';
