@@ -399,19 +399,61 @@
     <!-- ══════════════════════ TAB 3: SIMULACRO ══════════════════════ -->
     <div class="tab-panel" id="tab-simulacro">
 
-      <!-- DEMO VISUAL DE PRIMER ACCESO -->
-      <div style="background:linear-gradient(135deg,rgba(0,70,173,.12),rgba(247,168,0,.06));border:1.5px solid rgba(247,168,0,.2);border-radius:14px;padding:1.4rem 1.6rem;margin-bottom:1.8rem;">
-        <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;justify-content:space-between;">
-          <div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:.1em;color:var(--p-orange);margin-bottom:.2rem;">
-              <i class="fa-solid fa-display" style="margin-right:.4rem;"></i>Demo de Primer Acceso
+      <!-- ══ DEMO EN VIVO ══ -->
+      <div style="background:linear-gradient(135deg,rgba(0,70,173,.12),rgba(247,168,0,.06));border:1.5px solid rgba(247,168,0,.25);border-radius:14px;padding:1.4rem 1.6rem;margin-bottom:1.4rem;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.15rem;letter-spacing:.1em;color:var(--p-orange);margin-bottom:.3rem;">
+          <i class="fa-solid fa-rocket" style="margin-right:.4rem;"></i>Demo en Vivo — Flujo Real
+        </div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:.8rem;color:rgba(255,255,255,.45);margin-bottom:1rem;">
+          Selecciona una tienda, prepara la demo y ábrela en una pestaña nueva. Tu jefa verá el flujo real: <strong style="color:rgba(255,255,255,.7);">Login → Crear contraseña → Álbum con fichas.</strong>
+        </div>
+
+        <!-- Paso 1: seleccionar tienda -->
+        <div style="display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;margin-bottom:1rem;">
+          <select id="demoTiendaSelect" style="flex:1;min-width:220px;max-width:380px;background:#0d1f3c;border:1.5px solid rgba(255,255,255,.15);border-radius:9px;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:.9rem;padding:.5rem .8rem;outline:none;">
+            <option value="" style="background:#0d1f3c;color:#fff;">— Elige una tienda para la demo —</option>
+          </select>
+          <button onclick="prepararDemo()" style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;background:rgba(0,200,100,.18);color:rgba(100,255,160,.9);border:1.5px solid rgba(0,200,100,.35);border-radius:8px;padding:.5rem 1.2rem;cursor:pointer;">
+            <i class="fa-solid fa-wand-magic-sparkles" style="margin-right:4px;"></i>Preparar Demo
+          </button>
+          <button onclick="limpiarDemoReal()" id="btnLimpiarDemoReal" style="display:none;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;background:rgba(180,30,30,.2);color:rgba(255,120,120,.85);border:1.5px solid rgba(180,30,30,.35);border-radius:8px;padding:.5rem 1.2rem;cursor:pointer;">
+            <i class="fa-solid fa-rotate-left" style="margin-right:4px;"></i>Limpiar Demo
+          </button>
+        </div>
+
+        <!-- Credenciales y link (se muestra al preparar) -->
+        <div id="demoCredenciales" style="display:none;background:rgba(0,0,0,.3);border:1.5px solid rgba(0,200,100,.25);border-radius:10px;padding:1rem 1.2rem;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:.85rem;letter-spacing:.1em;color:rgba(0,220,120,.8);margin-bottom:.6rem;">✓ Demo lista — comparte estas credenciales:</div>
+          <div style="display:flex;flex-wrap:wrap;gap:1rem;margin-bottom:.8rem;">
+            <div>
+              <div style="font-family:'Barlow Condensed',sans-serif;font-size:.65rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.08em;">Correo</div>
+              <div style="font-family:'Barlow Condensed',sans-serif;font-size:.95rem;color:#fff;font-weight:700;" id="demoEmail">—</div>
             </div>
-            <div style="font-family:'Barlow Condensed',sans-serif;font-size:.8rem;color:rgba(255,255,255,.45);">
-              Presentación visual del flujo completo: Login → Crear contraseña → Álbum. Selecciona una tienda abajo para ver sus fichas en el paso 3.
+            <div>
+              <div style="font-family:'Barlow Condensed',sans-serif;font-size:.65rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.08em;">Contraseña temporal</div>
+              <div style="font-family:'Barlow Condensed',sans-serif;font-size:.95rem;color:var(--p-orange);font-weight:700;">sport123</div>
             </div>
           </div>
-          <button onclick="iniciarDemo()" style="flex-shrink:0;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.9rem;letter-spacing:.12em;text-transform:uppercase;background:linear-gradient(135deg,rgba(247,168,0,.25),rgba(247,168,0,.1));color:var(--p-orange);border:1.5px solid rgba(247,168,0,.45);border-radius:10px;padding:.6rem 1.4rem;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='rgba(247,168,0,.3)'" onmouseout="this.style.background='linear-gradient(135deg,rgba(247,168,0,.25),rgba(247,168,0,.1))'">
-            <i class="fa-solid fa-play" style="margin-right:.4rem;"></i>Iniciar Presentación
+          <a id="demoLink" href="https://album-cdt-mundial.vercel.app" target="_blank"
+            style="display:inline-flex;align-items:center;gap:.4rem;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.82rem;letter-spacing:.08em;text-transform:uppercase;background:rgba(0,70,173,.35);color:rgba(120,170,255,.9);border:1.5px solid rgba(0,70,173,.5);border-radius:8px;padding:.45rem 1rem;text-decoration:none;">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>Abrir en pestaña nueva
+          </a>
+        </div>
+      </div>
+
+      <!-- DEMO VISUAL (mockup) -->
+      <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:1.2rem 1.6rem;margin-bottom:1.8rem;">
+        <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;justify-content:space-between;">
+          <div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:.1em;color:rgba(255,255,255,.5);margin-bottom:.2rem;">
+              <i class="fa-solid fa-display" style="margin-right:.4rem;"></i>Presentación Visual (mockup)
+            </div>
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:.78rem;color:rgba(255,255,255,.35);">
+              Versión animada para mostrar el flujo sin abrir el sistema real.
+            </div>
+          </div>
+          <button onclick="iniciarDemo()" style="flex-shrink:0;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.82rem;letter-spacing:.1em;text-transform:uppercase;background:rgba(255,255,255,.07);color:rgba(255,255,255,.55);border:1.5px solid rgba(255,255,255,.12);border-radius:9px;padding:.5rem 1.2rem;cursor:pointer;">
+            <i class="fa-solid fa-play" style="margin-right:.4rem;"></i>Ver Mockup
           </button>
         </div>
       </div>
@@ -992,16 +1034,69 @@
     let _simTiendaId = null, _simFichas = [], _simFichaActual = null, _simFotoB64 = null, _simFotoTipo = null;
 
     function poblarSelectSimulacro() {
-      const sel = document.getElementById('simTiendaSelect');
-      sel.innerHTML = '<option value="">— Selecciona una tienda —</option>';
-      (_todasTiendas || []).forEach(t => {
-        const opt = document.createElement('option');
-        opt.value = t.id;
-        opt.textContent = `${t.codigo} · ${t.nombre}`;
-        opt.style.background = '#0d1f3c';
-        opt.style.color = '#fff';
-        sel.appendChild(opt);
+      ['simTiendaSelect','demoTiendaSelect'].forEach(id => {
+        const sel = document.getElementById(id);
+        if (!sel) return;
+        sel.innerHTML = `<option value="" style="background:#0d1f3c;color:#fff;">${id === 'demoTiendaSelect' ? '— Elige una tienda para la demo —' : '— Selecciona una tienda —'}</option>`;
+        (_todasTiendas || []).forEach(t => {
+          const opt = document.createElement('option');
+          opt.value = t.id;
+          opt.textContent = `${t.codigo} · ${t.nombre}`;
+          opt.style.background = '#0d1f3c';
+          opt.style.color = '#fff';
+          sel.appendChild(opt);
+        });
       });
+    }
+
+    let _demoTiendaId = null;
+
+    async function prepararDemo() {
+      _demoTiendaId = document.getElementById('demoTiendaSelect').value;
+      if (!_demoTiendaId) { showToast('Selecciona una tienda primero.'); return; }
+
+      const tienda = _todasTiendas.find(t => t.id === _demoTiendaId);
+      if (!tienda) return;
+
+      try {
+        // 1. Resetear contraseña a sport123
+        await fetch(`${API_URL}/tiendas/${_demoTiendaId}/reset-password`, {
+          method: 'POST', headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        // 2. Desbloquear fichas de Semana 1
+        await fetch(`${API_URL}/album/simulacro/toggle`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tienda_id: _demoTiendaId, semana_numero: 1, desbloquear: true })
+        });
+
+        // Mostrar credenciales
+        const email = tienda.email || `${tienda.codigo.toLowerCase()}@sportline.com`;
+        document.getElementById('demoEmail').textContent = email;
+        document.getElementById('demoCredenciales').style.display = 'block';
+        document.getElementById('btnLimpiarDemoReal').style.display = 'inline-flex';
+        showToast(`✓ Demo lista: ${tienda.nombre}`);
+
+      } catch { showToast('❌ Error al preparar la demo.'); }
+    }
+
+    async function limpiarDemoReal() {
+      if (!_demoTiendaId) return;
+      // Re-bloquear fichas S1 y limpiar fotos
+      await fetch(`${API_URL}/album/simulacro/toggle`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tienda_id: _demoTiendaId, semana_numero: 1, desbloquear: false })
+      });
+      // Resetear contraseña de nuevo para que quede en sport123
+      await fetch(`${API_URL}/tiendas/${_demoTiendaId}/reset-password`, {
+        method: 'POST', headers: { 'Authorization': `Bearer ${token}` }
+      });
+      document.getElementById('demoCredenciales').style.display = 'none';
+      document.getElementById('btnLimpiarDemoReal').style.display = 'none';
+      _demoTiendaId = null;
+      showToast('✓ Demo limpiada. La tienda volvió a su estado original.');
     }
 
     document.querySelectorAll('.tab-btn').forEach(btn => {
