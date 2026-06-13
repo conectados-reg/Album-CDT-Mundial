@@ -116,7 +116,7 @@ router.put('/cambiar-clave', async (req, res) => {
 
   } catch (err) {
     console.error('[CambiarClave]', err.message);
-    res.status(500).json({ error: 'Error del servidor al actualizar la contraseña.' });
+    res.status(500).json({ error: 'Error del servidor al actualizar la contraseña.', detalle: err.message });
   }
 });
 
