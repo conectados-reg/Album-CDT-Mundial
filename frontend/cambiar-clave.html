@@ -275,24 +275,24 @@
 <body>
 
   <div class="badge">
-    <span class="badge-icon">🔄</span>
-    <div class="badge-title">CAMBIAR <span>CONTRASEÑA</span></div>
+    <span class="badge-icon" id="badgeIcon">🔄</span>
+    <div class="badge-title" id="badgeTitulo">CAMBIAR <span>CONTRASEÑA</span></div>
     <div class="badge-sub">Sportline · Álbum Estrellas · 2026</div>
   </div>
 
   <div class="card">
     <div class="store-banner" id="bannerTienda">
-      Actualizando contraseña para<strong id="lblNombreTienda">Cargando...</strong>
+      <span id="bannerTexto">Actualizando contraseña para</span>&nbsp;<strong id="lblNombreTienda">Cargando...</strong>
     </div>
 
     <div id="alertMsg" class="alert alert-error"></div>
 
     <form id="cambiarForm">
 
-      <div class="form-group">
+      <div class="form-group" id="grupoActual">
         <label for="pwdActual">Contraseña actual</label>
         <div class="input-wrap">
-          <input type="password" id="pwdActual" placeholder="••••••••" required autocomplete="current-password">
+          <input type="password" id="pwdActual" placeholder="••••••••" autocomplete="current-password">
           <button type="button" class="toggle-eye" onclick="toggleVer('pwdActual',this)">👁</button>
         </div>
       </div>
@@ -327,17 +327,24 @@
   <div class="login-footer">Sportline Corp · Álbum Digital · 2026</div>
 
   <script>
-    const API_URL = "https://album-cdt-mundial.onrender.com/api";
-    const token   = localStorage.getItem('token');
-    const esAdmin = localStorage.getItem('esAdmin');
+    const API_URL     = "https://album-cdt-mundial.onrender.com/api";
+    const token       = localStorage.getItem('token');
+    const esAdmin     = localStorage.getItem('esAdmin');
+    const primerAcceso = localStorage.getItem('primerAcceso') === 'true';
 
-    // Solo tiendas pueden cambiar contraseña aquí
-    if (!token || esAdmin === 'true') {
-      window.location.href = 'index.html';
-    }
+    if (!token || esAdmin === 'true') window.location.href = 'index.html';
 
     document.getElementById('lblNombreTienda').textContent =
       localStorage.getItem('nombreTienda') || 'Tu Sucursal';
+
+    // Modo primer acceso: ocultar campo contraseña actual y personalizar textos
+    if (primerAcceso) {
+      document.getElementById('badgeIcon').textContent    = '🏆';
+      document.getElementById('badgeTitulo').innerHTML    = 'PRIMER <span>ACCESO</span>';
+      document.getElementById('bannerTexto').textContent  = 'Crea tu contraseña personal para';
+      document.getElementById('grupoActual').style.display = 'none';
+      document.getElementById('btnGuardar').textContent   = '🔐 Crear mi Contraseña';
+    }
 
     function toggleVer(id, btn) {
       const input = document.getElementById(id);
@@ -375,7 +382,7 @@
     document.getElementById('cambiarForm').onsubmit = async (e) => {
       e.preventDefault();
 
-      const pwdActual    = document.getElementById('pwdActual').value;
+      const pwdActual    = primerAcceso ? 'sport123' : document.getElementById('pwdActual').value;
       const pwdNueva     = document.getElementById('pwdNueva').value;
       const pwdConfirmar = document.getElementById('pwdConfirmar').value;
       const alertMsg     = document.getElementById('alertMsg');
@@ -384,6 +391,11 @@
       alertMsg.style.display = 'none';
       alertMsg.className = 'alert alert-error';
 
+      if (!primerAcceso && !pwdActual) {
+        alertMsg.textContent = '❌ Ingresa tu contraseña actual.';
+        alertMsg.style.display = 'block';
+        return;
+      }
       if (pwdNueva !== pwdConfirmar) {
         alertMsg.textContent = '❌ Las contraseñas nuevas no coinciden. Verifica e intenta de nuevo.';
         alertMsg.style.display = 'block';
@@ -394,7 +406,12 @@
         alertMsg.style.display = 'block';
         return;
       }
-      if (pwdNueva === pwdActual) {
+      if (pwdNueva === 'sport123') {
+        alertMsg.textContent = '❌ No puedes usar la contraseña genérica. Elige una contraseña personal.';
+        alertMsg.style.display = 'block';
+        return;
+      }
+      if (!primerAcceso && pwdNueva === pwdActual) {
         alertMsg.textContent = '❌ La contraseña nueva no puede ser igual a la actual.';
         alertMsg.style.display = 'block';
         return;
@@ -406,10 +423,7 @@
       try {
         const res = await fetch(`${API_URL}/auth/cambiar-clave`, {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({ passwordActual: pwdActual, passwordNueva: pwdNueva })
         });
 
@@ -418,26 +432,29 @@
         if (!res.ok) {
           alertMsg.textContent = `❌ ${data.error || 'Error al cambiar la contraseña.'}`;
           alertMsg.style.display = 'block';
-          btn.textContent = '🔐 Guardar Nueva Contraseña';
+          btn.textContent = primerAcceso ? '🔐 Crear mi Contraseña' : '🔐 Guardar Nueva Contraseña';
           btn.disabled = false;
           return;
         }
 
         alertMsg.className = 'alert alert-success';
-        alertMsg.textContent = '✅ Contraseña actualizada. Serás redirigido al inicio de sesión...';
         alertMsg.style.display = 'block';
-        btn.textContent = '✅ Contraseña guardada';
 
-        // Cerrar sesión y redirigir para que inicie con la nueva clave
-        setTimeout(() => {
-          localStorage.clear();
-          window.location.href = 'index.html';
-        }, 2500);
+        if (primerAcceso) {
+          alertMsg.textContent = '✅ ¡Contraseña creada! Entrando al álbum...';
+          btn.textContent = '✅ ¡Listo!';
+          localStorage.setItem('primerAcceso', 'false');
+          setTimeout(() => window.location.href = 'album.html', 2000);
+        } else {
+          alertMsg.textContent = '✅ Contraseña actualizada. Serás redirigido al inicio de sesión...';
+          btn.textContent = '✅ Contraseña guardada';
+          setTimeout(() => { localStorage.clear(); window.location.href = 'index.html'; }, 2500);
+        }
 
       } catch {
         alertMsg.textContent = '❌ Sin conexión. Verifica tu red e intenta de nuevo.';
         alertMsg.style.display = 'block';
-        btn.textContent = '🔐 Guardar Nueva Contraseña';
+        btn.textContent = primerAcceso ? '🔐 Crear mi Contraseña' : '🔐 Guardar Nueva Contraseña';
         btn.disabled = false;
       }
     };
