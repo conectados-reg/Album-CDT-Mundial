@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Album CDT Mundial — Presentación de Lanzamiento</title>
+<title>Album Estrellas — Presentación de Lanzamiento</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;600;700;900&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -136,7 +136,7 @@
   }
   @keyframes barFill {
     from { width: 0%; }
-    to   { width: 74%; }
+    to   { width: 100%; }
   }
   @keyframes ringFill {
     from { stroke-dashoffset: 283; }
@@ -376,9 +376,20 @@
   .ficha-num {
     font-family: 'Barlow Condensed', sans-serif;
     font-size: .65rem; font-weight: 700;
-    color: rgba(255,255,255,.4); letter-spacing: .1em;
+    color: rgba(255,255,255,.9); letter-spacing: .1em;
   }
   .ficha-card.has-photo .ficha-num { color: var(--gold); }
+  .semana-label {
+    grid-column: 1 / -1;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: .7rem; font-weight: 700;
+    letter-spacing: .2em; text-transform: uppercase;
+    color: #fff; padding: 4px 0 2px;
+    border-bottom: 1px solid rgba(255,255,255,.1);
+    margin-bottom: 4px;
+  }
+  .semana-label.done { color: var(--gold); border-color: rgba(247,168,0,.3); }
+  .semana-label.open { color: rgba(255,255,255,.7); }
 
   /* ── SLIDE 5: UNLOCK ── */
   #s5 {
@@ -496,15 +507,6 @@
   }
 
   /* ── SLIDE 7: ADMIN ── */
-  #s7 {
-    background: radial-gradient(ellipse at 50% 30%, #0A1628 0%, #000 70%);
-    flex-direction: row; gap: 80px; padding: 0 5vw;
-  }
-  #s7 .s7-left { flex: 1; max-width: 440px; }
-  #s7 .s7-right {
-    flex: 1; display: flex;
-    align-items: center; justify-content: center;
-  }
   .admin-mockup {
     background: var(--navy2);
     border: 1px solid rgba(247,168,0,.15);
@@ -561,11 +563,11 @@
     text-transform: uppercase; letter-spacing: .08em;
   }
 
-  /* ── SLIDE 8: NÚMEROS ── */
-  #s8 {
+  /* ── SLIDE 7: NÚMEROS ── */
+  #s7 {
     background: radial-gradient(ellipse at 50% 50%, #0A1628 0%, #000 70%);
   }
-  #s8 .nums-label {
+  #s7 .nums-label {
     font-family: 'Barlow Condensed', sans-serif;
     font-size: .78rem; letter-spacing: .3em;
     text-transform: uppercase; color: var(--gold);
@@ -607,8 +609,8 @@
   }
 
   /* ── SLIDE 9: CIERRE ── */
-  #s9 { background: #000; }
-  #s9 .close-logo {
+  #s8 { background: #000; }
+  #s8 .close-logo {
     font-family: 'Barlow Condensed', sans-serif;
     font-size: clamp(3.5rem, 9vw, 8rem);
     font-weight: 900;
@@ -617,14 +619,14 @@
     animation: glowPulse 3s ease-in-out infinite;
     text-align: center; line-height: 1;
   }
-  #s9 .close-sub {
+  #s8 .close-sub {
     font-family: 'Barlow Condensed', sans-serif;
     font-size: clamp(1rem, 2.5vw, 1.8rem);
     letter-spacing: .25em; text-transform: uppercase;
     color: rgba(255,255,255,.35); margin-top: 1rem;
     animation: fadeIn 1s 1s both;
   }
-  #s9 .close-tag {
+  #s8 .close-tag {
     margin-top: 3rem;
     font-family: 'Barlow Condensed', sans-serif;
     font-size: clamp(.8rem, 1.5vw, 1rem);
@@ -632,12 +634,12 @@
     color: rgba(255,255,255,.2);
     animation: fadeIn 1s 2s both;
   }
-  #s9 .stars {
+  #s8 .stars {
     position: absolute; inset: 0;
     pointer-events: none;
     overflow: hidden;
   }
-  #s9 .star {
+  #s8 .star {
     position: absolute;
     width: 2px; height: 2px;
     background: rgba(255,255,255,.5);
@@ -665,8 +667,8 @@
 
   /* Responsive */
   @media (max-width: 768px) {
-    #s2, #s3, #s5, #s6, #s7 { flex-direction: column; gap: 2rem; padding: 1rem; }
-    #s2 .s2-left, #s3 .s3-right, #s5 .s5-left, #s6 .s6-left, #s7 .s7-left { max-width: 100%; }
+    #s2, #s3, #s5, #s6 { flex-direction: column; gap: 2rem; padding: 1rem; }
+    #s2 .s2-left, #s3 .s3-right, #s5 .s5-left, #s6 .s6-left { max-width: 100%; }
     .mockup-login, .mockup-pass, .mockup-upload, .admin-mockup, .progress-mockup { width: min(260px, 85vw); }
     .album-mockup { grid-template-columns: repeat(4, 1fr); }
     .nums-divider { display: none; }
@@ -691,7 +693,7 @@
 
   <!-- ── SLIDE 0: INTRO ── -->
   <div class="slide" id="s0">
-    <div class="logo-text fadeUp-1">Album<br>CDT Mundial</div>
+    <div class="logo-text fadeUp-1">Album<br>Estrellas</div>
     <div class="sub fadeUp-2">Sportline · 2026</div>
     <div class="year-badge">Copa del Mundo FIFA 2026</div>
   </div>
@@ -704,8 +706,7 @@
     </div>
     <div class="line"></div>
     <div class="desc">
-      Una plataforma diseñada para que cada colaborador deje su huella
-      en el álbum más grande de Sportline.
+      Una plataforma diseñada para cada FanSLA.
     </div>
   </div>
 
@@ -715,13 +716,13 @@
       <div class="label-tag">Paso 01</div>
       <div class="big-title fadeUp-1">Acceso<br><span>seguro</span><br>para cada<br>sucursal</div>
       <div class="body-text fadeUp-2">
-        Cada tienda entra con su correo corporativo. Sin complicaciones, sin papeles. Solo tu sucursal y tu contraseña.
+        Cada tienda entra con su nombre o ID de tienda. Sin complicaciones, sin papeles. Solo tu tienda y tu contraseña.
       </div>
     </div>
     <div class="s2-right">
       <div class="mockup-login">
         <div class="m-title">🏆 Iniciar Sesión</div>
-        <input class="m-field" type="email" value="sucursal@sportline.com" readonly>
+        <input class="m-field" type="text" value="Santo Domingo Norte · ID: 0142" readonly>
         <input class="m-field" type="password" value="••••••••" readonly>
         <button class="m-btn">Entrar al Álbum</button>
         <div class="m-sub">237 sucursales conectadas</div>
@@ -758,21 +759,30 @@
       </div>
     </div>
     <div class="album-mockup">
-      <!-- Semana 1: todas con foto -->
-      <div class="ficha-card has-photo"><div class="ficha-avatar" style="background:linear-gradient(160deg,#F7A800,#D48F00);font-size:1.6rem;">👩</div><div class="ficha-num">S1·01</div></div>
-      <div class="ficha-card has-photo"><div class="ficha-avatar" style="background:linear-gradient(160deg,#D48F00,#A36A00);font-size:1.6rem;">👨</div><div class="ficha-num">S1·02</div></div>
-      <div class="ficha-card has-photo"><div class="ficha-avatar" style="background:linear-gradient(160deg,#F7A800,#B07300);font-size:1.6rem;">👩</div><div class="ficha-num">S1·03</div></div>
-      <!-- Semana 2: desbloqueadas sin foto -->
-      <div class="ficha-card unlocked"><div class="ficha-avatar">📷</div><div class="ficha-num">S2·01</div></div>
-      <div class="ficha-card unlocked"><div class="ficha-avatar">📷</div><div class="ficha-num">S2·02</div></div>
-      <div class="ficha-card unlocked"><div class="ficha-avatar">📷</div><div class="ficha-num">S2·03</div></div>
+      <!-- Semana 1: 6 fichas con foto (100% cumplido) -->
+      <div class="semana-label done">✅ Semana 1 — 100% cumplido · 6 fichas desbloqueadas</div>
+      <div class="ficha-card has-photo"><div class="ficha-avatar" style="background:linear-gradient(160deg,#F7A800,#D48F00);font-size:1.5rem;">👩</div><div class="ficha-num">01</div></div>
+      <div class="ficha-card has-photo"><div class="ficha-avatar" style="background:linear-gradient(160deg,#D48F00,#A36A00);font-size:1.5rem;">👨</div><div class="ficha-num">02</div></div>
+      <div class="ficha-card has-photo"><div class="ficha-avatar" style="background:linear-gradient(160deg,#F7A800,#B07300);font-size:1.5rem;">👩</div><div class="ficha-num">03</div></div>
+      <div class="ficha-card has-photo"><div class="ficha-avatar" style="background:linear-gradient(160deg,#B07300,#F7A800);font-size:1.5rem;">🧑</div><div class="ficha-num">04</div></div>
+      <div class="ficha-card has-photo"><div class="ficha-avatar" style="background:linear-gradient(160deg,#A36A00,#D48F00);font-size:1.5rem;">👩</div><div class="ficha-num">05</div></div>
+      <div class="ficha-card has-photo"><div class="ficha-avatar" style="background:linear-gradient(160deg,#D48F00,#F7A800);font-size:1.5rem;">👨</div><div class="ficha-num">06</div></div>
+      <!-- Semana 2: 6 fichas desbloqueadas sin foto -->
+      <div class="semana-label open">🔓 Semana 2 — 100% cumplido · Sube las fotos de tu equipo</div>
+      <div class="ficha-card unlocked"><div class="ficha-avatar">📷</div><div class="ficha-num">07</div></div>
+      <div class="ficha-card unlocked"><div class="ficha-avatar">📷</div><div class="ficha-num">08</div></div>
+      <div class="ficha-card unlocked"><div class="ficha-avatar">📷</div><div class="ficha-num">09</div></div>
+      <div class="ficha-card unlocked"><div class="ficha-avatar">📷</div><div class="ficha-num">10</div></div>
+      <div class="ficha-card unlocked"><div class="ficha-avatar">📷</div><div class="ficha-num">11</div></div>
+      <div class="ficha-card unlocked"><div class="ficha-avatar">📷</div><div class="ficha-num">12</div></div>
       <!-- Semana 3-6: bloqueadas -->
-      <div class="ficha-card locked"><div class="ficha-avatar">🔒</div><div class="ficha-num">S3·01</div></div>
-      <div class="ficha-card locked"><div class="ficha-avatar">🔒</div><div class="ficha-num">S3·02</div></div>
-      <div class="ficha-card locked"><div class="ficha-avatar">🔒</div><div class="ficha-num">S3·03</div></div>
-      <div class="ficha-card locked"><div class="ficha-avatar">🔒</div><div class="ficha-num">S4·01</div></div>
-      <div class="ficha-card locked"><div class="ficha-avatar">🔒</div><div class="ficha-num">S4·02</div></div>
-      <div class="ficha-card locked"><div class="ficha-avatar">🔒</div><div class="ficha-num">S4·03</div></div>
+      <div class="semana-label" style="color:rgba(255,255,255,.35);border-color:rgba(255,255,255,.08)">🔒 Semanas 3 a 6 — Se desbloquean al llegar al 100% cada período</div>
+      <div class="ficha-card locked"><div class="ficha-avatar">🔒</div><div class="ficha-num">13</div></div>
+      <div class="ficha-card locked"><div class="ficha-avatar">🔒</div><div class="ficha-num">14</div></div>
+      <div class="ficha-card locked"><div class="ficha-avatar">🔒</div><div class="ficha-num">15</div></div>
+      <div class="ficha-card locked"><div class="ficha-avatar">🔒</div><div class="ficha-num">16</div></div>
+      <div class="ficha-card locked"><div class="ficha-avatar">🔒</div><div class="ficha-num">17</div></div>
+      <div class="ficha-card locked"><div class="ficha-avatar">🔒</div><div class="ficha-num">18</div></div>
     </div>
   </div>
 
@@ -784,7 +794,7 @@
         El cumplimiento<br><span style="color:var(--gold)">desbloquea</span><br>tus fichas
       </div>
       <div class="body-text fadeUp-3">
-        Cada semana, si tu sucursal supera su meta, se desbloquean nuevas fichas. Más cumplimiento, más álbum.
+        Cada período de medición, el administrador carga los resultados de cumplimiento. Si tu sucursal alcanza el <strong style="color:var(--gold)">100% o más</strong>, se desbloquean automáticamente <strong style="color:var(--gold)">6 fichas</strong> para ese período. Sin 100%, no hay fichas esa semana.
       </div>
     </div>
     <div class="s5-right">
@@ -794,10 +804,10 @@
         <div class="pm-bar-bg">
           <div class="pm-bar-fill"></div>
         </div>
-        <div class="pm-pct">74% ✓</div>
+        <div class="pm-pct">100% ✓</div>
       </div>
       <div class="unlock-badge">
-        🔓 3 fichas desbloqueadas para la semana 2
+        🔓 6 fichas desbloqueadas — ¡Meta cumplida!
       </div>
     </div>
   </div>
@@ -827,35 +837,8 @@
     </div>
   </div>
 
-  <!-- ── SLIDE 7: ADMIN ── -->
+  <!-- ── SLIDE 7: NÚMEROS ── -->
   <div class="slide" id="s7">
-    <div class="s7-left">
-      <div class="label-tag fadeUp-1">Panel de Control</div>
-      <div class="big-title fadeUp-2" style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(2rem,4vw,3.8rem);color:#fff;line-height:1.05;">
-        El administrador<br><span style="color:var(--gold)">lo ve todo</span>
-      </div>
-      <div class="body-text fadeUp-3">
-        Panel centralizado con resultados en tiempo real, gestión de fichas, subida de fotos y control total de las 237 sucursales.
-      </div>
-    </div>
-    <div class="s7-right">
-      <div class="admin-mockup">
-        <div class="am-header">Panel Administrador · CDT Mundial 2026</div>
-        <div class="am-row"><div class="am-dot green"></div><div class="am-name">Sto. Domingo Norte</div><div class="am-pct">89%</div></div>
-        <div class="am-row"><div class="am-dot gold"></div><div class="am-name">Santiago Centro</div><div class="am-pct">74%</div></div>
-        <div class="am-row"><div class="am-dot gold"></div><div class="am-name">La Romana</div><div class="am-pct">68%</div></div>
-        <div class="am-row"><div class="am-dot gray"></div><div class="am-name">San Pedro de Macorís</div><div class="am-pct">41%</div></div>
-        <div class="am-stat-row">
-          <div class="am-stat"><span class="am-stat-n">237</span><span class="am-stat-l">Sucursales</span></div>
-          <div class="am-stat"><span class="am-stat-n">6</span><span class="am-stat-l">Semanas</span></div>
-          <div class="am-stat"><span class="am-stat-n">68%</span><span class="am-stat-l">Promedio</span></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── SLIDE 8: NÚMEROS ── -->
-  <div class="slide" id="s8">
     <div class="nums-label">La escala de la plataforma</div>
     <div class="nums-grid">
       <div class="num-block">
@@ -880,10 +863,10 @@
     </div>
   </div>
 
-  <!-- ── SLIDE 9: CIERRE ── -->
-  <div class="slide" id="s9">
+  <!-- ── SLIDE 8: CIERRE ── -->
+  <div class="slide" id="s8">
     <div class="stars" id="stars"></div>
-    <div class="close-logo fadeUp-1">Album<br>CDT Mundial</div>
+    <div class="close-logo fadeUp-1">Album<br>Estrellas</div>
     <div class="close-sub fadeUp-2">Sportline · Copa del Mundo 2026</div>
     <div class="close-tag">album-cdt-mundial.vercel.app</div>
   </div>
