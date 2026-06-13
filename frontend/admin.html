@@ -1208,13 +1208,19 @@
     async function simSubirFoto() {
       if (!_simFotoB64) { showToast('Selecciona una foto primero.'); return; }
       const alertEl = document.getElementById('simAlertFoto');
+      const btnSubir = document.querySelector('#simModal button[onclick="simSubirFoto()"]');
       alertEl.textContent = 'Subiendo...'; alertEl.style.display = 'block'; alertEl.style.background = 'rgba(247,168,0,.1)'; alertEl.style.color = 'var(--p-orange)';
+      if (btnSubir) btnSubir.disabled = true;
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 40000);
       try {
         const res = await fetch(`${API_URL}/album/simulacro/foto`, {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ficha_id: _simFichaActual, foto_base64: _simFotoB64, tipo: _simFotoTipo })
+          body: JSON.stringify({ ficha_id: _simFichaActual, foto_base64: _simFotoB64, tipo: _simFotoTipo }),
+          signal: controller.signal
         });
+        clearTimeout(timer);
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
         _simFichas = _simFichas.map(f => f.id === _simFichaActual ? { ...f, foto_url: data.foto_url } : f);
@@ -1222,7 +1228,11 @@
         document.getElementById('simModal').style.display = 'none';
         showToast('✓ Foto subida al álbum.');
       } catch (err) {
-        alertEl.textContent = '❌ ' + err.message; alertEl.style.background = 'rgba(220,50,50,.15)'; alertEl.style.color = '#f87171';
+        clearTimeout(timer);
+        const msg = err.name === 'AbortError' ? 'Tiempo de espera agotado. Intenta de nuevo.' : err.message;
+        alertEl.textContent = '❌ ' + msg; alertEl.style.background = 'rgba(220,50,50,.15)'; alertEl.style.color = '#f87171';
+      } finally {
+        if (btnSubir) btnSubir.disabled = false;
       }
     }
 
