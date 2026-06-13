@@ -745,19 +745,25 @@
       if (!fotoBase64 || !fichaIdFoto) return;
       const btn = document.getElementById('btnSubir');
       btn.textContent = 'Subiendo...'; btn.disabled = true;
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 40000);
       try {
         const res = await fetch(`${API_URL}/album/foto`, {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ficha_id: fichaIdFoto, foto_base64: fotoBase64, tipo: fotoTipo })
+          body: JSON.stringify({ ficha_id: fichaIdFoto, foto_base64: fotoBase64, tipo: fotoTipo }),
+          signal: controller.signal
         });
+        clearTimeout(timer);
         if (res.status === 401) { localStorage.clear(); window.location.href = 'index.html'; return; }
         if (!res.ok) throw new Error('API error');
         mostrarAlerta('✅ Foto subida correctamente.', true);
         cerrarModal();
         await cargarAlbum();
-      } catch {
-        mostrarAlerta('❌ Error al subir la foto. Intenta de nuevo.');
+      } catch (err) {
+        clearTimeout(timer);
+        const msg = err.name === 'AbortError' ? '⏱️ Tiempo agotado. Intenta de nuevo.' : '❌ Error al subir la foto. Intenta de nuevo.';
+        mostrarAlerta(msg);
         btn.textContent = '⬆️ Subir al Álbum'; btn.disabled = false;
       }
     }
