@@ -487,6 +487,7 @@
 
         localStorage.setItem('token', data.token);
         localStorage.setItem('esAdmin', data.esAdmin ? 'true' : 'false');
+        localStorage.setItem('primerAcceso', data.primerAcceso ? 'true' : 'false');
 
         if (!data.esAdmin && data.tienda) {
           localStorage.setItem('nombreTienda', data.tienda.nombre);

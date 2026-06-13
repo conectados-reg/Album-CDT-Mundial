@@ -166,4 +166,22 @@ router.post('/:id/recalcular-fichas', verificarToken, async (req, res) => {
   }
 });
 
+// POST /api/tiendas/:id/reset-password — admin: restablece contraseña a sport123
+router.post('/:id/reset-password', verificarToken, async (req, res) => {
+  if (req.usuario.rol !== 'admin') return res.status(403).json({ error: 'No eres administrador.' });
+
+  const { data: tienda, error: tErr } = await supabase
+    .from('tiendas').select('id, nombre').eq('id', req.params.id).maybeSingle();
+
+  if (tErr || !tienda) return res.status(404).json({ error: 'Tienda no encontrada.' });
+
+  const { error } = await supabase.from('tiendas')
+    .update({ password_hash: 'sport123', password_changed_at: null })
+    .eq('id', req.params.id);
+
+  if (error) return res.status(500).json({ error: error.message });
+
+  res.json({ ok: true, tienda: tienda.nombre, mensaje: 'Contraseña restablecida a sport123.' });
+});
+
 module.exports = router;
