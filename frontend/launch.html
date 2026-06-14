@@ -377,6 +377,17 @@ html, body {
 <div class="slide-counter" id="counter">1 / 9</div>
 <div class="nav-hint">← → Navegar · Clic para avanzar</div>
 
+<!-- LOGO SLA CORP -->
+<div style="position:fixed;top:18px;right:24px;z-index:200;pointer-events:none;">
+  <img src="logo.png" alt="SLA Corp" style="height:44px;object-fit:contain;opacity:.9;filter:drop-shadow(0 2px 8px rgba(0,0,0,.5));">
+</div>
+
+<!-- BOTÓN MÚSICA -->
+<button id="musicBtn" onclick="toggleMusic()" style="position:fixed;bottom:50px;left:24px;z-index:200;background:rgba(247,168,0,.15);border:1.5px solid rgba(247,168,0,.4);border-radius:50%;width:42px;height:42px;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;transition:all .3s;" title="Reproducir música">🔇</button>
+
+<!-- YOUTUBE PLAYER (oculto) -->
+<div id="ytWrap" style="position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;overflow:hidden;bottom:0;left:0;"></div>
+
 <div class="deck">
 
 <!-- ══════════════════════════════════════════
@@ -765,6 +776,54 @@ html, body {
     const d = tx - e.changedTouches[0].clientX;
     if (Math.abs(d) > 50) d > 0 ? goTo(cur2+1) : goTo(cur2-1);
   });
+
+  /* ── MÚSICA: Desire — Himno oficial FIFA 2026 (Robbie Williams & Laura Pausini) ── */
+  let ytPlayer = null;
+  let musicPlaying = false;
+  const VIDEO_ID = 'Uc8LehnnjJk';
+
+  function onYouTubeIframeAPIReady() {
+    ytPlayer = new YT.Player('ytFrame', {
+      videoId: VIDEO_ID,
+      playerVars: { autoplay: 0, controls: 0, loop: 1, playlist: VIDEO_ID, rel: 0, showinfo: 0 },
+      events: {
+        onReady: () => {},
+        onStateChange: e => {
+          const btn = document.getElementById('musicBtn');
+          if (e.data === YT.PlayerState.PLAYING) {
+            musicPlaying = true;
+            btn.textContent = '🎵';
+            btn.style.background = 'rgba(247,168,0,.35)';
+            btn.style.borderColor = 'rgba(247,168,0,.8)';
+          } else if (e.data === YT.PlayerState.PAUSED || e.data === YT.PlayerState.ENDED) {
+            musicPlaying = false;
+            btn.textContent = '🔇';
+            btn.style.background = 'rgba(247,168,0,.15)';
+            btn.style.borderColor = 'rgba(247,168,0,.4)';
+          }
+        }
+      }
+    });
+  }
+
+  function toggleMusic() {
+    const btn = document.getElementById('musicBtn');
+    if (!ytPlayer) {
+      const wrap = document.getElementById('ytWrap');
+      wrap.innerHTML = '<div id="ytFrame"></div>';
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(tag);
+      btn.textContent = '⏳';
+      return;
+    }
+    if (musicPlaying) {
+      ytPlayer.pauseVideo();
+    } else {
+      ytPlayer.playVideo();
+    }
+  }
 </script>
+
 </body>
 </html>
