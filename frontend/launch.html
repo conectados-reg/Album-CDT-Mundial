@@ -765,14 +765,16 @@ html, body {
   document.getElementById('pBar').style.width = '0%';
 
   document.addEventListener('keydown', e => {
+    primeraInteraccion();
     if (e.key==='ArrowRight'||e.key===' '||e.key==='Enter') { e.preventDefault(); goTo(cur2+1); }
     if (e.key==='ArrowLeft') { e.preventDefault(); goTo(cur2-1); }
   });
-  document.querySelector('.deck').addEventListener('click', () => goTo(cur2+1));
+  document.querySelector('.deck').addEventListener('click', () => { primeraInteraccion(); goTo(cur2+1); });
 
   let tx = 0;
   document.addEventListener('touchstart', e => { tx = e.touches[0].clientX; });
   document.addEventListener('touchend', e => {
+    primeraInteraccion();
     const d = tx - e.changedTouches[0].clientX;
     if (Math.abs(d) > 50) d > 0 ? goTo(cur2+1) : goTo(cur2-1);
   });
@@ -780,14 +782,26 @@ html, body {
   /* ── MÚSICA: Desire — Himno oficial FIFA 2026 (Robbie Williams & Laura Pausini) ── */
   let ytPlayer = null;
   let musicPlaying = false;
+  let musicLoaded = false;
+  let musicStarted = false;
   const VIDEO_ID = 'Uc8LehnnjJk';
+
+  function cargarMusica() {
+    if (musicLoaded) return;
+    musicLoaded = true;
+    const wrap = document.getElementById('ytWrap');
+    wrap.innerHTML = '<div id="ytFrame"></div>';
+    const tag = document.createElement('script');
+    tag.src = 'https://www.youtube.com/iframe_api';
+    document.head.appendChild(tag);
+  }
 
   function onYouTubeIframeAPIReady() {
     ytPlayer = new YT.Player('ytFrame', {
       videoId: VIDEO_ID,
-      playerVars: { autoplay: 0, controls: 0, loop: 1, playlist: VIDEO_ID, rel: 0, showinfo: 0 },
+      playerVars: { autoplay: 1, controls: 0, loop: 1, playlist: VIDEO_ID, rel: 0 },
       events: {
-        onReady: () => {},
+        onReady: e => { e.target.setVolume(60); e.target.playVideo(); },
         onStateChange: e => {
           const btn = document.getElementById('musicBtn');
           if (e.data === YT.PlayerState.PLAYING) {
@@ -807,19 +821,16 @@ html, body {
   }
 
   function toggleMusic() {
-    const btn = document.getElementById('musicBtn');
-    if (!ytPlayer) {
-      const wrap = document.getElementById('ytWrap');
-      wrap.innerHTML = '<div id="ytFrame"></div>';
-      const tag = document.createElement('script');
-      tag.src = 'https://www.youtube.com/iframe_api';
-      document.head.appendChild(tag);
-      btn.textContent = '⏳';
-      return;
-    }
-    if (musicPlaying) {
-      ytPlayer.pauseVideo();
-    } else {
+    if (!ytPlayer) { cargarMusica(); return; }
+    if (musicPlaying) { ytPlayer.pauseVideo(); } else { ytPlayer.playVideo(); }
+  }
+
+  /* Inicia música automáticamente en la primera interacción del usuario */
+  function primeraInteraccion() {
+    if (musicStarted) return;
+    musicStarted = true;
+    cargarMusica();
+  }
       ytPlayer.playVideo();
     }
   }
