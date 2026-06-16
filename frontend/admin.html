@@ -312,6 +312,63 @@
     .store-acc-btn .acc-arrow { font-size: .55rem; color: rgba(255,255,255,.2); transition: transform .2s; margin-left: auto; }
     .store-acc-btn.open .acc-arrow { transform: rotate(90deg); color: var(--p-orange); }
     .store-acc-panel { display: none; padding: .9rem 1.4rem .9rem 3rem; background: rgba(0,0,0,.22); border-bottom: 2px solid rgba(247,168,0,.08); }
+
+    /* ── ADMIN SEARCH SELECT ─────────────────────────────── */
+    .adm-search-wrap { position: relative; flex: 1; min-width: 220px; max-width: 420px; }
+    .adm-search-input-wrap { position: relative; }
+    .adm-search-input {
+      width: 100%;
+      background: #0d1f3c;
+      border: 1.5px solid rgba(255,255,255,.15);
+      border-radius: 9px;
+      color: #fff;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .92rem; letter-spacing: .03em;
+      padding: .55rem .9rem .55rem 2.4rem;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .adm-search-input:focus { border-color: var(--p-orange); }
+    .adm-search-input::placeholder { color: rgba(255,255,255,.3); }
+    .adm-search-input.has-value { border-color: rgba(247,168,0,.45); }
+    .adm-search-icon {
+      position: absolute; left: .8rem; top: 50%; transform: translateY(-50%);
+      color: rgba(255,255,255,.35); font-size: .85rem; pointer-events: none;
+    }
+    .adm-search-results {
+      display: none;
+      position: absolute; top: calc(100% + 5px); left: 0; right: 0;
+      background: #0b1940;
+      border: 1.5px solid rgba(247,168,0,.3);
+      border-radius: 10px;
+      z-index: 9999;
+      box-shadow: 0 16px 48px rgba(0,0,0,.8);
+      max-height: 240px;
+      overflow-y: auto;
+    }
+    .adm-search-results.open { display: block; }
+    .adm-search-results::-webkit-scrollbar { width: 4px; }
+    .adm-search-results::-webkit-scrollbar-thumb { background: rgba(247,168,0,.3); border-radius: 2px; }
+    .adm-res-item {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .88rem; letter-spacing: .03em;
+      color: rgba(255,255,255,.8);
+      padding: .55rem .9rem;
+      cursor: pointer;
+      display: flex; align-items: center; gap: .55rem;
+      transition: background .15s;
+      border-bottom: 1px solid rgba(255,255,255,.04);
+    }
+    .adm-res-item:last-child { border-bottom: none; }
+    .adm-res-item:hover { background: rgba(247,168,0,.1); color: #fff; }
+    .adm-res-codigo { font-size: .7rem; color: var(--p-orange); flex-shrink: 0; letter-spacing: .04em; min-width: 42px; }
+    .adm-res-nombre { flex: 1; }
+    .adm-res-region { font-size: .67rem; color: rgba(255,255,255,.28); flex-shrink: 0; }
+    .adm-no-results {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .82rem; color: rgba(255,255,255,.3);
+      padding: 1.1rem; text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -410,9 +467,14 @@
 
         <!-- Paso 1: seleccionar tienda -->
         <div style="display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;margin-bottom:1rem;">
-          <select id="demoTiendaSelect" style="flex:1;min-width:220px;max-width:380px;background:#0d1f3c;border:1.5px solid rgba(255,255,255,.15);border-radius:9px;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:.9rem;padding:.5rem .8rem;outline:none;">
-            <option value="" style="background:#0d1f3c;color:#fff;">— Elige una tienda para la demo —</option>
-          </select>
+          <div class="adm-search-wrap" id="demoSearchWrap">
+            <div class="adm-search-input-wrap">
+              <span class="adm-search-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+              <input type="text" id="demoSearchInput" class="adm-search-input"
+                placeholder="Busca tienda para la demo…" autocomplete="off">
+            </div>
+            <div class="adm-search-results" id="demoSearchResults"></div>
+          </div>
           <button onclick="prepararDemo()" style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;background:rgba(0,200,100,.18);color:rgba(100,255,160,.9);border:1.5px solid rgba(0,200,100,.35);border-radius:8px;padding:.5rem 1.2rem;cursor:pointer;">
             <i class="fa-solid fa-wand-magic-sparkles" style="margin-right:4px;"></i>Preparar Demo
           </button>
@@ -506,9 +568,14 @@
 
       <!-- Selector de tienda -->
       <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.5rem;">
-        <select id="simTiendaSelect" style="flex:1;min-width:220px;max-width:420px;background:#0d1f3c;border:1.5px solid rgba(255,255,255,.15);border-radius:9px;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:.95rem;padding:.55rem .9rem;outline:none;">
-          <option value="" style="background:#0d1f3c;color:#fff;">— Selecciona una tienda —</option>
-        </select>
+        <div class="adm-search-wrap" id="simSearchWrap">
+          <div class="adm-search-input-wrap">
+            <span class="adm-search-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+            <input type="text" id="simSearchInput" class="adm-search-input"
+              placeholder="Busca la tienda del simulacro…" autocomplete="off">
+          </div>
+          <div class="adm-search-results" id="simSearchResults"></div>
+        </div>
         <button onclick="cargarSimulacro()" style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;background:rgba(0,70,173,.3);color:rgba(100,160,255,.9);border:1.5px solid rgba(0,70,173,.5);border-radius:8px;padding:.5rem 1.1rem;cursor:pointer;">
           <i class="fa-solid fa-magnifying-glass" style="margin-right:5px;"></i>Cargar
         </button>
@@ -1034,26 +1101,73 @@
     /* ══════════════════════ TAB 3 — SIMULACRO ══════════════════════ */
     let _simTiendaId = null, _simFichas = [], _simFichaActual = null, _simFotoB64 = null, _simFotoTipo = null;
 
-    function poblarSelectSimulacro() {
-      ['simTiendaSelect','demoTiendaSelect'].forEach(id => {
-        const sel = document.getElementById(id);
-        if (!sel) return;
-        sel.innerHTML = `<option value="" style="background:#0d1f3c;color:#fff;">${id === 'demoTiendaSelect' ? '— Elige una tienda para la demo —' : '— Selecciona una tienda —'}</option>`;
-        (_todasTiendas || []).forEach(t => {
-          const opt = document.createElement('option');
-          opt.value = t.id;
-          opt.textContent = `${t.codigo} · ${t.nombre}`;
-          opt.style.background = '#0d1f3c';
-          opt.style.color = '#fff';
-          sel.appendChild(opt);
-        });
+    function initAdminSearch(inputId, resultsId, onSelect) {
+      const input   = document.getElementById(inputId);
+      const results = document.getElementById(resultsId);
+      if (!input || !results) return;
+
+      const total = (_todasTiendas || []).length;
+      input.placeholder = `🔍 Busca entre ${total} tiendas…`;
+
+      function renderAdmResults(lista) {
+        if (!lista.length) {
+          results.innerHTML = '<div class="adm-no-results">Sin resultados</div>';
+        } else {
+          results.innerHTML = lista.map(t =>
+            `<div class="adm-res-item" data-id="${t.id}" data-nombre="${t.nombre}">
+              <span class="adm-res-codigo">${t.codigo || ''}</span>
+              <span class="adm-res-nombre">${t.nombre}</span>
+              <span class="adm-res-region">${t.region || ''}</span>
+            </div>`
+          ).join('');
+          results.querySelectorAll('.adm-res-item').forEach(item => {
+            item.addEventListener('click', () => {
+              input.value = item.dataset.nombre;
+              input.classList.add('has-value');
+              results.classList.remove('open');
+              onSelect(item.dataset.id);
+            });
+          });
+        }
+        results.classList.add('open');
+      }
+
+      input.addEventListener('input', () => {
+        const q = input.value.trim().toLowerCase();
+        input.classList.remove('has-value');
+        onSelect(null);
+        if (!q) { results.classList.remove('open'); return; }
+        renderAdmResults((_todasTiendas||[]).filter(t =>
+          t.nombre.toLowerCase().includes(q) ||
+          (t.region||'').toLowerCase().includes(q) ||
+          (t.codigo||'').toLowerCase().includes(q)
+        ));
       });
+
+      input.addEventListener('focus', () => {
+        const q   = input.value.trim().toLowerCase();
+        const all = _todasTiendas || [];
+        if (!all.length) return;
+        renderAdmResults(q
+          ? all.filter(t => t.nombre.toLowerCase().includes(q) || (t.codigo||'').toLowerCase().includes(q) || (t.region||'').toLowerCase().includes(q))
+          : all
+        );
+      });
+
+      document.addEventListener('click', e => {
+        if (!e.target.closest('#' + inputId) && !e.target.closest('#' + resultsId))
+          results.classList.remove('open');
+      }, { capture: false });
+    }
+
+    function poblarSelectSimulacro() {
+      initAdminSearch('demoSearchInput', 'demoSearchResults', id => { _demoTiendaId = id; });
+      initAdminSearch('simSearchInput',  'simSearchResults',  id => { _simTiendaId  = id; });
     }
 
     let _demoTiendaId = null;
 
     async function prepararDemo() {
-      _demoTiendaId = document.getElementById('demoTiendaSelect').value;
       if (!_demoTiendaId) { showToast('Selecciona una tienda primero.'); return; }
 
       const tienda = _todasTiendas.find(t => t.id === _demoTiendaId);
@@ -1107,7 +1221,6 @@
     });
 
     async function cargarSimulacro() {
-      _simTiendaId = document.getElementById('simTiendaSelect').value;
       if (!_simTiendaId) return showToast('Selecciona una tienda primero.');
       document.getElementById('simAlbumGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem;color:rgba(255,255,255,.4);font-family:\'Barlow Condensed\',sans-serif;">Cargando fichas...</div>';
       try {
