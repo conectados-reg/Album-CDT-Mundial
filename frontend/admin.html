@@ -753,10 +753,11 @@
         const data = await res.json();
         if (!res.ok) { showToast('❌ ' + (data.error || 'Error')); return; }
 
-        msg.textContent = `✓ ${data.fichas_por_semana} fichas/sem · +${data.fichas_agregadas} agregadas · −${data.fichas_eliminadas} eliminadas`;
+        const dist = (data.distribucion_semanal || []).join('-') || data.fichas_total;
+        msg.textContent = `✓ ${data.fichas_total} fichas total (dist: ${dist}) · +${data.fichas_agregadas} agregadas · −${data.fichas_eliminadas} eliminadas`;
         msg.style.display = 'inline';
         delete empCache[tiendaId];
-        showToast(`✓ ${data.tienda}: ${data.fichas_por_semana} fichas/semana (HC=${data.hc_nuevo})`);
+        showToast(`✓ ${data.tienda}: ${data.fichas_total} fichas totales (HC=${data.hc_nuevo})`);
       } catch {
         showToast('❌ Error de conexión al recalcular.');
       }
