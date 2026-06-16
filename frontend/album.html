@@ -492,6 +492,299 @@
       font-size: 1.35rem; font-weight: 700;
       min-width: 58px; text-align: right;
     }
+    .ranking-fichas {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .82rem; color: rgba(255,255,255,.4);
+      min-width: 52px; text-align: right;
+    }
+    .ranking-row.mi-tienda .ranking-fichas { color: rgba(247,168,0,.6); }
+
+    /* ── PANINI STICKER EFFECTS ────────────────────────────── */
+    .sticker-card.gold {
+      border-color: rgba(240,192,48,.35);
+      box-shadow: 0 4px 18px rgba(240,192,48,.12);
+    }
+    .sticker-card.gold .card-band {
+      background: linear-gradient(90deg, #7a5500, #c49000, var(--p-gold), #c49000, #7a5500);
+    }
+    .sticker-card.gold::after {
+      content: '';
+      position: absolute; inset: 0; z-index: 1; pointer-events: none;
+      background: linear-gradient(115deg, transparent 0%, transparent 38%, rgba(255,230,100,.07) 48%, rgba(255,255,200,.04) 52%, transparent 62%, transparent 100%);
+      animation: panini-shimmer 5s ease-in-out infinite;
+    }
+    @keyframes panini-shimmer {
+      0%   { transform: translateX(-120%) skewX(-10deg); opacity: 0; }
+      20%  { opacity: 1; }
+      80%  { opacity: 1; }
+      100% { transform: translateX(250%) skewX(-10deg); opacity: 0; }
+    }
+    .card-serial {
+      position: absolute; bottom: 63px; left: 8px; z-index: 2; pointer-events: none;
+      font-family: 'Bebas Neue', sans-serif; font-size: .5rem; letter-spacing: .06em;
+      color: rgba(255,255,255,.15);
+    }
+    .sticker-card.gold .card-serial { color: rgba(240,192,48,.3); }
+    .locked-placeholder {
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .4rem;
+    }
+    .locked-placeholder svg { width: 52px; height: 58px; opacity: .3; }
+    .locked-placeholder-txt {
+      font-family: 'Barlow Condensed', sans-serif; font-size: .6rem;
+      letter-spacing: .15em; text-transform: uppercase; color: rgba(255,255,255,.3);
+    }
+
+    /* ── COLLECTION PROGRESS BAR ───────────────────────────── */
+    .collection-bar-wrap {
+      margin-bottom: 1.5rem;
+      background: rgba(0,0,0,.3); border: 1px solid rgba(247,168,0,.12);
+      border-radius: 12px; padding: .8rem 1.2rem;
+    }
+    .collection-bar-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: .45rem;
+    }
+    .collection-bar-label {
+      font-family: 'Barlow Condensed', sans-serif; font-size: .7rem;
+      font-weight: 700; letter-spacing: .15em; text-transform: uppercase;
+      color: rgba(255,255,255,.35);
+    }
+    .collection-bar-pct {
+      font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem;
+      color: var(--p-orange); letter-spacing: .05em;
+    }
+    .collection-bar-track {
+      height: 7px; background: rgba(255,255,255,.07); border-radius: 4px; overflow: hidden;
+    }
+    .collection-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--p-blue) 0%, var(--p-orange) 100%);
+      border-radius: 4px; transition: width .6s cubic-bezier(.4,0,.2,1);
+      box-shadow: 0 0 10px rgba(247,168,0,.25);
+    }
+
+    /* ── MUNDIAL RANKING ───────────────────────────────────── */
+    .mundial-header {
+      padding: 1.2rem 1.5rem .5rem;
+      display: flex; align-items: baseline; gap: .8rem; flex-wrap: wrap;
+    }
+    .mundial-titulo {
+      font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem;
+      letter-spacing: .1em; color: var(--p-orange);
+    }
+    .mundial-badge {
+      font-family: 'Barlow Condensed', sans-serif; font-size: .78rem;
+      letter-spacing: .15em; text-transform: uppercase;
+      background: rgba(247,168,0,.1); border: 1px solid rgba(247,168,0,.3);
+      border-radius: 20px; padding: .2rem .8rem; color: rgba(255,255,255,.7);
+    }
+    .mundial-search { padding: 0 1.2rem .8rem; }
+    .mundial-search-input {
+      width: 100%; max-width: 380px;
+      background: rgba(255,255,255,.05); border: 1.5px solid rgba(255,255,255,.1);
+      border-radius: 10px; color: #fff;
+      font-family: 'Barlow Condensed', sans-serif; font-size: .9rem;
+      letter-spacing: .03em; padding: .55rem 1rem; outline: none;
+      transition: border-color .2s;
+    }
+    .mundial-search-input:focus { border-color: var(--p-orange); }
+    .mundial-search-input::placeholder { color: rgba(255,255,255,.25); }
+    .mundial-list { display: flex; flex-direction: column; gap: .4rem; padding: 0 1.2rem 2rem; }
+    .mundial-row {
+      display: flex; align-items: center; gap: .7rem;
+      padding: .62rem .9rem; border-radius: 12px;
+      background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07);
+      cursor: pointer; transition: background .2s, border-color .2s, transform .15s;
+    }
+    .mundial-row:hover {
+      background: rgba(247,168,0,.06); border-color: rgba(247,168,0,.25);
+      transform: translateX(3px);
+    }
+    .mundial-row.mi-tienda {
+      background: rgba(247,168,0,.1); border-color: rgba(247,168,0,.45);
+      box-shadow: 0 0 18px rgba(247,168,0,.08);
+    }
+    .mundial-pos {
+      font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem;
+      min-width: 34px; text-align: center; color: rgba(255,255,255,.35);
+    }
+    .mundial-row.mi-tienda .mundial-pos { color: var(--p-orange); }
+    .mundial-medal { font-size: 1.2rem; min-width: 24px; text-align: center; }
+    .mundial-info { flex: 1; min-width: 0; }
+    .mundial-nombre {
+      font-family: 'Barlow Condensed', sans-serif; font-size: .95rem;
+      font-weight: 700; color: #fff;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .mundial-row.mi-tienda .mundial-nombre { color: var(--p-orange); }
+    .mundial-pais {
+      font-size: .65rem; letter-spacing: .1em; text-transform: uppercase;
+      color: rgba(255,255,255,.35);
+    }
+    .mundial-fichas {
+      font-family: 'Barlow Condensed', sans-serif; font-size: .78rem;
+      color: rgba(255,255,255,.4); min-width: 52px; text-align: right;
+    }
+    .mundial-pct {
+      font-family: 'Barlow Condensed', sans-serif; font-size: 1.25rem;
+      font-weight: 700; min-width: 54px; text-align: right;
+    }
+
+    /* ── STORE PROFILE MODAL ───────────────────────────────── */
+    .modal-perfil-overlay {
+      display: none; position: fixed; inset: 0; z-index: 9100;
+      background: rgba(0,0,0,.8); backdrop-filter: blur(5px);
+      align-items: center; justify-content: center; padding: 1rem;
+    }
+    .modal-perfil-box {
+      background: linear-gradient(160deg, #0a1836 0%, #060e26 100%);
+      border: 1.5px solid rgba(247,168,0,.35); border-radius: 20px;
+      width: 100%; max-width: 520px; position: relative;
+      box-shadow: 0 24px 80px rgba(0,0,0,.8), 0 0 60px rgba(247,168,0,.05);
+      overflow: hidden;
+    }
+    .modal-perfil-header {
+      background: linear-gradient(90deg, rgba(0,70,173,.2), rgba(0,30,90,.35));
+      border-bottom: 1px solid rgba(247,168,0,.15);
+      padding: 1.4rem 4rem 1.2rem 1.6rem; position: relative;
+    }
+    .modal-perfil-titulo {
+      font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem;
+      letter-spacing: .1em; color: #fff; line-height: 1.1;
+    }
+    .modal-perfil-subtitulo {
+      font-family: 'Barlow Condensed', sans-serif; font-size: .75rem;
+      letter-spacing: .15em; text-transform: uppercase;
+      color: rgba(255,255,255,.4); margin-top: .25rem;
+    }
+    .modal-perfil-close {
+      position: absolute; top: 1rem; right: 1rem;
+      background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.15);
+      border-radius: 50%; width: 30px; height: 30px;
+      color: rgba(255,255,255,.6); cursor: pointer; font-size: .85rem;
+      display: flex; align-items: center; justify-content: center; transition: all .2s;
+    }
+    .modal-perfil-close:hover { background: rgba(232,35,26,.3); color: #fff; }
+    .modal-perfil-stats {
+      display: grid; grid-template-columns: repeat(2, 1fr);
+      gap: .7rem; padding: 1.2rem 1.6rem;
+    }
+    .perfil-stat {
+      background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07);
+      border-radius: 12px; padding: .85rem 1rem; text-align: center;
+    }
+    .perfil-stat-n {
+      font-family: 'Bebas Neue', sans-serif; font-size: 2rem; line-height: 1;
+      color: var(--p-orange); text-shadow: 0 0 16px rgba(247,168,0,.25);
+    }
+    .perfil-stat-l {
+      font-family: 'Barlow Condensed', sans-serif; font-size: .62rem;
+      letter-spacing: .12em; text-transform: uppercase;
+      color: rgba(255,255,255,.35); margin-top: .2rem;
+    }
+    .perfil-progress-wrap { padding: 0 1.6rem .8rem; }
+    .perfil-progress-label {
+      display: flex; justify-content: space-between;
+      font-family: 'Barlow Condensed', sans-serif; font-size: .68rem;
+      letter-spacing: .1em; text-transform: uppercase;
+      color: rgba(255,255,255,.4); margin-bottom: .4rem;
+    }
+    .perfil-progress-track {
+      height: 8px; background: rgba(255,255,255,.07); border-radius: 4px; overflow: hidden;
+    }
+    .perfil-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--p-blue), var(--p-orange));
+      border-radius: 4px; box-shadow: 0 0 10px rgba(247,168,0,.25);
+    }
+    .modal-perfil-actions {
+      padding: .8rem 1.6rem 1.4rem; display: flex; gap: .7rem;
+    }
+    .btn-perfil-action {
+      flex: 1; padding: .65rem; border-radius: 10px; border: none;
+      font-family: 'Barlow Condensed', sans-serif; font-size: .82rem;
+      font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+      cursor: pointer; transition: all .2s;
+    }
+    .btn-comparar {
+      background: rgba(0,70,173,.2); border: 1.5px solid rgba(0,70,173,.5); color: #7ab8ff;
+    }
+    .btn-comparar:hover { background: rgba(0,70,173,.45); color: #fff; }
+    .btn-perfil-cerrar {
+      background: rgba(255,255,255,.06); border: 1.5px solid rgba(255,255,255,.12);
+      color: rgba(255,255,255,.5);
+    }
+    .btn-perfil-cerrar:hover { background: rgba(255,255,255,.12); color: #fff; }
+
+    /* ── COMPARACIÓN MODAL ─────────────────────────────────── */
+    .modal-comp-overlay {
+      display: none; position: fixed; inset: 0; z-index: 9200;
+      background: rgba(0,0,0,.85); backdrop-filter: blur(6px);
+      align-items: center; justify-content: center; padding: 1rem;
+    }
+    .modal-comp-box {
+      background: linear-gradient(160deg, #0a1836 0%, #060e26 100%);
+      border: 1.5px solid rgba(0,70,173,.4); border-radius: 20px;
+      width: 100%; max-width: 640px; position: relative;
+      box-shadow: 0 24px 80px rgba(0,0,0,.8); overflow: hidden;
+    }
+    .modal-comp-header {
+      padding: 1.2rem 1.6rem; border-bottom: 1px solid rgba(255,255,255,.07);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .modal-comp-titulo {
+      font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem;
+      letter-spacing: .12em; color: #7ab8ff;
+    }
+    .modal-comp-close {
+      background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.15);
+      border-radius: 50%; width: 30px; height: 30px;
+      color: rgba(255,255,255,.6); cursor: pointer; font-size: .85rem;
+      display: flex; align-items: center; justify-content: center; transition: all .2s;
+    }
+    .modal-comp-close:hover { background: rgba(232,35,26,.3); color: #fff; }
+    .comp-grid {
+      display: grid; grid-template-columns: 1fr 44px 1fr;
+      padding: 1.2rem 1.6rem 1.4rem; gap: 0; align-items: start;
+    }
+    .comp-col { display: flex; flex-direction: column; gap: .55rem; }
+    .comp-col-title {
+      font-family: 'Barlow Condensed', sans-serif; font-size: .7rem;
+      font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+      color: rgba(255,255,255,.35); text-align: center; margin-bottom: .2rem;
+    }
+    .comp-store-name {
+      font-family: 'Bebas Neue', sans-serif; font-size: 1rem;
+      letter-spacing: .07em; color: #fff; text-align: center; line-height: 1.2;
+    }
+    .comp-store-region {
+      font-family: 'Barlow Condensed', sans-serif; font-size: .62rem;
+      letter-spacing: .12em; text-transform: uppercase;
+      color: rgba(255,255,255,.3); text-align: center; margin-top: -.25rem;
+    }
+    .comp-stat {
+      background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07);
+      border-radius: 10px; padding: .65rem .8rem; text-align: center;
+    }
+    .comp-stat-n {
+      font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; line-height: 1;
+    }
+    .comp-stat-l {
+      font-family: 'Barlow Condensed', sans-serif; font-size: .58rem;
+      letter-spacing: .1em; text-transform: uppercase;
+      color: rgba(255,255,255,.35); margin-top: .12rem;
+    }
+    .comp-divider {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: .55rem; padding-top: 2.8rem;
+    }
+    .comp-vs {
+      font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem;
+      color: rgba(255,255,255,.15); letter-spacing: .05em;
+    }
+    .comp-winner { color: #69f0ae; }
+    .comp-loser  { color: rgba(255,255,255,.2); }
+    .comp-draw   { color: var(--p-orange); }
   </style>
 </head>
 <body>
@@ -541,6 +834,7 @@
   <!-- TABS -->
   <div class="tabs-nav">
     <button class="tab-btn active" id="tabAlbum"   onclick="activarTab('album')">🃏 Mi Álbum</button>
+    <button class="tab-btn"        id="tabMundial" onclick="activarTab('mundial')">🌍 Ranking Mundial</button>
     <button class="tab-btn"        id="tabRanking" onclick="activarTab('ranking')">🏆 Ranking Nacional</button>
   </div>
 
@@ -551,8 +845,34 @@
       <span class="section-badge" id="badgeCount">Cargando...</span>
       <span class="hint-badge">📷 Haz clic en una casilla desbloqueada para subir la foto</span>
     </div>
+    <div class="collection-bar-wrap" id="collectionBar" style="display:none;">
+      <div class="collection-bar-header">
+        <span class="collection-bar-label">🏅 Progreso de Colección</span>
+        <span class="collection-bar-pct" id="collectionBarPct">0%</span>
+      </div>
+      <div class="collection-bar-track">
+        <div class="collection-bar-fill" id="collectionBarFill" style="width:0%"></div>
+      </div>
+    </div>
     <div class="album-grid" id="wrapperAlbum">
       <div class="loading-msg"><span class="spin">⚙️</span> Cargando álbum...</div>
+    </div>
+  </div>
+
+  <!-- RANKING MUNDIAL -->
+  <div id="secMundial" style="display:none;">
+    <div class="mundial-header">
+      <div class="mundial-titulo">🌍 RANKING MUNDIAL</div>
+      <div class="mundial-badge" id="mundialBadge">237 tiendas</div>
+    </div>
+    <div class="mundial-search">
+      <input class="mundial-search-input" id="mundialSearchInput" type="text"
+        placeholder="🔍 Buscar tienda o país..." oninput="filtrarMundial(this.value)">
+    </div>
+    <div class="mundial-list" id="mundialList">
+      <div style="text-align:center;padding:3rem;color:rgba(255,255,255,.35);">
+        <span>⚙️</span> Cargando ranking mundial...
+      </div>
     </div>
   </div>
 
@@ -592,6 +912,61 @@
         <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="previsualizarFoto(event)">
       </div>
       <button class="btn-subir" id="btnSubir" onclick="subirFoto()">⬆️ Subir al Álbum</button>
+    </div>
+  </div>
+
+  <!-- MODAL PERFIL DE TIENDA -->
+  <div id="modalPerfil" class="modal-perfil-overlay" onclick="if(event.target===this)cerrarPerfil()">
+    <div class="modal-perfil-box">
+      <div class="modal-perfil-header">
+        <button class="modal-perfil-close" onclick="cerrarPerfil()">✕</button>
+        <div class="modal-perfil-titulo" id="perfilNombre">—</div>
+        <div class="modal-perfil-subtitulo" id="perfilRegion">—</div>
+      </div>
+      <div class="modal-perfil-stats">
+        <div class="perfil-stat">
+          <div class="perfil-stat-n" id="perfilPosMundial">—</div>
+          <div class="perfil-stat-l">Posición Mundial</div>
+        </div>
+        <div class="perfil-stat">
+          <div class="perfil-stat-n" id="perfilPosNacional">—</div>
+          <div class="perfil-stat-l">Posición Nacional</div>
+        </div>
+        <div class="perfil-stat">
+          <div class="perfil-stat-n" id="perfilCumplimiento">—</div>
+          <div class="perfil-stat-l">Cumplimiento Acumulado</div>
+        </div>
+        <div class="perfil-stat">
+          <div class="perfil-stat-n" id="perfilFichas">—</div>
+          <div class="perfil-stat-l">Fichas Desbloqueadas</div>
+        </div>
+      </div>
+      <div class="perfil-progress-wrap">
+        <div class="perfil-progress-label">
+          <span>Avance de Colección</span>
+          <span id="perfilProgressPct">0 / 0</span>
+        </div>
+        <div class="perfil-progress-track">
+          <div class="perfil-progress-fill" id="perfilProgressFill" style="width:0%"></div>
+        </div>
+      </div>
+      <div class="modal-perfil-actions">
+        <button class="btn-perfil-action btn-comparar" id="btnComparar" onclick="abrirComparacion()">⚡ Comparar con Mi Tienda</button>
+        <button class="btn-perfil-action btn-perfil-cerrar" onclick="cerrarPerfil()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL COMPARACIÓN -->
+  <div id="modalComp" class="modal-comp-overlay" onclick="if(event.target===this)cerrarComparacion()">
+    <div class="modal-comp-box">
+      <div class="modal-comp-header">
+        <div class="modal-comp-titulo">⚡ COMPARACIÓN DE TIENDAS</div>
+        <button class="modal-comp-close" onclick="cerrarComparacion()">✕</button>
+      </div>
+      <div class="comp-grid" id="compGrid">
+        <div style="text-align:center;padding:2rem;color:rgba(255,255,255,.35);grid-column:1/-1;">Cargando comparación...</div>
+      </div>
     </div>
   </div>
 
@@ -700,6 +1075,17 @@
       const periodoEl = document.getElementById('valPeriodo');
       if (periodoEl) periodoEl.textContent = semLabel;
 
+      // Collection progress bar
+      if (total > 0) {
+        const pctCol = Math.round(desbloq / total * 100);
+        const barEl = document.getElementById('collectionBar');
+        if (barEl) {
+          barEl.style.display = '';
+          document.getElementById('collectionBarFill').style.width = pctCol + '%';
+          document.getElementById('collectionBarPct').textContent = pctCol + '%  · ' + desbloq + ' / ' + total + ' figuras';
+        }
+      }
+
       if (!total) {
         wrapper.innerHTML = `
         <div style="grid-column:1/-1;text-align:center;padding:4rem 2rem;">
@@ -742,14 +1128,23 @@
           const numStr = String(f.numero_ficha || 1).padStart(2, '0');
 
           if (!f.desbloqueado) {
-            return `<div class="sticker-card locked">
+            return `<div class="sticker-card locked" title="Alcanza el objetivo de esta semana para desbloquear">
               <div class="card-band"></div>
               <span class="card-num">#${numStr}</span>
-              <div class="card-photo"><div class="card-icon">🔒</div></div>
+              <div class="card-photo">
+                <div class="locked-placeholder">
+                  <svg viewBox="0 0 100 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="50" cy="30" r="22" fill="white"/>
+                    <ellipse cx="50" cy="88" rx="36" ry="24" fill="white"/>
+                  </svg>
+                  <div class="locked-placeholder-txt">Bloqueada</div>
+                </div>
+              </div>
               <div class="card-footer">
                 <div class="card-code">S${f.semana_numero || '?'}</div>
                 <div class="card-name">Ficha ${numStr}</div>
               </div>
+              <span class="card-serial">SLA·${numStr}</span>
             </div>`;
           }
 
@@ -771,6 +1166,7 @@
               <div class="card-code">S${f.semana_numero || '?'}</div>
               <div class="card-name">Ficha ${numStr}</div>
             </div>
+            <span class="card-serial">SLA·${numStr}</span>
           </div>`;
         }).join('');
       });
@@ -874,14 +1270,29 @@
 
     /* ── TABS ──────────────────────────────────────────────── */
     let _rankingCargado = false;
+    let _mundialCargado = false;
 
     function activarTab(tab) {
-      const isRanking = tab === 'ranking';
-      document.getElementById('tabAlbum').classList.toggle('active', !isRanking);
-      document.getElementById('tabRanking').classList.toggle('active', isRanking);
-      document.getElementById('secAlbum').style.display   = isRanking ? 'none' : '';
-      document.getElementById('secRanking').style.display = isRanking ? '' : 'none';
-      if (isRanking && !_rankingCargado) { _rankingCargado = true; cargarRanking(); }
+      ['tabAlbum','tabMundial','tabRanking'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('active');
+      });
+      document.getElementById('secAlbum').style.display   = 'none';
+      document.getElementById('secMundial').style.display = 'none';
+      document.getElementById('secRanking').style.display = 'none';
+
+      if (tab === 'album') {
+        document.getElementById('tabAlbum').classList.add('active');
+        document.getElementById('secAlbum').style.display = '';
+      } else if (tab === 'mundial') {
+        document.getElementById('tabMundial').classList.add('active');
+        document.getElementById('secMundial').style.display = '';
+        if (!_mundialCargado) { _mundialCargado = true; cargarRankingMundial(); }
+      } else {
+        document.getElementById('tabRanking').classList.add('active');
+        document.getElementById('secRanking').style.display = '';
+        if (!_rankingCargado) { _rankingCargado = true; cargarRanking(); }
+      }
     }
 
     /* ── RANKING ────────────────────────────────────────────── */
@@ -916,16 +1327,190 @@
         const medal = medallas[t.posicion] || (t.es_mi_tienda ? '⭐' : '');
         const pct   = t.cumplimiento_acumulado;
         const pctColor = pct >= 100 ? '#69f0ae' : pct > 0 ? 'var(--p-orange)' : 'rgba(255,255,255,.3)';
-        return `<div class="ranking-row${t.es_mi_tienda ? ' mi-tienda' : ''}">
+        return `<div class="ranking-row${t.es_mi_tienda ? ' mi-tienda' : ''}" onclick="verPerfilTienda('${t.id}')">
           <div class="ranking-pos">${t.posicion}</div>
           <div class="ranking-medal">${medal}</div>
           <div class="ranking-info">
             <div class="ranking-nombre">${t.nombre}${t.es_mi_tienda ? ' ← Tu tienda' : ''}</div>
             <div class="ranking-sub">${t.region}${t.semanas_registradas > 0 ? ' · ' + t.semanas_registradas + ' sem.' : ''}</div>
           </div>
+          <div class="ranking-fichas">🃏 ${t.fichas_desbloqueadas || 0}</div>
           <div class="ranking-pct" style="color:${pctColor}">${pct}%</div>
         </div>`;
       }).join('');
+    }
+
+    /* ── RANKING MUNDIAL ─────────────────────────────────── */
+    let _mundialData = [];
+
+    async function cargarRankingMundial() {
+      const list = document.getElementById('mundialList');
+      list.innerHTML = '<div style="text-align:center;padding:3rem;color:rgba(255,255,255,.35);"><span class="spin">⚙️</span> Cargando ranking mundial...</div>';
+      try {
+        const res = await fetch(`${API_URL}/ranking/mundial`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.status === 401) { localStorage.clear(); window.location.href = 'index.html'; return; }
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Error al cargar el ranking mundial.');
+        _mundialData = data.ranking || [];
+        const badgeEl = document.getElementById('mundialBadge');
+        if (badgeEl) badgeEl.textContent = (_mundialData.length) + ' tiendas';
+        renderRankingMundial(_mundialData);
+      } catch (err) {
+        list.innerHTML = `<div style="text-align:center;padding:3rem;color:#ff6b6b;">❌ ${err.message}</div>`;
+      }
+    }
+
+    function renderRankingMundial(ranking) {
+      const list = document.getElementById('mundialList');
+      if (!ranking || ranking.length === 0) {
+        list.innerHTML = '<div style="text-align:center;padding:3rem;color:rgba(255,255,255,.35);">Sin datos de ranking mundial aún.</div>';
+        return;
+      }
+      const medallas = { 1: '🥇', 2: '🥈', 3: '🥉' };
+      list.innerHTML = ranking.map(t => {
+        const medal = medallas[t.posicion] || (t.es_mi_tienda ? '⭐' : '');
+        const pct   = t.cumplimiento_acumulado;
+        const pctColor = pct >= 100 ? '#69f0ae' : pct > 0 ? 'var(--p-orange)' : 'rgba(255,255,255,.3)';
+        return `<div class="mundial-row${t.es_mi_tienda ? ' mi-tienda' : ''}" onclick="verPerfilTienda('${t.id}')">
+          <div class="mundial-pos">${t.posicion}</div>
+          <div class="mundial-medal">${medal}</div>
+          <div class="mundial-info">
+            <div class="mundial-nombre">${t.nombre}${t.es_mi_tienda ? ' ← Tu tienda' : ''}</div>
+            <div class="mundial-pais">${t.region || '—'}</div>
+          </div>
+          <div class="mundial-fichas">🃏 ${t.fichas_desbloqueadas}</div>
+          <div class="mundial-pct" style="color:${pctColor}">${pct}%</div>
+        </div>`;
+      }).join('');
+    }
+
+    function filtrarMundial(q) {
+      if (!q.trim()) { renderRankingMundial(_mundialData); return; }
+      const lq = q.toLowerCase();
+      renderRankingMundial(_mundialData.filter(t =>
+        t.nombre.toLowerCase().includes(lq) || (t.region || '').toLowerCase().includes(lq)
+      ));
+    }
+
+    /* ── PERFIL DE TIENDA ────────────────────────────────── */
+    let _perfilActual = null;
+
+    async function verPerfilTienda(id) {
+      document.getElementById('modalPerfil').style.display = 'flex';
+      document.getElementById('perfilNombre').textContent = 'Cargando...';
+      document.getElementById('perfilRegion').textContent = '—';
+      document.getElementById('perfilPosMundial').textContent = '—';
+      document.getElementById('perfilPosNacional').textContent = '—';
+      document.getElementById('perfilCumplimiento').textContent = '—';
+      document.getElementById('perfilFichas').textContent = '—';
+      document.getElementById('perfilProgressFill').style.width = '0%';
+      document.getElementById('perfilProgressPct').textContent = '0 / 0';
+      try {
+        const res = await fetch(`${API_URL}/ranking/tienda/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.status === 401) { localStorage.clear(); window.location.href = 'index.html'; return; }
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.error || 'Error.');
+        _perfilActual = d;
+        document.getElementById('perfilNombre').textContent = d.nombre;
+        document.getElementById('perfilRegion').textContent = (d.region || '—') + ' · ' + (d.codigo || '');
+        document.getElementById('perfilPosMundial').textContent = '#' + d.posicion_mundial + ' / ' + d.total_tiendas_mundial;
+        document.getElementById('perfilPosNacional').textContent = '#' + d.posicion_nacional + ' / ' + d.total_tiendas_nacional;
+        document.getElementById('perfilCumplimiento').textContent = d.cumplimiento_acumulado + '%';
+        document.getElementById('perfilFichas').textContent = d.fichas_desbloqueadas;
+        const pct = d.total_fichas > 0 ? Math.round(d.fichas_desbloqueadas / d.total_fichas * 100) : 0;
+        document.getElementById('perfilProgressFill').style.width = pct + '%';
+        document.getElementById('perfilProgressPct').textContent = d.fichas_desbloqueadas + ' / ' + d.total_fichas + ' figuras (' + pct + '%)';
+
+        // Hide compare button if viewing own store
+        const isOwn = req => false; // We check inside abrirComparacion
+        document.getElementById('btnComparar').style.display = '';
+      } catch (err) {
+        document.getElementById('perfilNombre').textContent = '❌ ' + err.message;
+      }
+    }
+
+    function cerrarPerfil() {
+      document.getElementById('modalPerfil').style.display = 'none';
+    }
+
+    /* ── COMPARACIÓN ─────────────────────────────────────── */
+    async function abrirComparacion() {
+      if (!_perfilActual) return;
+      cerrarPerfil();
+      document.getElementById('modalComp').style.display = 'flex';
+      const grid = document.getElementById('compGrid');
+      grid.innerHTML = '<div style="text-align:center;padding:2rem;color:rgba(255,255,255,.35);grid-column:1/-1;"><span class="spin">⚙️</span> Cargando...</div>';
+
+      // Fetch own store profile
+      const miId = req => null;
+      const ownId = (() => {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          return payload.id;
+        } catch { return null; }
+      })();
+
+      try {
+        const [resA, resB] = await Promise.all([
+          fetch(`${API_URL}/ranking/tienda/${ownId}`, { headers: { Authorization: `Bearer ${token}` } }),
+          Promise.resolve({ ok: true, json: () => Promise.resolve(_perfilActual) })
+        ]);
+        const a = resA.ok ? await resA.json() : null;
+        const b = _perfilActual;
+        if (!a || !b) { grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#ff6b6b;">❌ Error al cargar datos.</div>'; return; }
+
+        const cmpColor = (va, vb, el1, el2) => {
+          if (va > vb) { el1.classList.add('comp-winner'); el2.classList.add('comp-loser'); }
+          else if (vb > va) { el2.classList.add('comp-winner'); el1.classList.add('comp-loser'); }
+          else { el1.classList.add('comp-draw'); el2.classList.add('comp-draw'); }
+        };
+
+        const pctA = a.total_fichas > 0 ? Math.round(a.fichas_desbloqueadas / a.total_fichas * 100) : 0;
+        const pctB = b.total_fichas > 0 ? Math.round(b.fichas_desbloqueadas / b.total_fichas * 100) : 0;
+
+        grid.innerHTML = `
+          <div class="comp-col">
+            <div class="comp-col-title">Tu Tienda</div>
+            <div class="comp-store-name">${a.nombre}</div>
+            <div class="comp-store-region">${a.region || '—'}</div>
+            <div class="comp-stat"><div class="comp-stat-n" id="cA1">${a.cumplimiento_acumulado}%</div><div class="comp-stat-l">Cumplimiento</div></div>
+            <div class="comp-stat"><div class="comp-stat-n" id="cA2">${a.fichas_desbloqueadas}</div><div class="comp-stat-l">Fichas</div></div>
+            <div class="comp-stat"><div class="comp-stat-n" id="cA3">${pctA}%</div><div class="comp-stat-l">Álbum</div></div>
+            <div class="comp-stat"><div class="comp-stat-n" id="cA4">#${a.posicion_mundial}</div><div class="comp-stat-l">Pos. Mundial</div></div>
+          </div>
+          <div class="comp-divider"><div class="comp-vs">VS</div></div>
+          <div class="comp-col">
+            <div class="comp-col-title">Rival</div>
+            <div class="comp-store-name">${b.nombre}</div>
+            <div class="comp-store-region">${b.region || '—'}</div>
+            <div class="comp-stat"><div class="comp-stat-n" id="cB1">${b.cumplimiento_acumulado}%</div><div class="comp-stat-l">Cumplimiento</div></div>
+            <div class="comp-stat"><div class="comp-stat-n" id="cB2">${b.fichas_desbloqueadas}</div><div class="comp-stat-l">Fichas</div></div>
+            <div class="comp-stat"><div class="comp-stat-n" id="cB3">${pctB}%</div><div class="comp-stat-l">Álbum</div></div>
+            <div class="comp-stat"><div class="comp-stat-n" id="cB4">#${b.posicion_mundial}</div><div class="comp-stat-l">Pos. Mundial</div></div>
+          </div>`;
+
+        // Color winners
+        cmpColor(a.cumplimiento_acumulado, b.cumplimiento_acumulado,
+          document.getElementById('cA1'), document.getElementById('cB1'));
+        cmpColor(a.fichas_desbloqueadas, b.fichas_desbloqueadas,
+          document.getElementById('cA2'), document.getElementById('cB2'));
+        cmpColor(pctA, pctB,
+          document.getElementById('cA3'), document.getElementById('cB3'));
+        // For position, lower is better
+        cmpColor(b.posicion_mundial, a.posicion_mundial,
+          document.getElementById('cA4'), document.getElementById('cB4'));
+
+      } catch (err) {
+        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:#ff6b6b;">❌ ${err.message}</div>`;
+      }
+    }
+
+    function cerrarComparacion() {
+      document.getElementById('modalComp').style.display = 'none';
     }
 
     window.onload = cargarAlbum;
