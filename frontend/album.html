@@ -834,7 +834,7 @@
   <!-- TABS -->
   <div class="tabs-nav">
     <button class="tab-btn active" id="tabAlbum"   onclick="activarTab('album')">🃏 Mi Álbum</button>
-    <button class="tab-btn"        id="tabMundial" onclick="activarTab('mundial')">🌍 Ranking Mundial</button>
+    <button class="tab-btn"        id="tabMundial" onclick="activarTab('mundial')">🌍 Ranking Regional</button>
     <button class="tab-btn"        id="tabRanking" onclick="activarTab('ranking')">🏆 Ranking Nacional</button>
   </div>
 
@@ -859,10 +859,10 @@
     </div>
   </div>
 
-  <!-- RANKING MUNDIAL -->
+  <!-- RANKING REGIONAL -->
   <div id="secMundial" style="display:none;">
     <div class="mundial-header">
-      <div class="mundial-titulo">🌍 RANKING MUNDIAL</div>
+      <div class="mundial-titulo">🌍 RANKING REGIONAL</div>
       <div class="mundial-badge" id="mundialBadge">237 tiendas</div>
     </div>
     <div class="mundial-search">
@@ -871,7 +871,7 @@
     </div>
     <div class="mundial-list" id="mundialList">
       <div style="text-align:center;padding:3rem;color:rgba(255,255,255,.35);">
-        <span>⚙️</span> Cargando ranking mundial...
+        <span>⚙️</span> Cargando ranking regional...
       </div>
     </div>
   </div>
@@ -926,7 +926,7 @@
       <div class="modal-perfil-stats">
         <div class="perfil-stat">
           <div class="perfil-stat-n" id="perfilPosMundial">—</div>
-          <div class="perfil-stat-l">Posición Mundial</div>
+          <div class="perfil-stat-l">Posición Regional</div>
         </div>
         <div class="perfil-stat">
           <div class="perfil-stat-n" id="perfilPosNacional">—</div>
@@ -1268,6 +1268,30 @@
       }
     }
 
+    /* ── FLAGS ─────────────────────────────────────────────── */
+    const FLAG_MAP = {
+      'colombia': '🇨🇴', 'peru': '🇵🇪', 'perú': '🇵🇪',
+      'ecuador': '🇪🇨', 'mexico': '🇲🇽', 'méxico': '🇲🇽',
+      'chile': '🇨🇱', 'argentina': '🇦🇷', 'venezuela': '🇻🇪',
+      'bolivia': '🇧🇴', 'panama': '🇵🇦', 'panamá': '🇵🇦',
+      'costa rica': '🇨🇷', 'guatemala': '🇬🇹', 'honduras': '🇭🇳',
+      'el salvador': '🇸🇻', 'nicaragua': '🇳🇮',
+      'republica dominicana': '🇩🇴', 'república dominicana': '🇩🇴',
+      'rep. dominicana': '🇩🇴', 'dominicana': '🇩🇴',
+      'paraguay': '🇵🇾', 'uruguay': '🇺🇾',
+      'brasil': '🇧🇷', 'brazil': '🇧🇷',
+      'puerto rico': '🇵🇷', 'usa': '🇺🇸', 'estados unidos': '🇺🇸',
+    };
+
+    function getFlagEmoji(region) {
+      if (!region) return '';
+      const r = region.toLowerCase();
+      for (const [key, flag] of Object.entries(FLAG_MAP)) {
+        if (r.includes(key)) return flag;
+      }
+      return '🌐';
+    }
+
     /* ── TABS ──────────────────────────────────────────────── */
     let _rankingCargado = false;
     let _mundialCargado = false;
@@ -1314,7 +1338,7 @@
 
     function renderRanking(ranking, region) {
       const regionEl = document.getElementById('rankingRegion');
-      if (regionEl) regionEl.textContent = region || '—';
+      if (regionEl) regionEl.textContent = (getFlagEmoji(region) + ' ' + (region || '—')).trim();
 
       const list = document.getElementById('rankingList');
       if (!ranking || ranking.length === 0) {
@@ -1327,12 +1351,13 @@
         const medal = medallas[t.posicion] || (t.es_mi_tienda ? '⭐' : '');
         const pct   = t.cumplimiento_acumulado;
         const pctColor = pct >= 100 ? '#69f0ae' : pct > 0 ? 'var(--p-orange)' : 'rgba(255,255,255,.3)';
+        const flag = getFlagEmoji(t.region);
         return `<div class="ranking-row${t.es_mi_tienda ? ' mi-tienda' : ''}" onclick="verPerfilTienda('${t.id}')">
           <div class="ranking-pos">${t.posicion}</div>
           <div class="ranking-medal">${medal}</div>
           <div class="ranking-info">
             <div class="ranking-nombre">${t.nombre}${t.es_mi_tienda ? ' ← Tu tienda' : ''}</div>
-            <div class="ranking-sub">${t.region}${t.semanas_registradas > 0 ? ' · ' + t.semanas_registradas + ' sem.' : ''}</div>
+            <div class="ranking-sub">${flag} ${t.region}${t.semanas_registradas > 0 ? ' · ' + t.semanas_registradas + ' sem.' : ''}</div>
           </div>
           <div class="ranking-fichas">🃏 ${t.fichas_desbloqueadas || 0}</div>
           <div class="ranking-pct" style="color:${pctColor}">${pct}%</div>
@@ -1345,14 +1370,14 @@
 
     async function cargarRankingMundial() {
       const list = document.getElementById('mundialList');
-      list.innerHTML = '<div style="text-align:center;padding:3rem;color:rgba(255,255,255,.35);"><span class="spin">⚙️</span> Cargando ranking mundial...</div>';
+      list.innerHTML = '<div style="text-align:center;padding:3rem;color:rgba(255,255,255,.35);"><span class="spin">⚙️</span> Cargando ranking regional...</div>';
       try {
         const res = await fetch(`${API_URL}/ranking/mundial`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (res.status === 401) { localStorage.clear(); window.location.href = 'index.html'; return; }
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Error al cargar el ranking mundial.');
+        if (!res.ok) throw new Error(data.error || 'Error al cargar el ranking regional.');
         _mundialData = data.ranking || [];
         const badgeEl = document.getElementById('mundialBadge');
         if (badgeEl) badgeEl.textContent = (_mundialData.length) + ' tiendas';
@@ -1365,7 +1390,7 @@
     function renderRankingMundial(ranking) {
       const list = document.getElementById('mundialList');
       if (!ranking || ranking.length === 0) {
-        list.innerHTML = '<div style="text-align:center;padding:3rem;color:rgba(255,255,255,.35);">Sin datos de ranking mundial aún.</div>';
+        list.innerHTML = '<div style="text-align:center;padding:3rem;color:rgba(255,255,255,.35);">Sin datos de ranking regional aún.</div>';
         return;
       }
       const medallas = { 1: '🥇', 2: '🥈', 3: '🥉' };
@@ -1373,12 +1398,13 @@
         const medal = medallas[t.posicion] || (t.es_mi_tienda ? '⭐' : '');
         const pct   = t.cumplimiento_acumulado;
         const pctColor = pct >= 100 ? '#69f0ae' : pct > 0 ? 'var(--p-orange)' : 'rgba(255,255,255,.3)';
+        const flag = getFlagEmoji(t.region);
         return `<div class="mundial-row${t.es_mi_tienda ? ' mi-tienda' : ''}" onclick="verPerfilTienda('${t.id}')">
           <div class="mundial-pos">${t.posicion}</div>
           <div class="mundial-medal">${medal}</div>
           <div class="mundial-info">
             <div class="mundial-nombre">${t.nombre}${t.es_mi_tienda ? ' ← Tu tienda' : ''}</div>
-            <div class="mundial-pais">${t.region || '—'}</div>
+            <div class="mundial-pais">${flag} ${t.region || '—'}</div>
           </div>
           <div class="mundial-fichas">🃏 ${t.fichas_desbloqueadas}</div>
           <div class="mundial-pct" style="color:${pctColor}">${pct}%</div>
@@ -1416,7 +1442,7 @@
         if (!res.ok) throw new Error(d.error || 'Error.');
         _perfilActual = d;
         document.getElementById('perfilNombre').textContent = d.nombre;
-        document.getElementById('perfilRegion').textContent = (d.region || '—') + ' · ' + (d.codigo || '');
+        document.getElementById('perfilRegion').textContent = getFlagEmoji(d.region) + ' ' + (d.region || '—') + (d.codigo ? ' · ' + d.codigo : '');
         document.getElementById('perfilPosMundial').textContent = '#' + d.posicion_mundial + ' / ' + d.total_tiendas_mundial;
         document.getElementById('perfilPosNacional').textContent = '#' + d.posicion_nacional + ' / ' + d.total_tiendas_nacional;
         document.getElementById('perfilCumplimiento').textContent = d.cumplimiento_acumulado + '%';
@@ -1476,21 +1502,21 @@
           <div class="comp-col">
             <div class="comp-col-title">Tu Tienda</div>
             <div class="comp-store-name">${a.nombre}</div>
-            <div class="comp-store-region">${a.region || '—'}</div>
+            <div class="comp-store-region">${getFlagEmoji(a.region)} ${a.region || '—'}</div>
             <div class="comp-stat"><div class="comp-stat-n" id="cA1">${a.cumplimiento_acumulado}%</div><div class="comp-stat-l">Cumplimiento</div></div>
             <div class="comp-stat"><div class="comp-stat-n" id="cA2">${a.fichas_desbloqueadas}</div><div class="comp-stat-l">Fichas</div></div>
             <div class="comp-stat"><div class="comp-stat-n" id="cA3">${pctA}%</div><div class="comp-stat-l">Álbum</div></div>
-            <div class="comp-stat"><div class="comp-stat-n" id="cA4">#${a.posicion_mundial}</div><div class="comp-stat-l">Pos. Mundial</div></div>
+            <div class="comp-stat"><div class="comp-stat-n" id="cA4">#${a.posicion_mundial}</div><div class="comp-stat-l">Pos. Regional</div></div>
           </div>
           <div class="comp-divider"><div class="comp-vs">VS</div></div>
           <div class="comp-col">
             <div class="comp-col-title">Rival</div>
             <div class="comp-store-name">${b.nombre}</div>
-            <div class="comp-store-region">${b.region || '—'}</div>
+            <div class="comp-store-region">${getFlagEmoji(b.region)} ${b.region || '—'}</div>
             <div class="comp-stat"><div class="comp-stat-n" id="cB1">${b.cumplimiento_acumulado}%</div><div class="comp-stat-l">Cumplimiento</div></div>
             <div class="comp-stat"><div class="comp-stat-n" id="cB2">${b.fichas_desbloqueadas}</div><div class="comp-stat-l">Fichas</div></div>
             <div class="comp-stat"><div class="comp-stat-n" id="cB3">${pctB}%</div><div class="comp-stat-l">Álbum</div></div>
-            <div class="comp-stat"><div class="comp-stat-n" id="cB4">#${b.posicion_mundial}</div><div class="comp-stat-l">Pos. Mundial</div></div>
+            <div class="comp-stat"><div class="comp-stat-n" id="cB4">#${b.posicion_mundial}</div><div class="comp-stat-l">Pos. Regional</div></div>
           </div>`;
 
         // Color winners
