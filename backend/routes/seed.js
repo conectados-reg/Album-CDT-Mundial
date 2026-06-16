@@ -3,6 +3,13 @@ const { createClient } = require('@supabase/supabase-js');
 
 const SEED_KEY = 'sla2026mundial';
 
+function calcularDistribucion(hc) {
+  const total = hc <= 6 ? 6 : hc;
+  const base = Math.floor(total / 6);
+  const extra = total % 6;
+  return Array.from({ length: 6 }, (_, i) => (i < extra ? base + 1 : base));
+}
+
 const TIENDAS = [
   ['1107','NIKE SANTA FE','Colombia',3],
   ['1108','SLA PORTAL 80','Colombia',1],
@@ -299,10 +306,10 @@ router.get('/', async (req, res) => {
     const fichasNuevas = [];
     for (const [c, , , hc] of TIENDAS) {
       const t = tiendaMap[c]; if (!t) continue;
-      const fps = hc <= 6 ? 6 : Math.round(6 + hc / 6);
+      const dist = calcularDistribucion(hc);
       for (let sn = 1; sn <= 6; sn++) {
         const sid = semanaMap[sn]; if (!sid) continue;
-        for (let num = 1; num <= fps; num++) {
+        for (let num = 1; num <= dist[sn - 1]; num++) {
           if (!fichasExistSet.has(`${t.id}|${sid}|${num}`))
             fichasNuevas.push({ tienda_id: t.id, semana_id: sid, numero_ficha: num, desbloqueado: false });
         }
@@ -330,7 +337,6 @@ router.get('/fix', async (req, res) => {
 
   try {
     const codigosCanonicos = new Set(TIENDAS.map(([c]) => c));
-    const codigosHCbajo = new Set(TIENDAS.filter(([,,,h]) => h <= 6).map(([c]) => c));
 
     const { data: todasTiendas } = await supabase.from('tiendas').select('id, codigo, total_empleados');
     const todas = todasTiendas || [];
@@ -358,17 +364,26 @@ router.get('/fix', async (req, res) => {
       }
     }
 
-    // 3. Borrar ficha numero_ficha=7 de tiendas con HC<=6 (la fórmula antes daba 7 para HC 3-6)
-    const idsHCbajo = todas.filter(t => codigosHCbajo.has(t.codigo)).map(t => t.id);
+    // 3. Recalcular fichas según nueva fórmula: hc<=6 → 6 total (1/sem); hc>6 → hc total distribuido
+    const { data: semanas } = await supabase.from('semanas').select('id, numero').order('numero');
+    const semanaMap = {};
+    for (const s of (semanas || [])) semanaMap[s.numero] = s.id;
+
     let fichasCorregidas = 0;
-    if (idsHCbajo.length) {
-      for (let i = 0; i < idsHCbajo.length; i += 100) {
+    for (const t of todas) {
+      if (!codigosCanonicos.has(t.codigo)) continue;
+      const hc = hcMap[t.codigo] ?? 0;
+      const dist = calcularDistribucion(hc);
+      for (let sn = 1; sn <= 6; sn++) {
+        const sid = semanaMap[sn]; if (!sid) continue;
         const { error } = await supabase.from('fichas_tienda').delete()
-          .in('tienda_id', idsHCbajo.slice(i, i + 100))
-          .eq('numero_ficha', 7);
+          .eq('tienda_id', t.id)
+          .eq('semana_id', sid)
+          .eq('desbloqueado', false)
+          .gt('numero_ficha', dist[sn - 1]);
         if (error) return res.status(500).json({ ok: false, error: 'Corregir fichas: ' + error.message });
       }
-      fichasCorregidas = idsHCbajo.length;
+      fichasCorregidas++;
     }
 
     const { count: totalTiendas } = await supabase.from('tiendas').select('*', { count: 'exact', head: true });

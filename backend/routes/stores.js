@@ -4,6 +4,13 @@ const { createClient } = require('@supabase/supabase-js');
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
+function calcularDistribucion(hc) {
+  const total = hc <= 6 ? 6 : hc;
+  const base = Math.floor(total / 6);
+  const extra = total % 6;
+  return Array.from({ length: 6 }, (_, i) => (i < extra ? base + 1 : base));
+}
+
 function verificarToken(req, res, next) {
   const token = req.headers.authorization?.split(' ')[1];
   if (!token) return res.status(401).json({ error: 'Token faltante.' });
@@ -112,7 +119,7 @@ router.post('/:id/recalcular-fichas', verificarToken, async (req, res) => {
       await supabase.from('tiendas').update({ total_empleados: hc }).eq('id', tiendaId);
     }
 
-    const fichasPorSemana = Math.round(6 + hc / 6);
+    const dist = calcularDistribucion(hc);
 
     const { data: semanas } = await supabase
       .from('semanas').select('id, numero').order('numero');
@@ -120,6 +127,8 @@ router.post('/:id/recalcular-fichas', verificarToken, async (req, res) => {
     let fichasAgregadas = 0, fichasEliminadas = 0;
 
     for (const semana of (semanas || [])) {
+      const fichasSemana = dist[semana.numero - 1] ?? 0;
+
       const { data: fichasExist } = await supabase
         .from('fichas_tienda')
         .select('id, desbloqueado')
@@ -128,7 +137,7 @@ router.post('/:id/recalcular-fichas', verificarToken, async (req, res) => {
 
       const existentes = fichasExist || [];
       const totalExist = existentes.length;
-      const diff = fichasPorSemana - totalExist;
+      const diff = fichasSemana - totalExist;
 
       if (diff > 0) {
         const nuevas = Array.from({ length: diff }, (_, i) => ({
@@ -154,8 +163,8 @@ router.post('/:id/recalcular-fichas', verificarToken, async (req, res) => {
       ok: true,
       tienda: tienda.nombre,
       hc_nuevo: hc,
-      fichas_por_semana: fichasPorSemana,
-      fichas_total: fichasPorSemana * 6,
+      distribucion_semanal: dist,
+      fichas_total: dist.reduce((a, b) => a + b, 0),
       fichas_agregadas: fichasAgregadas,
       fichas_eliminadas: fichasEliminadas,
     });
