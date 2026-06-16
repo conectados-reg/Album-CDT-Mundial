@@ -746,6 +746,7 @@ html, body {
 
   slides[0].classList.add('active');
   document.getElementById('pBar').style.width = '0%';
+  document.getElementById('counter').textContent = '1 / ' + total;
 
   document.addEventListener('keydown', e => {
     primeraInteraccion();
