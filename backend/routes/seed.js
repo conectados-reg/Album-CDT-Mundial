@@ -365,25 +365,36 @@ router.get('/fix', async (req, res) => {
     }
 
     // 3. Recalcular fichas según nueva fórmula: hc<=6 → 6 total (1/sem); hc>6 → hc total distribuido
+    // Agrupamos tiendas por target de fichas por semana para hacer deletes en lote (evita timeout)
     const { data: semanas } = await supabase.from('semanas').select('id, numero').order('numero');
     const semanaMap = {};
     for (const s of (semanas || [])) semanaMap[s.numero] = s.id;
 
     let fichasCorregidas = 0;
-    for (const t of todas) {
-      if (!codigosCanonicos.has(t.codigo)) continue;
-      const hc = hcMap[t.codigo] ?? 0;
-      const dist = calcularDistribucion(hc);
-      for (let sn = 1; sn <= 6; sn++) {
-        const sid = semanaMap[sn]; if (!sid) continue;
-        const { error } = await supabase.from('fichas_tienda').delete()
-          .eq('tienda_id', t.id)
-          .eq('semana_id', sid)
-          .eq('desbloqueado', false)
-          .gt('numero_ficha', dist[sn - 1]);
-        if (error) return res.status(500).json({ ok: false, error: 'Corregir fichas: ' + error.message });
+    for (let sn = 1; sn <= 6; sn++) {
+      const sid = semanaMap[sn]; if (!sid) continue;
+      // Agrupar tiendas por su target de fichas para esta semana
+      const grupos = {};
+      for (const t of todas) {
+        if (!codigosCanonicos.has(t.codigo)) continue;
+        const hc = hcMap[t.codigo] ?? 0;
+        const target = calcularDistribucion(hc)[sn - 1];
+        if (!grupos[target]) grupos[target] = [];
+        grupos[target].push(t.id);
+        if (sn === 1) fichasCorregidas++;
       }
-      fichasCorregidas++;
+      // Un delete por grupo en lotes de 100 (en lugar de 1 por tienda)
+      for (const [targetStr, ids] of Object.entries(grupos)) {
+        const target = parseInt(targetStr);
+        for (let i = 0; i < ids.length; i += 100) {
+          const { error } = await supabase.from('fichas_tienda').delete()
+            .in('tienda_id', ids.slice(i, i + 100))
+            .eq('semana_id', sid)
+            .eq('desbloqueado', false)
+            .gt('numero_ficha', target);
+          if (error) return res.status(500).json({ ok: false, error: 'Corregir fichas: ' + error.message });
+        }
+      }
     }
 
     const { count: totalTiendas } = await supabase.from('tiendas').select('*', { count: 'exact', head: true });
