@@ -175,6 +175,16 @@ router.get('/tienda/:id', verificarToken, async (req, res) => {
     const rankingNacional = mismaRegion.map(enrich).sort(rankSort);
     const posicionNacional = rankingNacional.findIndex(t => t.id === tiendaId) + 1;
 
+    // Fotos públicas de esta tienda (solo fichas desbloqueadas con foto)
+    const { data: fichasFotos } = await supabase
+      .from('fichas_tienda')
+      .select('id, numero_ficha, semana_numero, semana_nombre, foto_url')
+      .eq('tienda_id', tiendaId)
+      .eq('desbloqueado', true)
+      .not('foto_url', 'is', null)
+      .order('semana_numero', { ascending: true })
+      .order('numero_ficha', { ascending: true });
+
     res.json({
       id: tiendaInfo.id,
       nombre: tiendaInfo.nombre,
@@ -187,6 +197,7 @@ router.get('/tienda/:id', verificarToken, async (req, res) => {
       posicion_nacional: posicionNacional,
       total_tiendas_mundial: todasTiendas.length,
       total_tiendas_nacional: mismaRegion.length,
+      fotos: fichasFotos || [],
     });
 
   } catch (err) {

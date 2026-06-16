@@ -825,6 +825,96 @@
     .comp-winner { color: #69f0ae; }
     .comp-loser  { color: rgba(255,255,255,.2); }
     .comp-draw   { color: var(--p-orange); }
+
+    /* ── GALERÍA DE FOTOS EN PERFIL ────────────────────────── */
+    .perfil-gallery-wrap {
+      padding: 0 1.6rem .6rem;
+    }
+    .perfil-gallery-label {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .68rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+      color: rgba(255,255,255,.35); margin-bottom: .6rem;
+      display: flex; align-items: center; gap: .5rem;
+    }
+    .perfil-gallery-count {
+      background: rgba(247,168,0,.15); border: 1px solid rgba(247,168,0,.25);
+      border-radius: 10px; padding: .05rem .45rem;
+      font-size: .6rem; color: var(--p-orange);
+    }
+    .perfil-gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(74px, 1fr));
+      gap: .45rem;
+      max-height: 230px;
+      overflow-y: auto;
+      padding-right: .2rem;
+    }
+    .perfil-gallery-grid::-webkit-scrollbar { width: 4px; }
+    .perfil-gallery-grid::-webkit-scrollbar-thumb { background: rgba(247,168,0,.3); border-radius: 2px; }
+    .gallery-thumb {
+      aspect-ratio: 9/13;
+      border-radius: 7px;
+      overflow: hidden;
+      position: relative;
+      border: 1.5px solid rgba(247,168,0,.25);
+      cursor: pointer;
+      transition: transform .2s, border-color .2s, box-shadow .2s;
+      background: rgba(0,0,0,.3);
+    }
+    .gallery-thumb:hover {
+      transform: scale(1.06);
+      border-color: var(--p-orange);
+      box-shadow: 0 4px 16px rgba(247,168,0,.3);
+      z-index: 5;
+    }
+    .gallery-thumb img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+    .gallery-thumb-label {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: linear-gradient(transparent, rgba(0,0,0,.75));
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: .52rem; letter-spacing: .05em;
+      color: rgba(255,255,255,.8); text-align: center; padding: .4rem .1rem .15rem;
+    }
+    .perfil-no-fotos {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .8rem; color: rgba(255,255,255,.25);
+      text-align: center; padding: 1.2rem;
+      border: 1px dashed rgba(255,255,255,.08); border-radius: 10px;
+    }
+
+    /* ── LIGHTBOX ──────────────────────────────────────────── */
+    .lightbox-overlay {
+      display: none; position: fixed; inset: 0; z-index: 9500;
+      background: rgba(0,0,0,.92); backdrop-filter: blur(8px);
+      align-items: center; justify-content: center;
+      flex-direction: column; gap: .8rem; padding: 1rem;
+      cursor: zoom-out;
+    }
+    .lightbox-overlay.open { display: flex; }
+    .lightbox-img {
+      max-width: min(92vw, 480px);
+      max-height: 75vh;
+      object-fit: contain;
+      border-radius: 12px;
+      border: 2px solid rgba(247,168,0,.35);
+      box-shadow: 0 20px 60px rgba(0,0,0,.8);
+    }
+    .lightbox-caption {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1rem; letter-spacing: .12em;
+      color: rgba(255,255,255,.5);
+    }
+    .lightbox-close {
+      position: absolute; top: 1rem; right: 1.2rem;
+      background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2);
+      border-radius: 50%; width: 36px; height: 36px;
+      color: rgba(255,255,255,.7); cursor: pointer; font-size: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .2s;
+    }
+    .lightbox-close:hover { background: rgba(232,35,26,.4); color: #fff; }
   </style>
 </head>
 <body>
@@ -990,11 +1080,27 @@
           <div class="perfil-progress-fill" id="perfilProgressFill" style="width:0%"></div>
         </div>
       </div>
+      <div class="perfil-gallery-wrap" id="perfilGalleryWrap">
+        <div class="perfil-gallery-label">
+          📸 Fotos del Álbum
+          <span class="perfil-gallery-count" id="perfilGalleryCount">0</span>
+        </div>
+        <div class="perfil-gallery-grid" id="perfilGalleryGrid">
+          <div class="perfil-no-fotos">Cargando fotos...</div>
+        </div>
+      </div>
       <div class="modal-perfil-actions">
         <button class="btn-perfil-action btn-comparar" id="btnComparar" onclick="abrirComparacion()">⚡ Comparar con Mi Tienda</button>
         <button class="btn-perfil-action btn-perfil-cerrar" onclick="cerrarPerfil()">Cerrar</button>
       </div>
     </div>
+  </div>
+
+  <!-- LIGHTBOX -->
+  <div id="lightboxOverlay" class="lightbox-overlay" onclick="cerrarLightbox()">
+    <button class="lightbox-close" onclick="cerrarLightbox()">✕</button>
+    <img class="lightbox-img" id="lightboxImg" src="" alt="">
+    <div class="lightbox-caption" id="lightboxCaption"></div>
   </div>
 
   <!-- MODAL COMPARACIÓN -->
@@ -1482,6 +1588,8 @@
       document.getElementById('perfilFichas').textContent = '—';
       document.getElementById('perfilProgressFill').style.width = '0%';
       document.getElementById('perfilProgressPct').textContent = '0 / 0';
+      document.getElementById('perfilGalleryGrid').innerHTML = '<div class="perfil-no-fotos">⚙️ Cargando fotos...</div>';
+      document.getElementById('perfilGalleryCount').textContent = '0';
       try {
         const res = await fetch(`${API_URL}/ranking/tienda/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
@@ -1490,6 +1598,7 @@
         const d = await res.json();
         if (!res.ok) throw new Error(d.error || 'Error.');
         _perfilActual = d;
+
         document.getElementById('perfilNombre').textContent = d.nombre;
         document.getElementById('perfilRegion').textContent = getFlagEmoji(d.region) + ' ' + (d.region || '—') + (d.codigo ? ' · ' + d.codigo : '');
         document.getElementById('perfilPosMundial').textContent = '#' + d.posicion_mundial + ' / ' + d.total_tiendas_mundial;
@@ -1500,11 +1609,27 @@
         document.getElementById('perfilProgressFill').style.width = pct + '%';
         document.getElementById('perfilProgressPct').textContent = d.fichas_desbloqueadas + ' / ' + d.total_fichas + ' figuras (' + pct + '%)';
 
-        // Hide compare button if viewing own store
-        const isOwn = req => false; // We check inside abrirComparacion
+        // Galería de fotos
+        const fotos = d.fotos || [];
+        document.getElementById('perfilGalleryCount').textContent = fotos.length;
+        const grid = document.getElementById('perfilGalleryGrid');
+        if (fotos.length === 0) {
+          grid.innerHTML = '<div class="perfil-no-fotos">📭 Esta tienda aún no ha subido fotos a su álbum.</div>';
+        } else {
+          grid.innerHTML = fotos.map(f => {
+            const numStr = String(f.numero_ficha || 1).padStart(2, '0');
+            const label  = 'S' + (f.semana_numero || '?') + ' · #' + numStr;
+            return `<div class="gallery-thumb" onclick="abrirLightbox('${f.foto_url}','${d.nombre} — ${label}')">
+              <img src="${f.foto_url}" alt="${label}" loading="lazy">
+              <div class="gallery-thumb-label">${label}</div>
+            </div>`;
+          }).join('');
+        }
+
         document.getElementById('btnComparar').style.display = '';
       } catch (err) {
         document.getElementById('perfilNombre').textContent = '❌ ' + err.message;
+        document.getElementById('perfilGalleryGrid').innerHTML = '<div class="perfil-no-fotos">❌ Error al cargar.</div>';
       }
     }
 
@@ -1587,6 +1712,22 @@
     function cerrarComparacion() {
       document.getElementById('modalComp').style.display = 'none';
     }
+
+    /* ── LIGHTBOX ────────────────────────────────────────── */
+    function abrirLightbox(url, caption) {
+      document.getElementById('lightboxImg').src = url;
+      document.getElementById('lightboxCaption').textContent = caption;
+      document.getElementById('lightboxOverlay').classList.add('open');
+    }
+
+    function cerrarLightbox() {
+      document.getElementById('lightboxOverlay').classList.remove('open');
+      document.getElementById('lightboxImg').src = '';
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') cerrarLightbox();
+    });
 
     window.onload = cargarAlbum;
   </script>
