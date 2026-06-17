@@ -8,7 +8,7 @@ function verificarAdmin(req, res, next) {
   const token = req.headers.authorization?.split(' ')[1];
   if (!token) return res.status(401).json({ error: 'Token faltante.' });
   try {
-    const u = jwt.verify(token, process.env.JWT_SECRET || 'secretomocal123');
+    const u = jwt.verify(token, process.env.JWT_SECRET);
     if (u.rol !== 'admin') return res.status(403).json({ error: 'Solo para administradores.' });
     req.usuario = u;
     next();

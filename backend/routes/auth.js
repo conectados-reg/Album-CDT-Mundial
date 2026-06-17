@@ -7,8 +7,14 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SER
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
-const JWT_SECRET = process.env.JWT_SECRET || 'secretomocal123';
-const PASS_GEN   = 'sport123'; // contraseña genérica de primer acceso
+const JWT_SECRET   = process.env.JWT_SECRET;
+const ADMIN_EMAIL  = process.env.ADMIN_EMAIL;
+const ADMIN_PASS   = process.env.ADMIN_PASSWORD;
+const PASS_GEN     = 'sport123'; // contraseña genérica de primer acceso
+
+if (!JWT_SECRET)  throw new Error('Falta variable de entorno: JWT_SECRET');
+if (!ADMIN_EMAIL) throw new Error('Falta variable de entorno: ADMIN_EMAIL');
+if (!ADMIN_PASS)  throw new Error('Falta variable de entorno: ADMIN_PASSWORD');
 
 function esBcrypt(str) {
   return typeof str === 'string' && str.startsWith('$2');
@@ -29,8 +35,8 @@ router.post('/login', async (req, res) => {
     if (!email || !password)
       return res.status(400).json({ error: 'Por favor completa todos los campos.' });
 
-    // Admin hardcoded
-    if (email === 'admin@sportline.com' && password === 'admin123') {
+    // Admin via variables de entorno
+    if (email === ADMIN_EMAIL && password === ADMIN_PASS) {
       const token = jwt.sign({ id: 'admin-id', email, rol: 'admin' }, JWT_SECRET, { expiresIn: '12h' });
       return res.json({ token, esAdmin: true, redirect: 'admin.html' });
     }
