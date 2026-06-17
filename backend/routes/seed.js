@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const { createClient } = require('@supabase/supabase-js');
 
-const SEED_KEY = 'sla2026mundial';
+const SEED_KEY = process.env.SEED_KEY;
 
 function calcularDistribucion(hc) {
   const total = hc <= 6 ? 6 : hc;
@@ -258,9 +258,9 @@ router.get('/status', async (req, res) => {
   res.json({ tiendas: ct, fichas: cf });
 });
 
-// GET /api/seed?key=sla2026mundial
+// GET /api/seed?key=<SEED_KEY env var>
 router.get('/', async (req, res) => {
-  if (req.query.key !== SEED_KEY) {
+  if (!SEED_KEY || req.query.key !== SEED_KEY) {
     return res.status(403).json({ error: 'Clave incorrecta.' });
   }
 
@@ -330,9 +330,9 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET /api/seed/fix?key=sla2026mundial — elimina tiendas extra y fichas incorrectas
+// GET /api/seed/fix?key=<SEED_KEY env var>
 router.get('/fix', async (req, res) => {
-  if (req.query.key !== SEED_KEY) return res.status(403).json({ error: 'Clave incorrecta.' });
+  if (!SEED_KEY || req.query.key !== SEED_KEY) return res.status(403).json({ error: 'Clave incorrecta.' });
   const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
   try {
@@ -406,9 +406,9 @@ router.get('/fix', async (req, res) => {
   }
 });
 
-// GET /api/seed/reset?key=sla2026mundial — borra resultados y bloquea todas las fichas
+// GET /api/seed/reset?key=<SEED_KEY env var>
 router.get('/reset', async (req, res) => {
-  if (req.query.key !== SEED_KEY) return res.status(403).json({ error: 'Clave incorrecta.' });
+  if (!SEED_KEY || req.query.key !== SEED_KEY) return res.status(403).json({ error: 'Clave incorrecta.' });
   const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
   try {
