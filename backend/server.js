@@ -1,17 +1,28 @@
-const express = require('express');
-const cors = require('cors');
+const express    = require('express');
+const cors       = require('cors');
+const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
-const app = express();
+const app  = express();
 const PORT = process.env.PORT || 3000;
 
-// Configuración de CORS abierta para conectar con Vercel
+const ALLOWED_ORIGINS = [
+  process.env.FRONTEND_URL,
+  'https://album-cdt-mundial.vercel.app',
+].filter(Boolean);
+
 app.use(cors({
-  origin: '*',
+  origin: (origin, cb) => {
+    // Allow requests with no origin (server-to-server, Postman, etc.)
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+    cb(null, true); // permissive — actual auth is via signed JWT
+  },
+  credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-sync-key'],
 }));
 
+app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
 
 // Diagnóstico inicial

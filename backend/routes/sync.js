@@ -3,7 +3,7 @@ const db = require('../db');
 
 function verificarSyncKey(req, res, next) {
   const key = req.headers['x-sync-key'];
-  if (!key || key !== (process.env.SYNC_KEY || 'sync-sportline-2026')) {
+  if (!key || !process.env.SYNC_KEY || key !== process.env.SYNC_KEY) {
     return res.status(401).json({ error: 'Clave de sincronización inválida.' });
   }
   next();

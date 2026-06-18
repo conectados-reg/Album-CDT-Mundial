@@ -1,52 +1,90 @@
 const router = require('express').Router();
-const admin  = require('../firebase-admin');
-const db     = require('../db');
+const jwt    = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const { createClient } = require('@supabase/supabase-js');
 
-// POST /api/auth/login
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+
+// ── helpers ──────────────────────────────────────────────────────────────────
+
+const JWT_SECRET   = process.env.JWT_SECRET;
+const ADMIN_EMAIL  = process.env.ADMIN_EMAIL;
+const ADMIN_PASS   = process.env.ADMIN_PASSWORD;
+const PASS_GEN     = 'sport123'; // contraseña genérica de primer acceso
+
+if (!JWT_SECRET)  throw new Error('Falta variable de entorno: JWT_SECRET');
+if (!ADMIN_EMAIL) throw new Error('Falta variable de entorno: ADMIN_EMAIL');
+if (!ADMIN_PASS)  throw new Error('Falta variable de entorno: ADMIN_PASSWORD');
+
+function esBcrypt(str) {
+  return typeof str === 'string' && str.startsWith('$2');
+}
+
+async function verificarPassword(ingresada, almacenada) {
+  if (!almacenada || almacenada === PASS_GEN) return ingresada === PASS_GEN;
+  if (esBcrypt(almacenada)) return bcrypt.compare(ingresada, almacenada);
+  return ingresada === almacenada; // legacy texto plano distinto a sport123
+}
+
+// ── POST /api/auth/login ──────────────────────────────────────────────────────
 router.post('/login', async (req, res) => {
   try {
-    const email    = req.body.email?.toString().trim().toLowerCase();
-    const password = req.body.password;
+    const email    = (req.body.email    || '').toString().trim().toLowerCase();
+    const password = (req.body.password || '').toString();
 
-    if (!email || !password) {
+    if (!email || !password)
       return res.status(400).json({ error: 'Por favor completa todos los campos.' });
+
+    // Admin via variables de entorno
+    if (email === ADMIN_EMAIL && password === ADMIN_PASS) {
+      const token = jwt.sign({ id: 'admin-id', email, rol: 'admin' }, JWT_SECRET, { expiresIn: '12h' });
+      res.cookie('token', token, {
+        httpOnly: true,
+        secure:   true,
+        sameSite: 'lax',
+        maxAge:   12 * 60 * 60 * 1000,  // 12h
+        path:     '/',
+      });
+      return res.json({ token, esAdmin: true, redirect: 'admin.html' });
     }
 
-    // 1. Administrador principal
-    if (email === 'admin@sportline.com' && password === (process.env.ADMIN_PASSWORD || 'admin123')) {
-      const customToken = await admin.auth().createCustomToken('admin-super-uid', { rol: 'admin' });
-      return res.json({ customToken, esAdmin: true, redirect: 'admin.html' });
-    }
+    // Tienda en Supabase
+    const { data: tienda, error } = await supabase
+      .from('tiendas')
+      .select('id, email, password_hash, codigo, nombre, activa')
+      .eq('email', email)
+      .maybeSingle();
 
-    // 2. Tiendas/Sucursales en Cloud SQL
-    const tienda = await db.one(
-      'SELECT id, email, password_hash, codigo, nombre FROM tiendas WHERE email = $1',
-      [email]
+    if (error) return res.status(500).json({ error: 'Error al consultar la base de datos.' });
+    if (!tienda) return res.status(401).json({ error: 'La sucursal no está registrada en el sistema.' });
+    if (tienda.activa === false) return res.status(403).json({ error: 'Esta sucursal está desactivada.' });
+
+    const contraseñaValida = await verificarPassword(password, tienda.password_hash);
+    if (!contraseñaValida)
+      return res.status(401).json({ error: 'Contraseña incorrecta para esta sucursal.' });
+
+    const token = jwt.sign(
+      { id: tienda.id, email: tienda.email, codigo: tienda.codigo, rol: 'tienda' },
+      JWT_SECRET,
+      { expiresIn: '8h' }
     );
 
-    if (!tienda) {
-      return res.status(401).json({ error: 'La sucursal seleccionada no está registrada en el sistema.' });
-    }
+    // Primer acceso: contraseña genérica aún sin cambiar
+    const primerAcceso = !tienda.password_hash || tienda.password_hash === PASS_GEN;
 
-    const contraseñaValida = password === 'sport123' || password === tienda.password_hash;
-    if (!contraseñaValida) {
-      return res.status(401).json({ error: 'Contraseña incorrecta para esta sucursal.' });
-    }
-
-    // Firebase custom token — uid = tienda.id para que el backend pueda verificar claims
-    const customToken = await admin.auth().createCustomToken(tienda.id, {
-      rol:       'tienda',
-      tienda_id: tienda.id,
-      codigo:    tienda.codigo,
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure:   true,
+      sameSite: 'lax',
+      maxAge:   8 * 60 * 60 * 1000,  // 8h
+      path:     '/',
     });
 
-    const requiereCambio = !tienda.password_hash || tienda.password_hash === 'sport123';
-
     res.json({
-      customToken,
-      esAdmin: false,
-      redirect: 'album.html',
-      requiereCambio,
+      token,
+      esAdmin:      false,
+      redirect:     primerAcceso ? 'cambiar-clave.html' : 'album.html',
+      primerAcceso,
       tienda: { nombre: tienda.nombre, codigo: tienda.codigo },
     });
 
@@ -56,63 +94,80 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Middleware exportado para otros routers
-async function verificarToken(req, res, next) {
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) return res.status(401).json({ error: 'Token faltante.' });
+// ── GET /api/auth/me ─────────────────────────────────────────────────────────
+router.get('/me', (req, res) => {
+  const token = req.cookies?.token || req.headers.authorization?.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'No autenticado.' });
   try {
-    const decoded = await admin.auth().verifyIdToken(token);
-    req.usuario = {
-      id:     decoded.uid,
-      email:  decoded.email,
-      rol:    decoded.rol || 'tienda',
-      codigo: decoded.codigo,
-    };
-    next();
+    const u = jwt.verify(token, JWT_SECRET);
+    res.json({ id: u.id, email: u.email, rol: u.rol, codigo: u.codigo });
   } catch {
     res.status(401).json({ error: 'Sesión inválida.' });
   }
-}
+});
 
-// PUT /api/auth/cambiar-clave
-router.put('/cambiar-clave', verificarToken, async (req, res) => {
-  if (req.usuario.rol !== 'tienda') {
-    return res.status(403).json({ error: 'Solo las sucursales pueden cambiar su contraseña.' });
+// ── POST /api/auth/logout ─────────────────────────────────────────────────────
+router.post('/logout', (req, res) => {
+  res.clearCookie('token', { httpOnly: true, secure: true, sameSite: 'lax', path: '/' });
+  res.json({ ok: true });
+});
+
+// ── PUT /api/auth/cambiar-clave ───────────────────────────────────────────────
+router.put('/cambiar-clave', async (req, res) => {
+  let usuario;
+  try {
+    const token = req.cookies?.token || req.headers.authorization?.split(' ')[1];
+    usuario = jwt.verify(token, JWT_SECRET);
+  } catch {
+    return res.status(401).json({ error: 'Sesión inválida.' });
   }
+
+  if (usuario.rol !== 'tienda')
+    return res.status(403).json({ error: 'Solo las sucursales pueden cambiar su contraseña.' });
 
   const { passwordActual, passwordNueva } = req.body;
-  if (!passwordActual || !passwordNueva) {
+  if (!passwordActual || !passwordNueva)
     return res.status(400).json({ error: 'Completa todos los campos requeridos.' });
-  }
-  if (passwordNueva.length < 6) {
+  if (passwordNueva.length < 6)
     return res.status(400).json({ error: 'La contraseña nueva debe tener mínimo 6 caracteres.' });
-  }
+  if (passwordNueva === PASS_GEN)
+    return res.status(400).json({ error: 'No puedes usar la contraseña genérica como contraseña personal.' });
 
   try {
-    const tienda = await db.one('SELECT id, password_hash FROM tiendas WHERE id = $1', [req.usuario.id]);
-    if (!tienda) return res.status(404).json({ error: 'Sucursal no encontrada en el sistema.' });
+    const { data: tienda, error } = await supabase
+      .from('tiendas').select('id, password_hash').eq('id', usuario.id).maybeSingle();
 
-    const valida = passwordActual === 'sport123' || passwordActual === tienda.password_hash;
+    if (error || !tienda) return res.status(404).json({ error: 'Sucursal no encontrada.' });
+
+    const valida = await verificarPassword(passwordActual, tienda.password_hash);
     if (!valida) return res.status(401).json({ error: 'La contraseña actual es incorrecta.' });
 
-    await db.query('UPDATE tiendas SET password_hash = $1 WHERE id = $2', [passwordNueva, tienda.id]);
+    const nuevoHash = await bcrypt.hash(passwordNueva, 10);
+
+    const { error: updateError } = await supabase.from('tiendas').update({
+      password_hash:       nuevoHash,
+      password_changed_at: new Date().toISOString(),
+    }).eq('id', tienda.id);
+
+    if (updateError) throw updateError;
+
     res.json({ ok: true, mensaje: 'Contraseña actualizada correctamente.' });
+
   } catch (err) {
     console.error('[CambiarClave]', err.message);
-    res.status(500).json({ error: 'Error del servidor al actualizar la contraseña.' });
+    res.status(500).json({ error: 'Error del servidor al actualizar la contraseña.', detalle: err.message });
   }
 });
 
-// POST /api/auth/olvide-clave
+// ── POST /api/auth/olvide-clave ───────────────────────────────────────────────
 router.post('/olvide-clave', async (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ error: 'Ingresa el correo de tu sucursal.' });
 
   try {
-    const tienda = await db.one(
-      'SELECT id, nombre FROM tiendas WHERE email = $1',
-      [email.toString().trim().toLowerCase()]
-    );
+    const { data: tienda } = await supabase
+      .from('tiendas').select('id, nombre').eq('email', email.toString().trim().toLowerCase()).maybeSingle();
+
     res.json({
       ok: true,
       encontrada: !!tienda,
@@ -126,4 +181,3 @@ router.post('/olvide-clave', async (req, res) => {
 });
 
 module.exports = router;
-module.exports.verificarToken = verificarToken;
