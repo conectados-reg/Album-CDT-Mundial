@@ -5,7 +5,7 @@ const { createClient } = require('@supabase/supabase-js');
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
 function verificarToken(req, res, next) {
-  const token = req.cookies?.token || req.headers.authorization?.split(' ')[1];
+  const token = req.headers.authorization?.split(' ')[1];
   if (!token) return res.status(401).json({ error: 'Token faltante.' });
   try {
     req.usuario = jwt.verify(token, process.env.JWT_SECRET);
