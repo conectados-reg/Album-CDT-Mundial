@@ -79,14 +79,12 @@ router.post('/resultados', verificarSyncKey, async (req, res) => {
 
     let tienda = tiendaEncontrada;
 
-    // Si la tienda no existe, crearla automáticamente con los datos del Sheet
     if (!tienda) {
       const { nombre, pais } = req.body;
       if (!nombre) return res.status(404).json({ error: `Tienda "${tienda_codigo}" no encontrada. Incluye "nombre" en el payload para crearla.` });
 
       const emailAuto = `${tienda_codigo.toString().trim().toLowerCase()}@sportline.com`;
 
-      // Intentar insertar — si ya existe por carrera paralela, ignorar el error
       const { error: cErr } = await supabase
         .from('tiendas')
         .insert({
@@ -103,7 +101,6 @@ router.post('/resultados', verificarSyncKey, async (req, res) => {
         return res.status(500).json({ error: 'No se pudo crear la tienda: ' + cErr.message });
       }
 
-      // Obtener la tienda (recién creada o ya existente)
       const { data: tiendaReloaded } = await supabase
         .from('tiendas')
         .select('id, nombre, total_empleados')
@@ -113,7 +110,6 @@ router.post('/resultados', verificarSyncKey, async (req, res) => {
       tienda = tiendaReloaded;
     }
 
-    // Actualizar total_empleados si viene en el payload y es diferente al actual
     const nuevoTotal = parseInt(total_empleados);
     if (!isNaN(nuevoTotal) && nuevoTotal > 0 && nuevoTotal !== tienda.total_empleados) {
       await supabase
@@ -137,7 +133,6 @@ router.post('/resultados', verificarSyncKey, async (req, res) => {
       { onConflict: 'tienda_id,semana_id' }
     );
 
-    // Desbloquear fichas si llega al 100% (redundante con el trigger, pero garantiza consistencia)
     let desbloqueadas = 0;
     if (pct >= 100) {
       const { data: actualizadas } = await supabase
