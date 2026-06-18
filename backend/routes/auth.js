@@ -38,6 +38,13 @@ router.post('/login', async (req, res) => {
     // Admin via variables de entorno
     if (email === ADMIN_EMAIL && password === ADMIN_PASS) {
       const token = jwt.sign({ id: 'admin-id', email, rol: 'admin' }, JWT_SECRET, { expiresIn: '12h' });
+      res.cookie('token', token, {
+        httpOnly: true,
+        secure:   true,
+        sameSite: 'lax',
+        maxAge:   12 * 60 * 60 * 1000,  // 12h
+        path:     '/',
+      });
       return res.json({ token, esAdmin: true, redirect: 'admin.html' });
     }
 
@@ -65,6 +72,14 @@ router.post('/login', async (req, res) => {
     // Primer acceso: contraseña genérica aún sin cambiar
     const primerAcceso = !tienda.password_hash || tienda.password_hash === PASS_GEN;
 
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure:   true,
+      sameSite: 'lax',
+      maxAge:   8 * 60 * 60 * 1000,  // 8h
+      path:     '/',
+    });
+
     res.json({
       token,
       esAdmin:      false,
@@ -79,12 +94,30 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// ── GET /api/auth/me ─────────────────────────────────────────────────────────
+router.get('/me', (req, res) => {
+  const token = req.cookies?.token || req.headers.authorization?.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'No autenticado.' });
+  try {
+    const u = jwt.verify(token, JWT_SECRET);
+    res.json({ id: u.id, email: u.email, rol: u.rol, codigo: u.codigo });
+  } catch {
+    res.status(401).json({ error: 'Sesión inválida.' });
+  }
+});
+
+// ── POST /api/auth/logout ─────────────────────────────────────────────────────
+router.post('/logout', (req, res) => {
+  res.clearCookie('token', { httpOnly: true, secure: true, sameSite: 'lax', path: '/' });
+  res.json({ ok: true });
+});
+
 // ── PUT /api/auth/cambiar-clave ───────────────────────────────────────────────
 router.put('/cambiar-clave', async (req, res) => {
   let usuario;
   try {
-    const header = req.headers.authorization || '';
-    usuario = jwt.verify(header.split(' ')[1], JWT_SECRET);
+    const token = req.cookies?.token || req.headers.authorization?.split(' ')[1];
+    usuario = jwt.verify(token, JWT_SECRET);
   } catch {
     return res.status(401).json({ error: 'Sesión inválida.' });
   }
