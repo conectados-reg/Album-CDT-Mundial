@@ -112,10 +112,11 @@ router.post('/resultados', verificarSyncKey, async (req, res) => {
 
     const nuevoTotal = parseInt(total_empleados);
     if (!isNaN(nuevoTotal) && nuevoTotal > 0 && nuevoTotal !== tienda.total_empleados) {
-      await supabase
+      const { error: updErr } = await supabase
         .from('tiendas')
         .update({ total_empleados: nuevoTotal })
         .eq('id', tienda.id);
+      if (updErr) console.error('[Sync] Error actualizando empleados:', updErr.message);
     }
 
     const { data: semana, error: sErr } = await supabase
@@ -128,10 +129,11 @@ router.post('/resultados', verificarSyncKey, async (req, res) => {
 
     const pct = parseFloat(porcentaje) || 0;
 
-    await supabase.from('resultados_tienda').upsert(
+    const { error: upsertErr } = await supabase.from('resultados_tienda').upsert(
       { tienda_id: tienda.id, semana_id: semana.id, porcentaje_cumplido: pct, cumplio_meta: pct >= 100, updated_at: new Date().toISOString() },
       { onConflict: 'tienda_id,semana_id' }
     );
+    if (upsertErr) throw new Error('Error guardando resultado: ' + upsertErr.message);
 
     let desbloqueadas = 0;
     if (pct >= 100) {

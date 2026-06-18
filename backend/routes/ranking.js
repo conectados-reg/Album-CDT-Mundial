@@ -176,14 +176,14 @@ router.get('/tienda/:id', verificarToken, async (req, res) => {
     const posicionNacional = rankingNacional.findIndex(t => t.id === tiendaId) + 1;
 
     // Fotos públicas de esta tienda (solo fichas desbloqueadas con foto)
-    const { data: fichasFotos } = await supabase
+    const { data: fichasFotos, error: fotErr } = await supabase
       .from('fichas_tienda')
-      .select('id, numero_ficha, semana_numero, semana_nombre, foto_url')
+      .select('id, numero_ficha, foto_url')
       .eq('tienda_id', tiendaId)
       .eq('desbloqueado', true)
       .not('foto_url', 'is', null)
-      .order('semana_numero', { ascending: true })
       .order('numero_ficha', { ascending: true });
+    if (fotErr) console.error('[Perfil Fotos]', fotErr.message);
 
     res.json({
       id: tiendaInfo.id,
