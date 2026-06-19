@@ -128,10 +128,11 @@ router.post('/resultados', verificarSyncKey, async (req, res) => {
 
     const pct = parseFloat(porcentaje) || 0;
 
-    await supabase.from('resultados_tienda').upsert(
-      { tienda_id: tienda.id, semana_id: semana.id, porcentaje_cumplido: pct, cumplio_meta: pct >= 100, updated_at: new Date().toISOString() },
+    const { error: upsertErr } = await supabase.from('resultados_tienda').upsert(
+      { tienda_id: tienda.id, semana_id: semana.id, porcentaje_cumplido: pct },
       { onConflict: 'tienda_id,semana_id' }
     );
+    if (upsertErr) throw new Error('Error guardando resultado: ' + upsertErr.message);
 
     let desbloqueadas = 0;
     if (pct >= 100) {
