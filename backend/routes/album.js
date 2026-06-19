@@ -25,7 +25,7 @@ router.get('/', verificarToken, async (req, res) => {
     const { data: tiendaInfo } = await supabase
       .from('tiendas').select('total_empleados').eq('id', tiendaId).maybeSingle();
 
-    const { data: semanaActiva } = await supabase
+    const { data: semanaActivaDB } = await supabase
       .from('semanas').select('id, numero, nombre').eq('activa', true).maybeSingle();
 
     const { data: semanas } = await supabase
@@ -48,6 +48,19 @@ router.get('/', verificarToken, async (req, res) => {
       .eq('tienda_id', tiendaId);
     const resultadoMap = {};
     for (const r of (resultados || [])) resultadoMap[r.semana_id] = r.porcentaje_cumplido;
+
+    // Use explicitly active semana; fall back to latest semana with non-zero results
+    let semanaActiva = semanaActivaDB;
+    if (!semanaActiva && resultados && resultados.length > 0) {
+      let best = null;
+      for (const r of resultados) {
+        if (r.porcentaje_cumplido > 0) {
+          const s = semanaMap[r.semana_id];
+          if (s && (!best || s.numero > best.numero)) best = s;
+        }
+      }
+      semanaActiva = best || null;
+    }
 
     const pctTienda = semanaActiva ? (resultadoMap[semanaActiva.id] ?? null) : null;
 
