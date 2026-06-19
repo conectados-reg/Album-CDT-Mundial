@@ -3,6 +3,13 @@ const { createClient } = require('@supabase/supabase-js');
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
+function calcularDistribucion(hc) {
+  const total = hc <= 6 ? 6 : hc;
+  const base  = Math.floor(total / 6);
+  const extra = total % 6;
+  return Array.from({ length: 6 }, (_, i) => (i < extra ? base + 1 : base));
+}
+
 function verificarSyncKey(req, res, next) {
   const key = req.headers['x-sync-key'];
   if (!key || !process.env.SYNC_KEY || key !== process.env.SYNC_KEY) {
@@ -128,6 +135,23 @@ router.post('/resultados', verificarSyncKey, async (req, res) => {
     if (sErr || !semana) return res.status(404).json({ error: `Semana ${semanaNum} no encontrada.` });
 
     const pct = parseFloat(porcentaje) || 0;
+
+    // Auto-crear fichas para esta semana si no existen
+    const hcActual = !isNaN(nuevoTotal) && nuevoTotal > 0 ? nuevoTotal : (tienda.total_empleados || 0);
+    if (hcActual > 0) {
+      const dist = calcularDistribucion(hcActual);
+      const fichasNecesarias = dist[(semana.numero - 1)] ?? 1;
+      const { data: fichasExist } = await supabase
+        .from('fichas_tienda').select('id').eq('tienda_id', tienda.id).eq('semana_id', semana.id);
+      const existentes = fichasExist?.length || 0;
+      if (existentes < fichasNecesarias) {
+        const nuevas = Array.from({ length: fichasNecesarias - existentes }, (_, i) => ({
+          tienda_id: tienda.id, semana_id: semana.id,
+          numero_ficha: existentes + i + 1, desbloqueado: false,
+        }));
+        await supabase.from('fichas_tienda').insert(nuevas);
+      }
+    }
 
     const { error: upsertErr } = await supabase.from('resultados_tienda').upsert(
            { tienda_id: tienda.id, semana_id: semana.id, porcentaje_cumplido: pct },
