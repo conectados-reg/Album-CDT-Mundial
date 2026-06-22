@@ -55,21 +55,24 @@ router.get('/', verificarToken, async (req, res) => {
 
     if (error) throw error;
 
-    const { data: fichasFotos, error: ffErr } = await supabase
-      .from('fichas_tienda')
-      .select('tienda_id, foto_url')
-      .not('foto_url', 'is', null)
-      .limit(9000);
-
-    if (ffErr) console.error('[Tiendas fotos_count]', ffErr.message);
-
+    // Traer TODAS las fichas en lotes para evitar el límite de 1000 filas de Supabase
     const fotosCount = {};
-    for (const f of (fichasFotos || [])) {
-      if (f.foto_url && f.foto_url.length > 0) {
-        fotosCount[f.tienda_id] = (fotosCount[f.tienda_id] || 0) + 1;
+    let desde = 0;
+    const LOTE = 1000;
+    while (true) {
+      const { data: lote, error: lErr } = await supabase
+        .from('fichas_tienda')
+        .select('tienda_id, foto_url')
+        .range(desde, desde + LOTE - 1);
+      if (lErr) { console.error('[Tiendas fotos_count] error lote', desde, lErr.message); break; }
+      if (!lote || lote.length === 0) break;
+      for (const f of lote) {
+        if (f.foto_url) fotosCount[f.tienda_id] = (fotosCount[f.tienda_id] || 0) + 1;
       }
+      if (lote.length < LOTE) break;
+      desde += LOTE;
     }
-    console.log('[Tiendas fotos_count] fichas con foto:', (fichasFotos || []).length, '| tiendas con fotos:', Object.keys(fotosCount).length);
+    console.log('[Tiendas fotos_count] tiendas con fotos:', Object.keys(fotosCount).length);
 
     const tiendasFormateadas = (tiendas || []).map(t => ({
       id: t.id,
