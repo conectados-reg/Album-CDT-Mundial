@@ -17,15 +17,21 @@ function verificarToken(req, res, next) {
 
 // Helper: builds acumulado + fichas maps for an array of tiendaIds
 async function buildMaps(tiendaIds) {
-  const [{ data: resultados, error: rErr }, { data: fichasDesb, error: fErr }, { data: fichasTot, error: ftErr }] =
-    await Promise.all([
-      supabase.from('resultados_tienda').select('tienda_id, porcentaje_cumplido').in('tienda_id', tiendaIds),
-      supabase.from('fichas_tienda').select('tienda_id').eq('desbloqueado', true).in('tienda_id', tiendaIds),
-      supabase.from('fichas_tienda').select('tienda_id').in('tienda_id', tiendaIds),
-    ]);
+  const [
+    { data: resultados, error: rErr },
+    { data: fichasDesb, error: fErr },
+    { data: fichasTot, error: ftErr },
+    { data: fichasFotos, error: ffErr },
+  ] = await Promise.all([
+    supabase.from('resultados_tienda').select('tienda_id, porcentaje_cumplido').in('tienda_id', tiendaIds),
+    supabase.from('fichas_tienda').select('tienda_id').eq('desbloqueado', true).in('tienda_id', tiendaIds),
+    supabase.from('fichas_tienda').select('tienda_id').in('tienda_id', tiendaIds),
+    supabase.from('fichas_tienda').select('tienda_id').not('foto_url', 'is', null).in('tienda_id', tiendaIds),
+  ]);
   if (rErr) throw rErr;
   if (fErr) throw fErr;
   if (ftErr) throw ftErr;
+  if (ffErr) throw ffErr;
 
   const acumulado = {};
   for (const r of (resultados || [])) {
@@ -40,7 +46,10 @@ async function buildMaps(tiendaIds) {
   const fichasTotCount = {};
   for (const f of (fichasTot || [])) fichasTotCount[f.tienda_id] = (fichasTotCount[f.tienda_id] || 0) + 1;
 
-  return { acumulado, fichasDesbCount, fichasTotCount };
+  const fotosCount = {};
+  for (const f of (fichasFotos || [])) fotosCount[f.tienda_id] = (fotosCount[f.tienda_id] || 0) + 1;
+
+  return { acumulado, fichasDesbCount, fichasTotCount, fotosCount };
 }
 
 function calcCumplimiento(ac) {
@@ -48,8 +57,7 @@ function calcCumplimiento(ac) {
 }
 
 function rankSort(a, b) {
-  if (b.cumplimiento_acumulado !== a.cumplimiento_acumulado)
-    return b.cumplimiento_acumulado - a.cumplimiento_acumulado;
+  if (b.fotos_count !== a.fotos_count) return b.fotos_count - a.fotos_count;
   return b.fichas_desbloqueadas - a.fichas_desbloqueadas;
 }
 
@@ -83,7 +91,7 @@ router.get('/nacional', verificarToken, async (req, res) => {
       return res.json({ ranking: [], region: tiendaPropia.region });
 
     const tiendaIds = tiendas.map(t => t.id);
-    const { acumulado, fichasDesbCount } = await buildMaps(tiendaIds);
+    const { acumulado, fichasDesbCount, fotosCount } = await buildMaps(tiendaIds);
 
     const ranking = tiendas
       .map(t => ({
@@ -93,6 +101,7 @@ router.get('/nacional', verificarToken, async (req, res) => {
         codigo: t.codigo,
         cumplimiento_acumulado: calcCumplimiento(acumulado[t.id]),
         fichas_desbloqueadas: fichasDesbCount[t.id] || 0,
+        fotos_count: fotosCount[t.id] || 0,
         semanas_registradas: acumulado[t.id]?.semanas || 0,
         es_mi_tienda: t.id === req.usuario.id,
       }))
@@ -121,7 +130,7 @@ router.get('/mundial', verificarToken, async (req, res) => {
       return res.json({ ranking: [], total: 0 });
 
     const tiendaIds = tiendas.map(t => t.id);
-    const { acumulado, fichasDesbCount } = await buildMaps(tiendaIds);
+    const { acumulado, fichasDesbCount, fotosCount } = await buildMaps(tiendaIds);
 
     const ranking = tiendas
       .map(t => ({
@@ -131,6 +140,7 @@ router.get('/mundial', verificarToken, async (req, res) => {
         codigo: t.codigo,
         cumplimiento_acumulado: calcCumplimiento(acumulado[t.id]),
         fichas_desbloqueadas: fichasDesbCount[t.id] || 0,
+        fotos_count: fotosCount[t.id] || 0,
         semanas_registradas: acumulado[t.id]?.semanas || 0,
         es_mi_tienda: t.id === req.usuario.id,
       }))
@@ -160,12 +170,13 @@ router.get('/tienda/:id', verificarToken, async (req, res) => {
     if (!tiendaInfo) return res.status(404).json({ error: 'Tienda no encontrada.' });
 
     const tiendaIds = todasTiendas.map(t => t.id);
-    const { acumulado, fichasDesbCount, fichasTotCount } = await buildMaps(tiendaIds);
+    const { acumulado, fichasDesbCount, fichasTotCount, fotosCount } = await buildMaps(tiendaIds);
 
     const enrich = t => ({
       id: t.id,
       cumplimiento_acumulado: calcCumplimiento(acumulado[t.id]),
       fichas_desbloqueadas: fichasDesbCount[t.id] || 0,
+      fotos_count: fotosCount[t.id] || 0,
     });
 
     const rankingMundial = todasTiendas.map(enrich).sort(rankSort);
@@ -192,6 +203,7 @@ router.get('/tienda/:id', verificarToken, async (req, res) => {
       codigo: tiendaInfo.codigo,
       cumplimiento_acumulado: calcCumplimiento(acumulado[tiendaId]),
       fichas_desbloqueadas: fichasDesbCount[tiendaId] || 0,
+      fotos_count: fotosCount[tiendaId] || 0,
       total_fichas: fichasTotCount[tiendaId] || 0,
       posicion_mundial: posicionMundial,
       posicion_nacional: posicionNacional,
