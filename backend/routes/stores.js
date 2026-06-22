@@ -116,6 +116,109 @@ router.get('/historial-claves', verificarToken, async (req, res) => {
   }
 });
 
+// POST /api/tiendas/recalcular-todas — admin: audita y corrige fichas de todas las tiendas
+router.post('/recalcular-todas', verificarToken, async (req, res) => {
+  if (req.usuario.rol !== 'admin') return res.status(403).json({ error: 'No eres administrador.' });
+
+  const soloReportar = req.body.solo_reporte === true;
+
+  try {
+    const [
+      { data: tiendas, error: tErr },
+      { data: semanas, error: sErr },
+    ] = await Promise.all([
+      supabase.from('tiendas').select('id, codigo, nombre, total_empleados').order('nombre'),
+      supabase.from('semanas').select('id, numero').order('numero'),
+    ]);
+    if (tErr) throw tErr;
+    if (sErr) throw sErr;
+
+    // Traer TODAS las fichas en lotes
+    const todasFichas = [];
+    let desde = 0;
+    const LOTE = 1000;
+    while (true) {
+      const { data: lote, error: lErr } = await supabase
+        .from('fichas_tienda').select('id, tienda_id, semana_id, desbloqueado')
+        .range(desde, desde + LOTE - 1);
+      if (lErr) throw lErr;
+      if (!lote || lote.length === 0) break;
+      todasFichas.push(...lote);
+      if (lote.length < LOTE) break;
+      desde += LOTE;
+    }
+
+    // Agrupar fichas por tienda
+    const fichasPorTienda = {};
+    for (const f of todasFichas) {
+      if (!fichasPorTienda[f.tienda_id]) fichasPorTienda[f.tienda_id] = [];
+      fichasPorTienda[f.tienda_id].push(f);
+    }
+
+    const discrepancias = [];
+    const corregidas = [];
+
+    for (const tienda of (tiendas || [])) {
+      const hc = tienda.total_empleados || 0;
+      const dist = calcularDistribucion(hc);
+      const totalEsperado = dist.reduce((a, b) => a + b, 0);
+      const fichas = fichasPorTienda[tienda.id] || [];
+      const totalActual = fichas.length;
+
+      if (totalActual !== totalEsperado) {
+        const item = {
+          id: tienda.id,
+          codigo: tienda.codigo,
+          nombre: tienda.nombre,
+          hc,
+          fichas_esperadas: totalEsperado,
+          fichas_actuales: totalActual,
+          diferencia: totalEsperado - totalActual,
+        };
+        discrepancias.push(item);
+
+        if (!soloReportar) {
+          let fichasAgregadas = 0, fichasEliminadas = 0;
+          for (const semana of (semanas || [])) {
+            const fichasSemana = dist[semana.numero - 1] ?? 0;
+            const fichasExist = fichas.filter(f => f.semana_id === semana.id);
+            const totalExist = fichasExist.length;
+            const diff = fichasSemana - totalExist;
+            if (diff > 0) {
+              const nuevas = Array.from({ length: diff }, (_, i) => ({
+                tienda_id: tienda.id, semana_id: semana.id,
+                numero_ficha: totalExist + i + 1, desbloqueado: false,
+              }));
+              await supabase.from('fichas_tienda').insert(nuevas);
+              fichasAgregadas += diff;
+            } else if (diff < 0) {
+              const bloqueadas = fichasExist.filter(f => !f.desbloqueado);
+              const aEliminar = Math.min(-diff, bloqueadas.length);
+              if (aEliminar > 0) {
+                const ids = bloqueadas.slice(-aEliminar).map(f => f.id);
+                await supabase.from('fichas_tienda').delete().in('id', ids);
+                fichasEliminadas += aEliminar;
+              }
+            }
+          }
+          corregidas.push({ ...item, fichas_agregadas: fichasAgregadas, fichas_eliminadas: fichasEliminadas });
+        }
+      }
+    }
+
+    res.json({
+      ok: true,
+      solo_reporte: soloReportar,
+      total_tiendas: (tiendas || []).length,
+      total_discrepancias: discrepancias.length,
+      tiendas: soloReportar ? discrepancias : corregidas,
+    });
+  } catch (err) {
+    console.error('[Recalcular Todas]', err.message);
+    res.status(500).json({ error: 'Error: ' + err.message });
+  }
+});
+
 // POST /api/tiendas/:id/recalcular-fichas — admin: recalcula fichas sin tocar desbloqueadas
 router.post('/:id/recalcular-fichas', verificarToken, async (req, res) => {
   if (req.usuario.rol !== 'admin') {
