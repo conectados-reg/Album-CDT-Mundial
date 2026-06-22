@@ -57,11 +57,13 @@ router.get('/', verificarToken, async (req, res) => {
 
     const tiendaIds = (tiendas || []).map(t => t.id);
     const { data: fichasFotos } = tiendaIds.length
-      ? await supabase.from('fichas_tienda').select('tienda_id').not('foto_url', 'is', null).in('tienda_id', tiendaIds)
+      ? await supabase.from('fichas_tienda').select('tienda_id, foto_url').not('foto_url', 'is', null).neq('foto_url', '').in('tienda_id', tiendaIds).limit(9000)
       : { data: [] };
 
     const fotosCount = {};
-    for (const f of (fichasFotos || [])) fotosCount[f.tienda_id] = (fotosCount[f.tienda_id] || 0) + 1;
+    for (const f of (fichasFotos || [])) {
+      if (f.foto_url) fotosCount[f.tienda_id] = (fotosCount[f.tienda_id] || 0) + 1;
+    }
 
     const tiendasFormateadas = (tiendas || []).map(t => ({
       id: t.id,
