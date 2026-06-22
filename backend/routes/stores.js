@@ -55,17 +55,21 @@ router.get('/', verificarToken, async (req, res) => {
 
     if (error) throw error;
 
-    const { data: fichasFotos } = await supabase
+    const { data: fichasFotos, error: ffErr } = await supabase
       .from('fichas_tienda')
-      .select('tienda_id')
+      .select('tienda_id, foto_url')
       .not('foto_url', 'is', null)
-      .neq('foto_url', '')
       .limit(9000);
+
+    if (ffErr) console.error('[Tiendas fotos_count]', ffErr.message);
 
     const fotosCount = {};
     for (const f of (fichasFotos || [])) {
-      fotosCount[f.tienda_id] = (fotosCount[f.tienda_id] || 0) + 1;
+      if (f.foto_url && f.foto_url.length > 0) {
+        fotosCount[f.tienda_id] = (fotosCount[f.tienda_id] || 0) + 1;
+      }
     }
+    console.log('[Tiendas fotos_count] fichas con foto:', (fichasFotos || []).length, '| tiendas con fotos:', Object.keys(fotosCount).length);
 
     const tiendasFormateadas = (tiendas || []).map(t => ({
       id: t.id,
