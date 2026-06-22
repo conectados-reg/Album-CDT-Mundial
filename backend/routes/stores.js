@@ -87,6 +87,7 @@ router.get('/', verificarToken, async (req, res) => {
       fotos_count: fotosCount[t.id] || 0,
     }));
 
+    res.setHeader('Cache-Control', 'no-store');
     res.json({ tiendas: tiendasFormateadas });
   } catch (error) {
     console.error(error);
