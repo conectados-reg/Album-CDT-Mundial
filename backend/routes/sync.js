@@ -3,13 +3,6 @@ const { createClient } = require('@supabase/supabase-js');
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
-function calcularDistribucion(hc) {
-  const total = hc <= 6 ? 6 : hc;
-  const base  = Math.floor(total / 6);
-  const extra = total % 6;
-  return Array.from({ length: 6 }, (_, i) => (i < extra ? base + 1 : base));
-}
-
 function verificarSyncKey(req, res, next) {
   const key = req.headers['x-sync-key'];
   if (!key || !process.env.SYNC_KEY || key !== process.env.SYNC_KEY) {
@@ -24,19 +17,25 @@ function verificarSyncKey(req, res, next) {
  * Body: { tienda_codigo, nombre, pais }
  */
 router.post('/registrar-tienda', verificarSyncKey, async (req, res) => {
-  const { tienda_codigo, nombre, pais } = req.body;
+  const { tienda_codigo, nombre, pais, total_empleados } = req.body;
   if (!tienda_codigo || !nombre) {
     return res.status(400).json({ error: 'Faltan campos: tienda_codigo, nombre.' });
   }
 
+  const nuevoHC = parseInt(total_empleados);
+  const hcValido = !isNaN(nuevoHC) && nuevoHC > 0;
+
   try {
     const { data: existente } = await supabase
       .from('tiendas')
-      .select('id, nombre')
+      .select('id, nombre, total_empleados')
       .eq('codigo', tienda_codigo.toString().trim())
       .maybeSingle();
 
     if (existente) {
+      if (hcValido && nuevoHC !== existente.total_empleados) {
+        await supabase.from('tiendas').update({ total_empleados: nuevoHC }).eq('id', existente.id);
+      }
       return res.json({ ok: true, creada: false, tienda: existente.nombre });
     }
 
@@ -48,7 +47,7 @@ router.post('/registrar-tienda', verificarSyncKey, async (req, res) => {
       email:           emailAuto,
       password_hash:   'sport123',
       activa:          true,
-      total_empleados: 0
+      total_empleados: hcValido ? nuevoHC : 0
     });
 
     if (cErr && !cErr.message.includes('duplicate key')) {
@@ -119,11 +118,10 @@ router.post('/resultados', verificarSyncKey, async (req, res) => {
 
     const nuevoTotal = parseInt(total_empleados);
     if (!isNaN(nuevoTotal) && nuevoTotal > 0 && nuevoTotal !== tienda.total_empleados) {
-      const { error: updErr } = await supabase
+      await supabase
         .from('tiendas')
         .update({ total_empleados: nuevoTotal })
         .eq('id', tienda.id);
-      if (updErr) console.error('[Sync] Error actualizando empleados:', updErr.message);
     }
 
     const { data: semana, error: sErr } = await supabase
@@ -136,25 +134,8 @@ router.post('/resultados', verificarSyncKey, async (req, res) => {
 
     const pct = parseFloat(porcentaje) || 0;
 
-    // Auto-crear fichas para esta semana si no existen
-    const hcActual = !isNaN(nuevoTotal) && nuevoTotal > 0 ? nuevoTotal : (tienda.total_empleados || 0);
-    if (hcActual > 0) {
-      const dist = calcularDistribucion(hcActual);
-      const fichasNecesarias = dist[(semana.numero - 1)] ?? 1;
-      const { data: fichasExist } = await supabase
-        .from('fichas_tienda').select('id').eq('tienda_id', tienda.id).eq('semana_id', semana.id);
-      const existentes = fichasExist?.length || 0;
-      if (existentes < fichasNecesarias) {
-        const nuevas = Array.from({ length: fichasNecesarias - existentes }, (_, i) => ({
-          tienda_id: tienda.id, semana_id: semana.id,
-          numero_ficha: existentes + i + 1, desbloqueado: false,
-        }));
-        await supabase.from('fichas_tienda').insert(nuevas);
-      }
-    }
-
     const { error: upsertErr } = await supabase.from('resultados_tienda').upsert(
-           { tienda_id: tienda.id, semana_id: semana.id, porcentaje_cumplido: pct },
+      { tienda_id: tienda.id, semana_id: semana.id, porcentaje_cumplido: pct },
       { onConflict: 'tienda_id,semana_id' }
     );
     if (upsertErr) throw new Error('Error guardando resultado: ' + upsertErr.message);
