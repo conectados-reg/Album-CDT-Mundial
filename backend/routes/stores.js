@@ -57,22 +57,23 @@ router.get('/', verificarToken, async (req, res) => {
 
     // Traer TODAS las fichas en lotes para evitar el límite de 1000 filas de Supabase
     const fotosCount = {};
+    const desbCount  = {};
     let desde = 0;
     const LOTE = 1000;
     while (true) {
       const { data: lote, error: lErr } = await supabase
         .from('fichas_tienda')
-        .select('tienda_id, foto_url')
+        .select('tienda_id, foto_url, desbloqueado')
         .range(desde, desde + LOTE - 1);
       if (lErr) { console.error('[Tiendas fotos_count] error lote', desde, lErr.message); break; }
       if (!lote || lote.length === 0) break;
       for (const f of lote) {
-        if (f.foto_url) fotosCount[f.tienda_id] = (fotosCount[f.tienda_id] || 0) + 1;
+        if (f.foto_url)      fotosCount[f.tienda_id] = (fotosCount[f.tienda_id] || 0) + 1;
+        if (f.desbloqueado)  desbCount[f.tienda_id]  = (desbCount[f.tienda_id]  || 0) + 1;
       }
       if (lote.length < LOTE) break;
       desde += LOTE;
     }
-    console.log('[Tiendas fotos_count] tiendas con fotos:', Object.keys(fotosCount).length);
 
     const tiendasFormateadas = (tiendas || []).map(t => ({
       id: t.id,
@@ -84,7 +85,8 @@ router.get('/', verificarToken, async (req, res) => {
       ciudad: t.ciudad || 'General',
       total_empleados: t.total_empleados || 0,
       activa: t.activa,
-      fotos_count: fotosCount[t.id] || 0,
+      fotos_count:          fotosCount[t.id] || 0,
+      fichas_desbloqueadas: desbCount[t.id]  || 0,
     }));
 
     res.setHeader('Cache-Control', 'no-store');
