@@ -118,6 +118,89 @@ router.get('/historial-claves', verificarToken, async (req, res) => {
   }
 });
 
+// GET /api/tiendas/rankings — admin: ranking por porcentaje acumulativo
+router.get('/rankings', verificarToken, async (req, res) => {
+  if (req.usuario.rol !== 'admin') return res.status(403).json({ error: 'No eres administrador.' });
+
+  try {
+    const { data: tiendas, error: tErr } = await supabase
+      .from('tiendas')
+      .select('id, codigo, nombre, region, total_empleados')
+      .eq('activa', true);
+    if (tErr) throw tErr;
+
+    // Traer todos los resultados en lotes
+    const todosResultados = [];
+    let desde = 0;
+    const LOTE = 1000;
+    while (true) {
+      const { data: lote, error: lErr } = await supabase
+        .from('resultados_tienda')
+        .select('tienda_id, porcentaje_cumplido')
+        .range(desde, desde + LOTE - 1);
+      if (lErr) throw lErr;
+      if (!lote || lote.length === 0) break;
+      todosResultados.push(...lote);
+      if (lote.length < LOTE) break;
+      desde += LOTE;
+    }
+
+    // Traer fotos_count por tienda
+    const fotosCount = {};
+    desde = 0;
+    while (true) {
+      const { data: lote, error: lErr } = await supabase
+        .from('fichas_tienda')
+        .select('tienda_id, foto_url')
+        .not('foto_url', 'is', null)
+        .range(desde, desde + LOTE - 1);
+      if (lErr) break;
+      if (!lote || lote.length === 0) break;
+      for (const f of lote) {
+        fotosCount[f.tienda_id] = (fotosCount[f.tienda_id] || 0) + 1;
+      }
+      if (lote.length < LOTE) break;
+      desde += LOTE;
+    }
+
+    // Agrupar resultados por tienda
+    const resPorTienda = {};
+    for (const r of todosResultados) {
+      if (!resPorTienda[r.tienda_id]) resPorTienda[r.tienda_id] = [];
+      resPorTienda[r.tienda_id].push(r.porcentaje_cumplido);
+    }
+
+    const ranking = (tiendas || [])
+      .map(t => {
+        const semanas = resPorTienda[t.id] || [];
+        const sumaTotal = semanas.reduce((a, b) => a + (b || 0), 0);
+        const pct_acumulado = Math.round((sumaTotal / 6) * 10) / 10;
+        const pct_promedio  = semanas.length
+          ? Math.round((sumaTotal / semanas.length) * 10) / 10
+          : 0;
+        return {
+          id:               t.id,
+          codigo:           t.codigo,
+          nombre:           t.nombre,
+          region:           t.region || 'General',
+          total_empleados:  t.total_empleados || 0,
+          fotos_count:      fotosCount[t.id] || 0,
+          semanas_con_data: semanas.length,
+          pct_acumulado,
+          pct_promedio,
+        };
+      })
+      .filter(t => t.semanas_con_data > 0)
+      .sort((a, b) => b.pct_acumulado - a.pct_acumulado || b.fotos_count - a.fotos_count);
+
+    res.setHeader('Cache-Control', 'no-store');
+    res.json({ ranking });
+  } catch (err) {
+    console.error('[Rankings]', err.message);
+    res.status(500).json({ error: 'Error al calcular rankings: ' + err.message });
+  }
+});
+
 // POST /api/tiendas/recalcular-todas — admin: audita y corrige fichas de todas las tiendas
 router.post('/recalcular-todas', verificarToken, async (req, res) => {
   if (req.usuario.rol !== 'admin') return res.status(403).json({ error: 'No eres administrador.' });

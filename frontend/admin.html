@@ -669,7 +669,7 @@
         <span class="info-card-icon"><i class="fa-solid fa-trophy"></i></span>
         <div class="info-card-text">
           <h2>Ranking de Tiendas</h2>
-          <p>Clasificación por fotos subidas. Solo tiendas que ya han agregado al menos una foto al álbum.</p>
+          <p>Clasificación por porcentaje de cumplimiento acumulativo (suma de todas las semanas / 6). Solo tiendas con al menos una semana sincronizada.</p>
         </div>
       </div>
       <div class="table-card">
@@ -690,7 +690,8 @@
               <th>Código</th>
               <th>Tienda</th>
               <th style="text-align:center;">HC</th>
-              <th style="text-align:center;">Fichas</th>
+              <th style="text-align:center;">Semanas</th>
+              <th style="text-align:center;">% Acumulado</th>
               <th style="text-align:center;">📷 Fotos</th>
             </tr></thead>
             <tbody id="rankingsBody"></tbody>
@@ -762,8 +763,8 @@ const _0x112f37=_0xaee3;(function(_0x47ad25,_0x2be53d){const _0x43b698=_0xaee3,_
       : _rankData.filter(function (t) { return t.region === _rankFiltro; });
 
     lista.sort(function (a, b) {
-      if (b.fotos_count !== a.fotos_count) return b.fotos_count - a.fotos_count;
-      return b.fichas_desbloqueadas - a.fichas_desbloqueadas;
+      if (b.pct_acumulado !== a.pct_acumulado) return b.pct_acumulado - a.pct_acumulado;
+      return b.fotos_count - a.fotos_count;
     });
 
     var body = document.getElementById('rankingsBody');
@@ -785,14 +786,17 @@ const _0x112f37=_0xaee3;(function(_0x47ad25,_0x2be53d){const _0x43b698=_0xaee3,_
       var flag = FLAGS_RANK[t.region] || '🏳';
       var pos  = i + 1;
       var posStyle = pos <= 3 ? 'color:var(--p-orange);font-weight:800;' : 'color:rgba(255,255,255,.5);';
+      var pct = (t.pct_acumulado || 0).toFixed(1);
+      var pctColor = t.pct_acumulado >= 100 ? '#00c853' : t.pct_acumulado >= 80 ? 'var(--p-orange)' : 'rgba(255,255,255,.7)';
       return '<tr>'
         + '<td style="text-align:center;' + posStyle + '">' + pos + '</td>'
         + '<td>' + flag + ' ' + (t.region || 'General') + '</td>'
         + '<td style="color:var(--p-orange);font-weight:700;">' + (t.codigo || '—') + '</td>'
         + '<td>' + (t.nombre || '—') + '</td>'
         + '<td style="text-align:center;">' + (t.total_empleados || 0) + '</td>'
-        + '<td style="text-align:center;">' + (t.fichas_desbloqueadas || 0) + '</td>'
-        + '<td style="text-align:center;font-weight:700;color:var(--p-orange);">' + (t.fotos_count || 0) + '</td>'
+        + '<td style="text-align:center;">' + (t.semanas_con_data || 0) + '/6</td>'
+        + '<td style="text-align:center;font-weight:700;color:' + pctColor + ';">' + pct + '%</td>'
+        + '<td style="text-align:center;">' + (t.fotos_count || 0) + '</td>'
         + '</tr>';
     }).join('');
 
@@ -828,10 +832,10 @@ const _0x112f37=_0xaee3;(function(_0x47ad25,_0x2be53d){const _0x43b698=_0xaee3,_
     document.getElementById('filtrosPaisRankings').style.display = 'none';
     document.getElementById('badgeRankings').textContent = '';
 
-    fetch(API_RANK + '/tiendas/', { headers: { 'Authorization': 'Bearer ' + token } })
+    fetch(API_RANK + '/tiendas/rankings', { headers: { 'Authorization': 'Bearer ' + token } })
       .then(function (r) { return r.json(); })
       .then(function (data) {
-        _rankData = (data.tiendas || []).filter(function (t) { return t.fotos_count > 0; });
+        _rankData = data.ranking || [];
         _rankLoaded = true;
         document.getElementById('loadingRankings').style.display = 'none';
         renderRankings();
