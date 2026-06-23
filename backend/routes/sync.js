@@ -17,19 +17,25 @@ function verificarSyncKey(req, res, next) {
  * Body: { tienda_codigo, nombre, pais }
  */
 router.post('/registrar-tienda', verificarSyncKey, async (req, res) => {
-  const { tienda_codigo, nombre, pais } = req.body;
+  const { tienda_codigo, nombre, pais, total_empleados } = req.body;
   if (!tienda_codigo || !nombre) {
     return res.status(400).json({ error: 'Faltan campos: tienda_codigo, nombre.' });
   }
 
+  const nuevoHC = parseInt(total_empleados);
+  const hcValido = !isNaN(nuevoHC) && nuevoHC > 0;
+
   try {
     const { data: existente } = await supabase
       .from('tiendas')
-      .select('id, nombre')
+      .select('id, nombre, total_empleados')
       .eq('codigo', tienda_codigo.toString().trim())
       .maybeSingle();
 
     if (existente) {
+      if (hcValido && nuevoHC !== existente.total_empleados) {
+        await supabase.from('tiendas').update({ total_empleados: nuevoHC }).eq('id', existente.id);
+      }
       return res.json({ ok: true, creada: false, tienda: existente.nombre });
     }
 
@@ -41,7 +47,7 @@ router.post('/registrar-tienda', verificarSyncKey, async (req, res) => {
       email:           emailAuto,
       password_hash:   'sport123',
       activa:          true,
-      total_empleados: 0
+      total_empleados: hcValido ? nuevoHC : 0
     });
 
     if (cErr && !cErr.message.includes('duplicate key')) {
