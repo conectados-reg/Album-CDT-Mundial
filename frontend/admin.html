@@ -669,7 +669,7 @@
         <span class="info-card-icon"><i class="fa-solid fa-trophy"></i></span>
         <div class="info-card-text">
           <h2>Ranking de Tiendas</h2>
-          <p>Clasificación por fotos subidas. Solo tiendas que han desbloqueado al menos una ficha.</p>
+          <p>Clasificación por fotos subidas. Solo tiendas que ya han agregado al menos una foto al álbum.</p>
         </div>
       </div>
       <div class="table-card">
@@ -696,7 +696,7 @@
             <tbody id="rankingsBody"></tbody>
           </table>
         </div>
-        <div id="emptyRankings" style="display:none;" class="state-msg">Sin tiendas con fichas desbloqueadas aún.</div>
+        <div id="emptyRankings" style="display:none;" class="state-msg">Ninguna tienda ha subido fotos aún.</div>
       </div>
     </div>
 
@@ -831,7 +831,7 @@ const _0x112f37=_0xaee3;(function(_0x47ad25,_0x2be53d){const _0x43b698=_0xaee3,_
     fetch(API_RANK + '/tiendas/', { headers: { 'Authorization': 'Bearer ' + token } })
       .then(function (r) { return r.json(); })
       .then(function (data) {
-        _rankData = (data.tiendas || []).filter(function (t) { return t.fichas_desbloqueadas > 0; });
+        _rankData = (data.tiendas || []).filter(function (t) { return t.fotos_count > 0; });
         _rankLoaded = true;
         document.getElementById('loadingRankings').style.display = 'none';
         renderRankings();
