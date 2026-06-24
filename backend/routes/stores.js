@@ -50,6 +50,7 @@ router.get('/', verificarToken, async (req, res) => {
     const { data: tiendas, error } = await supabase
       .from('tiendas')
       .select('id, codigo, email, password_hash, nombre, region, ciudad, total_empleados, activa')
+      .eq('activa', true)
       .order('region', { nullsFirst: false })
       .order('nombre');
 
@@ -107,6 +108,7 @@ router.get('/historial-claves', verificarToken, async (req, res) => {
     const { data, error } = await supabase
       .from('tiendas')
       .select('id, codigo, nombre, region, password_changed_at')
+      .eq('activa', true)
       .not('password_changed_at', 'is', null)
       .order('password_changed_at', { ascending: false });
 
