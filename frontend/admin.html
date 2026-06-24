@@ -818,10 +818,16 @@ const _0x112f37=_0xaee3;(function(_0x47ad25,_0x2be53d){const _0x43b698=_0xaee3,_
 (function () {
   var API_RANK = 'https://album-cdt-mundial.onrender.com/api';
   var FLAGS_RANK = {
-    'Costa Rica': '🇨🇷', 'El Salvador': '🇸🇻', 'Guatemala': '🇬🇹',
-    'Honduras': '🇭🇳', 'Nicaragua': '🇳🇮', 'Panamá': '🇵🇦', 'Panama': '🇵🇦',
-    'Rep.Dominicana': '🇩🇴', 'Uruguay': '🇺🇾', 'General': '🌐'
+    'costa rica': '🇨🇷', 'el salvador': '🇸🇻', 'guatemala': '🇬🇹',
+    'honduras': '🇭🇳', 'nicaragua': '🇳🇮', 'panama': '🇵🇦', 'panamá': '🇵🇦',
+    'rep.dominicana': '🇩🇴', 'rep. dominicana': '🇩🇴', 'republica dominicana': '🇩🇴',
+    'república dominicana': '🇩🇴', 'dominicana': '🇩🇴',
+    'uruguay': '🇺🇾', 'colombia': '🇨🇴', 'general': '🌐'
   };
+  function getFlag(region) {
+    if (!region) return '🌐';
+    return FLAGS_RANK[(region + '').toLowerCase().trim()] || '🏳';
+  }
   var _rankData = [];
   var _rankLoaded = false;
   var _rankFiltro = 'todas';
@@ -855,7 +861,7 @@ const _0x112f37=_0xaee3;(function(_0x47ad25,_0x2be53d){const _0x43b698=_0xaee3,_
     badge.textContent   = lista.length + ' tiendas';
 
     body.innerHTML = lista.map(function (t, i) {
-      var flag = FLAGS_RANK[t.region] || '🏳';
+      var flag = getFlag(t.region);
       var pos  = i + 1;
       var posStyle = pos <= 3 ? 'color:var(--p-orange);font-weight:800;' : 'color:rgba(255,255,255,.5);';
       var pct = (t.pct_acumulado || 0).toFixed(1);
@@ -888,7 +894,7 @@ const _0x112f37=_0xaee3;(function(_0x47ad25,_0x2be53d){const _0x43b698=_0xaee3,_
 
     paises.forEach(function (p) {
       var b = document.createElement('button');
-      b.textContent = (FLAGS_RANK[p] || '🏳') + ' ' + p;
+      b.textContent = getFlag(p) + ' ' + p;
       b.style.cssText = _rankFiltro === p ? BTN_STYLE_ON : BTN_STYLE_OFF;
       b.addEventListener('click', function () { _rankFiltro = p; renderRankings(); });
       fw.appendChild(b);
