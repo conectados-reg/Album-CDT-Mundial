@@ -720,64 +720,53 @@ const _0x112f37=_0xaee3;(function(_0x47ad25,_0x2be53d){const _0x43b698=_0xaee3,_
 (function () {
   var API_DES = 'https://album-cdt-mundial.onrender.com/api';
 
-  function extraerUUID(texto) {
-    var m = texto.match(/[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}/i);
-    return m ? m[0] : null;
-  }
+  // Panel de desactivación por código
+  var panel = document.createElement('div');
+  panel.id = 'desactivarPanel';
+  panel.style.cssText = 'background:rgba(255,50,50,.06);border:1.5px solid rgba(255,60,60,.25);border-radius:12px;padding:1rem 1.2rem;margin-bottom:1rem;';
+  panel.innerHTML = '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:.8rem;font-weight:700;letter-spacing:.08em;color:rgba(255,90,90,.9);margin-bottom:.6rem;text-transform:uppercase;">🗑 Desactivar tienda por código</div>'
+    + '<div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;">'
+    + '<input id="inputCodigoDesactivar" type="text" placeholder="Ej: 2002" style="font-family:\'Barlow Condensed\',sans-serif;font-size:.85rem;padding:.35rem .7rem;border-radius:8px;border:1.5px solid rgba(255,255,255,.15);background:rgba(255,255,255,.07);color:#fff;width:110px;outline:none;">'
+    + '<button id="btnConfirmarDesactivar" style="font-family:\'Barlow Condensed\',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:.35rem .9rem;border-radius:20px;border:1.5px solid rgba(255,60,60,.4);background:rgba(255,60,60,.1);color:rgba(255,90,90,.9);cursor:pointer;">Desactivar</button>'
+    + '<span id="msgDesactivar" style="font-family:\'Barlow Condensed\',sans-serif;font-size:.8rem;color:rgba(255,255,255,.4);"></span>'
+    + '</div>';
 
-  function crearBoton(id, empRow, tiendaRow) {
-    var btn = document.createElement('button');
-    btn.className = 'btn-des-tienda';
-    btn.textContent = '🗑 Desactivar tienda';
-    btn.style.cssText = 'font-family:\'Barlow Condensed\',sans-serif;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:.3rem .85rem;border-radius:20px;border:1.5px solid rgba(255,60,60,.35);background:transparent;color:rgba(255,90,90,.8);cursor:pointer;margin-top:.7rem;display:block;';
-    btn.addEventListener('click', function (e) {
-      e.stopPropagation();
-      if (!confirm('¿Desactivar esta tienda? Dejará de aparecer en el login.')) return;
-      btn.disabled = true; btn.textContent = '⏳ Desactivando...';
-      fetch(API_DES + '/tiendas/' + id + '/desactivar', {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
-      }).then(function (r) { return r.json(); }).then(function (d) {
+  // Insertar después de filtroFotosWrap
+  var ref = document.getElementById('filtroFotosWrap');
+  if (ref && ref.parentNode) ref.parentNode.insertBefore(panel, ref.nextSibling);
+
+  document.getElementById('btnConfirmarDesactivar').addEventListener('click', function () {
+    var codigo = (document.getElementById('inputCodigoDesactivar').value || '').trim();
+    if (!codigo) return;
+    if (!confirm('¿Desactivar la tienda con código "' + codigo + '"? Dejará de aparecer en el login y en el panel.')) return;
+
+    var token = localStorage.getItem('token');
+    var msg = document.getElementById('msgDesactivar');
+    msg.textContent = '⏳ Buscando...';
+
+    // Primero buscar el ID por código
+    fetch(API_DES + '/tiendas/', { headers: { 'Authorization': 'Bearer ' + token } })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        var tienda = (data.tiendas || []).find(function (t) { return t.codigo === codigo; });
+        if (!tienda) { msg.textContent = '❌ Código no encontrado'; return; }
+        msg.textContent = '⏳ Desactivando ' + tienda.nombre + '...';
+        return fetch(API_DES + '/tiendas/' + tienda.id + '/desactivar', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token }
+        }).then(function (r) { return r.json(); });
+      })
+      .then(function (d) {
+        if (!d) return;
         if (d.ok) {
-          if (empRow)   empRow.style.display   = 'none';
-          if (tiendaRow) tiendaRow.style.display = 'none';
-        } else { btn.textContent = '❌ Error'; btn.disabled = false; }
-      }).catch(function () { btn.textContent = '❌ Error'; btn.disabled = false; });
-    });
-    return btn;
-  }
-
-  function procesarAcordeon() {
-    var container = document.getElementById('acordeonTiendas');
-    if (!container) return;
-    var filas = container.querySelectorAll('.row-tienda');
-    filas.forEach(function (tiendaRow) {
-      var empRow = tiendaRow.nextElementSibling;
-      if (!empRow || !empRow.classList.contains('row-empleados')) return;
-      var panel = empRow.querySelector('.emp-panel');
-      if (!panel || panel.querySelector('.btn-des-tienda')) return;
-
-      // Extraer UUID del HTML completo del panel o de la fila
-      var id = extraerUUID(empRow.innerHTML) || extraerUUID(tiendaRow.outerHTML);
-      if (!id) return;
-
-      var summary = panel.querySelector('.emp-summary');
-      var btn = crearBoton(id, empRow, tiendaRow);
-      if (summary) summary.after(btn);
-      else panel.appendChild(btn);
-    });
-  }
-
-  // Esperar a que el acordeón cargue su contenido
-  var obs = new MutationObserver(function (muts) {
-    var container = document.getElementById('acordeonTiendas');
-    if (container && container.querySelector('.row-tienda')) {
-      procesarAcordeon();
-      // Mantener observer activo para recargas del acordeón
-    }
+          msg.textContent = '✅ ' + d.tienda + ' desactivada';
+          document.getElementById('inputCodigoDesactivar').value = '';
+        } else {
+          msg.textContent = '❌ ' + (d.error || 'Error');
+        }
+      })
+      .catch(function () { msg.textContent = '❌ Error de conexión'; });
   });
-  var cont = document.getElementById('acordeonTiendas');
-  if (cont) obs.observe(cont, { childList: true, subtree: true });
 })();
 
 // Ocultar grupo "General" del acordeón de sucursales
