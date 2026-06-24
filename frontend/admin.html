@@ -817,16 +817,21 @@ const _0x112f37=_0xaee3;(function(_0x47ad25,_0x2be53d){const _0x43b698=_0xaee3,_
 <script>
 (function () {
   var API_RANK = 'https://album-cdt-mundial.onrender.com/api';
-  var FLAGS_RANK = {
-    'costa rica': '🇨🇷', 'el salvador': '🇸🇻', 'guatemala': '🇬🇹',
-    'honduras': '🇭🇳', 'nicaragua': '🇳🇮', 'panama': '🇵🇦', 'panamá': '🇵🇦',
-    'rep.dominicana': '🇩🇴', 'rep. dominicana': '🇩🇴', 'republica dominicana': '🇩🇴',
-    'república dominicana': '🇩🇴', 'dominicana': '🇩🇴',
-    'uruguay': '🇺🇾', 'colombia': '🇨🇴', 'general': '🌐'
-  };
+  var ISO_RANK = [
+    ['costa rica','cr'],['el salvador','sv'],['guatemala','gt'],
+    ['honduras','hn'],['nicaragua','ni'],['panama','pa'],['panamá','pa'],
+    ['domini','do'],['urugu','uy'],['colombia','co']
+  ];
   function getFlag(region) {
-    if (!region) return '🌐';
-    return FLAGS_RANK[(region + '').toLowerCase().trim()] || '🏳';
+    if (!region) return '<i class="fa-solid fa-globe" style="font-size:.85rem;color:rgba(255,255,255,.3);vertical-align:middle;margin-right:.3rem;"></i>';
+    var r = (region + '').toLowerCase().trim();
+    for (var i = 0; i < ISO_RANK.length; i++) {
+      if (r.indexOf(ISO_RANK[i][0]) !== -1) {
+        var code = ISO_RANK[i][1];
+        return '<img src="https://flagcdn.com/w20/' + code + '.png" alt="' + code + '" style="width:18px;height:auto;border-radius:2px;vertical-align:middle;margin-right:.35rem;">';
+      }
+    }
+    return '<i class="fa-solid fa-globe" style="font-size:.85rem;color:rgba(255,255,255,.3);vertical-align:middle;margin-right:.3rem;"></i>';
   }
   var _rankData = [];
   var _rankLoaded = false;
@@ -868,7 +873,7 @@ const _0x112f37=_0xaee3;(function(_0x47ad25,_0x2be53d){const _0x43b698=_0xaee3,_
       var pctColor = t.pct_acumulado >= 100 ? '#00c853' : t.pct_acumulado >= 80 ? 'var(--p-orange)' : 'rgba(255,255,255,.7)';
       return '<tr>'
         + '<td style="text-align:center;' + posStyle + '">' + pos + '</td>'
-        + '<td>' + flag + ' ' + (t.region || 'General') + '</td>'
+        + '<td>' + flag + (t.region || 'General') + '</td>'
         + '<td style="color:var(--p-orange);font-weight:700;">' + (t.codigo || '—') + '</td>'
         + '<td>' + (t.nombre || '—') + '</td>'
         + '<td style="text-align:center;">' + (t.total_empleados || 0) + '</td>'
@@ -894,7 +899,7 @@ const _0x112f37=_0xaee3;(function(_0x47ad25,_0x2be53d){const _0x43b698=_0xaee3,_
 
     paises.forEach(function (p) {
       var b = document.createElement('button');
-      b.textContent = getFlag(p) + ' ' + p;
+      b.innerHTML = getFlag(p) + p;
       b.style.cssText = _rankFiltro === p ? BTN_STYLE_ON : BTN_STYLE_OFF;
       b.addEventListener('click', function () { _rankFiltro = p; renderRankings(); });
       fw.appendChild(b);
