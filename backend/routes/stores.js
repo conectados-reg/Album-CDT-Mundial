@@ -384,6 +384,27 @@ router.post('/:id/recalcular-fichas', verificarToken, async (req, res) => {
   }
 });
 
+// POST /api/tiendas/desactivar-lista — admin: desactiva tiendas por lista de códigos o región
+router.post('/desactivar-lista', verificarToken, async (req, res) => {
+  if (req.usuario.rol !== 'admin') return res.status(403).json({ error: 'No eres administrador.' });
+
+  const { region, codigos } = req.body;
+
+  try {
+    let query = supabase.from('tiendas').update({ activa: false });
+    if (region)  query = query.eq('region', region);
+    else if (codigos && codigos.length) query = query.in('codigo', codigos);
+    else return res.status(400).json({ error: 'Envía region o codigos.' });
+
+    const { data, error } = await query.select('id, nombre, codigo');
+    if (error) throw error;
+    res.json({ ok: true, desactivadas: (data || []).length, tiendas: data || [] });
+  } catch (err) {
+    console.error('[Desactivar Lista]', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // POST /api/tiendas/:id/desactivar — admin: marca la tienda como inactiva
 router.post('/:id/desactivar', verificarToken, async (req, res) => {
   if (req.usuario.rol !== 'admin') return res.status(403).json({ error: 'No eres administrador.' });
