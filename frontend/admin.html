@@ -394,6 +394,7 @@
     <button class="tab-btn" data-tab="semanas"><i class="fa-solid fa-calendar-week"></i> Semanas</button>
     <button class="tab-btn" data-tab="simulacro"><i class="fa-solid fa-flask"></i> Simulacro</button>
     <button class="tab-btn" data-tab="rankings"><i class="fa-solid fa-trophy"></i> Rankings</button>
+    <button class="tab-btn" data-tab="sin-login"><i class="fa-solid fa-user-slash"></i> Sin Login</button>
   </div>
 
   <div class="container">
@@ -701,6 +702,39 @@
       </div>
     </div>
 
+    <div class="tab-panel" id="tab-sin-login">
+      <div class="info-card">
+        <span class="info-card-icon"><i class="fa-solid fa-user-slash"></i></span>
+        <div class="info-card-text">
+          <h2>Tiendas sin Login</h2>
+          <p>Tiendas activas que nunca han accedido al álbum (aún tienen la contraseña genérica sin cambiar).</p>
+        </div>
+      </div>
+      <div class="table-card">
+        <div class="table-card-header" style="flex-wrap:wrap;gap:.6rem;">
+          <h3><i class="fa-solid fa-user-slash" style="color:#ff6b6b;margin-right:.4rem;font-size:.9rem;"></i>Sin acceso al álbum</h3>
+          <span class="table-count" id="badgeSinLogin"></span>
+          <button id="btnRecargarSinLogin" style="font-family:'Barlow Condensed',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:.35rem .9rem;border-radius:20px;border:1.5px solid rgba(255,255,255,.18);background:transparent;color:rgba(255,255,255,.6);cursor:pointer;">↺ Recargar</button>
+        </div>
+        <div id="loadingSinLogin" class="state-msg">
+          <i class="fa-solid fa-circle-notch fa-spin" style="font-size:1.4rem;color:#ff6b6b;"></i><br>Cargando...
+        </div>
+        <div class="table-wrapper" id="tablaSinLoginWrap" style="display:none;">
+          <table id="tablaSinLogin">
+            <thead><tr>
+              <th style="text-align:center;width:48px;">#</th>
+              <th>País</th>
+              <th>Código</th>
+              <th>Tienda</th>
+              <th style="text-align:center;">HC</th>
+            </tr></thead>
+            <tbody id="sinLoginBody"></tbody>
+          </table>
+        </div>
+        <div id="emptySinLogin" style="display:none;" class="state-msg">¡Todas las tiendas han iniciado sesión!</div>
+      </div>
+    </div>
+
   <!-- Modal ver fotos de tienda (fuera de los tab-panels para que position:fixed funcione) -->
   <div id="fotosAdminModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:1100;align-items:center;justify-content:center;" onclick="if(event.target===this)document.getElementById('fotosAdminModal').style.display='none'">
     <div style="background:linear-gradient(135deg,#0a1628,#0d2045);border:1.5px solid rgba(247,168,0,.3);border-radius:16px;padding:1.5rem;max-width:520px;width:94%;position:relative;max-height:85vh;overflow-y:auto;">
@@ -939,6 +973,81 @@ const _0x112f37=_0xaee3;(function(_0x47ad25,_0x2be53d){const _0x43b698=_0xaee3,_
     _rankLoaded = false;
     _rankFiltro = 'todas';
     cargarRankings();
+  });
+})();
+</script>
+
+<script>
+(function () {
+  var API_SL = 'https://album-cdt-mundial.onrender.com/api';
+  var ISO_SL = [
+    ['costa rica','cr'],['el salvador','sv'],['guatemala','gt'],
+    ['honduras','hn'],['nicaragua','ni'],['panama','pa'],['panamá','pa'],
+    ['domini','do'],['urugu','uy'],['colombia','co']
+  ];
+  function getFlagSL(region) {
+    if (!region) return '<i class="fa-solid fa-globe" style="font-size:.85rem;color:rgba(255,255,255,.3);vertical-align:middle;margin-right:.3rem;"></i>';
+    var r = (region + '').toLowerCase().trim();
+    for (var i = 0; i < ISO_SL.length; i++) {
+      if (r.indexOf(ISO_SL[i][0]) !== -1) {
+        var code = ISO_SL[i][1];
+        return '<img src="https://flagcdn.com/w20/' + code + '.png" alt="' + code + '" style="width:18px;height:auto;border-radius:2px;vertical-align:middle;margin-right:.35rem;">';
+      }
+    }
+    return '<i class="fa-solid fa-globe" style="font-size:.85rem;color:rgba(255,255,255,.3);vertical-align:middle;margin-right:.3rem;"></i>';
+  }
+
+  var _slLoaded = false;
+
+  function cargarSinLogin() {
+    var token = localStorage.getItem('token');
+    document.getElementById('loadingSinLogin').style.display = 'block';
+    document.getElementById('tablaSinLoginWrap').style.display = 'none';
+    document.getElementById('emptySinLogin').style.display = 'none';
+
+    fetch(API_SL + '/tiendas/sin-login', { headers: { 'Authorization': 'Bearer ' + token } })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        document.getElementById('loadingSinLogin').style.display = 'none';
+        var tiendas = data.tiendas || [];
+        var badge = document.getElementById('badgeSinLogin');
+        badge.textContent = tiendas.length + ' tienda' + (tiendas.length !== 1 ? 's' : '');
+
+        if (!tiendas.length) {
+          document.getElementById('emptySinLogin').style.display = 'block';
+          return;
+        }
+
+        var body = document.getElementById('sinLoginBody');
+        body.innerHTML = tiendas.map(function (t, idx) {
+          return '<tr>'
+            + '<td style="text-align:center;color:rgba(255,255,255,.4);">' + (idx + 1) + '</td>'
+            + '<td>' + getFlagSL(t.region) + (t.region || '—') + '</td>'
+            + '<td style="font-family:monospace;font-size:.85rem;">' + (t.codigo || '—') + '</td>'
+            + '<td>' + (t.nombre || '—') + '</td>'
+            + '<td style="text-align:center;">' + (t.total_empleados || 0) + '</td>'
+            + '</tr>';
+        }).join('');
+
+        document.getElementById('tablaSinLoginWrap').style.display = 'block';
+        _slLoaded = true;
+      })
+      .catch(function () {
+        document.getElementById('loadingSinLogin').style.display = 'none';
+        document.getElementById('emptySinLogin').style.display = 'block';
+        document.getElementById('emptySinLogin').textContent = '❌ Error al cargar datos.';
+      });
+  }
+
+  document.querySelectorAll('.tab-btn[data-tab="sin-login"]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      if (!_slLoaded) cargarSinLogin();
+    });
+  });
+
+  document.getElementById('btnRecargarSinLogin').addEventListener('click', function () {
+    _slLoaded = false;
+    cargarSinLogin();
   });
 })();
 </script>

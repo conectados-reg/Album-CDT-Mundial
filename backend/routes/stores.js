@@ -120,6 +120,28 @@ router.get('/historial-claves', verificarToken, async (req, res) => {
   }
 });
 
+// GET /api/tiendas/sin-login — admin: tiendas que nunca cambiaron la clave genérica
+router.get('/sin-login', verificarToken, async (req, res) => {
+  if (req.usuario.rol !== 'admin') return res.status(403).json({ error: 'No eres administrador.' });
+
+  try {
+    const { data, error } = await supabase
+      .from('tiendas')
+      .select('id, codigo, nombre, region, total_empleados')
+      .eq('activa', true)
+      .or('password_hash.eq.sport123,password_hash.is.null')
+      .order('region', { nullsFirst: false })
+      .order('nombre');
+
+    if (error) throw error;
+    res.setHeader('Cache-Control', 'no-store');
+    res.json({ tiendas: data || [], total: (data || []).length });
+  } catch (err) {
+    console.error('[Sin Login]', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/tiendas/rankings — admin: ranking por porcentaje acumulativo
 router.get('/rankings', verificarToken, async (req, res) => {
   if (req.usuario.rol !== 'admin') return res.status(403).json({ error: 'No eres administrador.' });
