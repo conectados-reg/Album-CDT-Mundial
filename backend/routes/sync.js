@@ -134,11 +134,16 @@ router.post('/resultados', verificarSyncKey, async (req, res) => {
 
     const pct = parseFloat(porcentaje) || 0;
 
-    const { error: upsertErr } = await supabase.from('resultados_tienda').upsert(
-      { tienda_id: tienda.id, semana_id: semana.id, porcentaje_cumplido: pct },
-      { onConflict: 'tienda_id,semana_id' }
+    // DELETE + INSERT en lugar de upsert para evitar duplicados
+    await supabase.from('resultados_tienda')
+      .delete()
+      .eq('tienda_id', tienda.id)
+      .eq('semana_id', semana.id);
+
+    const { error: insertErr } = await supabase.from('resultados_tienda').insert(
+      { tienda_id: tienda.id, semana_id: semana.id, porcentaje_cumplido: pct }
     );
-    if (upsertErr) throw new Error('Error guardando resultado: ' + upsertErr.message);
+    if (insertErr) throw new Error('Error guardando resultado: ' + insertErr.message);
 
     let desbloqueadas = 0;
     if (pct >= 100) {

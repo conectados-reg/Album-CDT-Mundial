@@ -23,7 +23,7 @@ async function buildMaps(tiendaIds) {
     { data: fichasTot, error: ftErr },
     { data: fichasFotos, error: ffErr },
   ] = await Promise.all([
-    supabase.from('resultados_tienda').select('tienda_id, porcentaje_cumplido').in('tienda_id', tiendaIds),
+    supabase.from('resultados_tienda').select('tienda_id, semana_id, porcentaje_cumplido').in('tienda_id', tiendaIds),
     supabase.from('fichas_tienda').select('tienda_id').eq('desbloqueado', true).in('tienda_id', tiendaIds),
     supabase.from('fichas_tienda').select('tienda_id').in('tienda_id', tiendaIds),
     supabase.from('fichas_tienda').select('tienda_id').not('foto_url', 'is', null).in('tienda_id', tiendaIds),
@@ -33,11 +33,20 @@ async function buildMaps(tiendaIds) {
   if (ftErr) throw ftErr;
   if (ffErr) throw ffErr;
 
-  const acumulado = {};
+  // Deduplicar: si hay múltiples filas para la misma tienda+semana, queda el mayor valor
+  const mejorPorSemana = {};
   for (const r of (resultados || [])) {
-    if (!acumulado[r.tienda_id]) acumulado[r.tienda_id] = { suma: 0, semanas: 0 };
-    acumulado[r.tienda_id].suma += r.porcentaje_cumplido;
-    acumulado[r.tienda_id].semanas++;
+    const key = r.tienda_id + '|' + r.semana_id;
+    if (mejorPorSemana[key] == null || r.porcentaje_cumplido > mejorPorSemana[key]) {
+      mejorPorSemana[key] = r.porcentaje_cumplido;
+    }
+  }
+  const acumulado = {};
+  for (const [key, pct] of Object.entries(mejorPorSemana)) {
+    const tienda_id = key.split('|')[0];
+    if (!acumulado[tienda_id]) acumulado[tienda_id] = { suma: 0, semanas: 0 };
+    acumulado[tienda_id].suma += pct;
+    acumulado[tienda_id].semanas++;
   }
 
   const fichasDesbCount = {};
@@ -79,7 +88,7 @@ router.get('/publico', async (req, res) => {
     while (true) {
       const { data: lote, error: lErr } = await supabase
         .from('resultados_tienda')
-        .select('tienda_id, porcentaje_cumplido')
+        .select('tienda_id, semana_id, porcentaje_cumplido')
         .range(desde, desde + 999);
       if (lErr || !lote || lote.length === 0) break;
       todosResultados.push(...lote);
@@ -87,10 +96,19 @@ router.get('/publico', async (req, res) => {
       desde += 1000;
     }
 
-    const resPorTienda = {};
+    // Deduplicar: si hay múltiples filas para la misma tienda+semana, queda el mayor valor
+    const mejorPorSemana = {};
     for (const r of todosResultados) {
-      if (!resPorTienda[r.tienda_id]) resPorTienda[r.tienda_id] = [];
-      resPorTienda[r.tienda_id].push(r.porcentaje_cumplido);
+      const key = r.tienda_id + '|' + r.semana_id;
+      if (mejorPorSemana[key] == null || r.porcentaje_cumplido > mejorPorSemana[key]) {
+        mejorPorSemana[key] = r.porcentaje_cumplido;
+      }
+    }
+    const resPorTienda = {};
+    for (const [key, pct] of Object.entries(mejorPorSemana)) {
+      const tienda_id = key.split('|')[0];
+      if (!resPorTienda[tienda_id]) resPorTienda[tienda_id] = [];
+      resPorTienda[tienda_id].push(pct);
     }
 
     const ranking = tiendas

@@ -160,7 +160,7 @@ router.get('/rankings', verificarToken, async (req, res) => {
     while (true) {
       const { data: lote, error: lErr } = await supabase
         .from('resultados_tienda')
-        .select('tienda_id, porcentaje_cumplido')
+        .select('tienda_id, semana_id, porcentaje_cumplido')
         .range(desde, desde + LOTE - 1);
       if (lErr) throw lErr;
       if (!lote || lote.length === 0) break;
@@ -187,11 +187,19 @@ router.get('/rankings', verificarToken, async (req, res) => {
       desde += LOTE;
     }
 
-    // Agrupar resultados por tienda
-    const resPorTienda = {};
+    // Deduplicar: si hay múltiples filas para la misma tienda+semana, queda el mayor valor
+    const mejorPorSemana = {};
     for (const r of todosResultados) {
-      if (!resPorTienda[r.tienda_id]) resPorTienda[r.tienda_id] = [];
-      resPorTienda[r.tienda_id].push(r.porcentaje_cumplido);
+      const key = r.tienda_id + '|' + r.semana_id;
+      if (mejorPorSemana[key] == null || r.porcentaje_cumplido > mejorPorSemana[key]) {
+        mejorPorSemana[key] = r.porcentaje_cumplido;
+      }
+    }
+    const resPorTienda = {};
+    for (const [key, pct] of Object.entries(mejorPorSemana)) {
+      const tienda_id = key.split('|')[0];
+      if (!resPorTienda[tienda_id]) resPorTienda[tienda_id] = [];
+      resPorTienda[tienda_id].push(pct);
     }
 
     const ranking = (tiendas || [])
