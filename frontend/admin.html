@@ -716,6 +716,7 @@
           <span class="table-count" id="badgeSinLogin"></span>
           <button id="btnRecargarSinLogin" style="font-family:'Barlow Condensed',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:.35rem .9rem;border-radius:20px;border:1.5px solid rgba(255,255,255,.18);background:transparent;color:rgba(255,255,255,.6);cursor:pointer;">↺ Recargar</button>
         </div>
+        <div id="filtrosPaisSinLogin" style="display:none;flex-wrap:wrap;gap:.5rem;padding:.8rem 1rem .2rem;"></div>
         <div id="loadingSinLogin" class="state-msg">
           <i class="fa-solid fa-circle-notch fa-spin" style="font-size:1.4rem;color:#ff6b6b;"></i><br>Cargando...
         </div>
@@ -997,45 +998,90 @@ const _0x112f37=_0xaee3;(function(_0x47ad25,_0x2be53d){const _0x43b698=_0xaee3,_
     return '<i class="fa-solid fa-globe" style="font-size:.85rem;color:rgba(255,255,255,.3);vertical-align:middle;margin-right:.3rem;"></i>';
   }
 
+  var _slData   = [];
   var _slLoaded = false;
+  var _slFiltro = 'todas';
+
+  var SL_ON  = 'font-family:\'Barlow Condensed\',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:.35rem .9rem;border-radius:20px;border:1.5px solid rgba(255,107,107,.4);background:rgba(255,107,107,.18);color:#ff6b6b;cursor:pointer;';
+  var SL_OFF = 'font-family:\'Barlow Condensed\',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:.35rem .9rem;border-radius:20px;border:1.5px solid rgba(255,255,255,.08);background:transparent;color:rgba(255,255,255,.5);cursor:pointer;';
+
+  function renderSinLogin() {
+    var lista = _slFiltro === 'todas'
+      ? _slData.slice()
+      : _slData.filter(function (t) { return t.region === _slFiltro; });
+
+    lista.sort(function (a, b) { return (a.nombre || '').localeCompare(b.nombre || ''); });
+
+    var body  = document.getElementById('sinLoginBody');
+    var badge = document.getElementById('badgeSinLogin');
+    var empty = document.getElementById('emptySinLogin');
+    var wrap  = document.getElementById('tablaSinLoginWrap');
+
+    if (!lista.length) {
+      wrap.style.display  = 'none';
+      empty.style.display = 'block';
+      empty.textContent   = _slFiltro === 'todas' ? '¡Todas las tiendas han iniciado sesión!' : 'Ninguna tienda sin login en este país.';
+      badge.textContent   = '0 tiendas';
+      return;
+    }
+    empty.style.display = 'none';
+    wrap.style.display  = '';
+    badge.textContent   = lista.length + ' tienda' + (lista.length !== 1 ? 's' : '');
+
+    body.innerHTML = lista.map(function (t, idx) {
+      return '<tr>'
+        + '<td style="text-align:center;color:rgba(255,255,255,.4);">' + (idx + 1) + '</td>'
+        + '<td>' + getFlagSL(t.region) + (t.region || '—') + '</td>'
+        + '<td style="font-family:monospace;font-size:.85rem;color:var(--p-orange);font-weight:700;">' + (t.codigo || '—') + '</td>'
+        + '<td>' + (t.nombre || '—') + '</td>'
+        + '<td style="text-align:center;">' + (t.total_empleados || 0) + '</td>'
+        + '</tr>';
+    }).join('');
+
+    // Botones de filtro por país
+    var paises = [];
+    _slData.forEach(function (t) { if (t.region && paises.indexOf(t.region) === -1) paises.push(t.region); });
+    paises.sort();
+    var fw = document.getElementById('filtrosPaisSinLogin');
+    fw.innerHTML = '';
+    fw.style.display = 'flex';
+
+    var btnT = document.createElement('button');
+    btnT.textContent = 'Todos';
+    btnT.style.cssText = _slFiltro === 'todas' ? SL_ON : SL_OFF;
+    btnT.addEventListener('click', function () { _slFiltro = 'todas'; renderSinLogin(); });
+    fw.appendChild(btnT);
+
+    paises.forEach(function (p) {
+      var b = document.createElement('button');
+      b.innerHTML = getFlagSL(p) + p;
+      b.style.cssText = _slFiltro === p ? SL_ON : SL_OFF;
+      b.addEventListener('click', function () { _slFiltro = p; renderSinLogin(); });
+      fw.appendChild(b);
+    });
+  }
 
   function cargarSinLogin() {
     var token = localStorage.getItem('token');
-    document.getElementById('loadingSinLogin').style.display = 'block';
+    _slFiltro = 'todas';
+    document.getElementById('loadingSinLogin').style.display  = 'block';
     document.getElementById('tablaSinLoginWrap').style.display = 'none';
-    document.getElementById('emptySinLogin').style.display = 'none';
+    document.getElementById('emptySinLogin').style.display    = 'none';
+    document.getElementById('filtrosPaisSinLogin').style.display = 'none';
 
     fetch(API_SL + '/tiendas/sin-login', { headers: { 'Authorization': 'Bearer ' + token } })
       .then(function (r) { return r.json(); })
       .then(function (data) {
         document.getElementById('loadingSinLogin').style.display = 'none';
-        var tiendas = data.tiendas || [];
-        var badge = document.getElementById('badgeSinLogin');
-        badge.textContent = tiendas.length + ' tienda' + (tiendas.length !== 1 ? 's' : '');
-
-        if (!tiendas.length) {
-          document.getElementById('emptySinLogin').style.display = 'block';
-          return;
-        }
-
-        var body = document.getElementById('sinLoginBody');
-        body.innerHTML = tiendas.map(function (t, idx) {
-          return '<tr>'
-            + '<td style="text-align:center;color:rgba(255,255,255,.4);">' + (idx + 1) + '</td>'
-            + '<td>' + getFlagSL(t.region) + (t.region || '—') + '</td>'
-            + '<td style="font-family:monospace;font-size:.85rem;">' + (t.codigo || '—') + '</td>'
-            + '<td>' + (t.nombre || '—') + '</td>'
-            + '<td style="text-align:center;">' + (t.total_empleados || 0) + '</td>'
-            + '</tr>';
-        }).join('');
-
-        document.getElementById('tablaSinLoginWrap').style.display = 'block';
+        _slData   = data.tiendas || [];
         _slLoaded = true;
+        renderSinLogin();
       })
       .catch(function () {
         document.getElementById('loadingSinLogin').style.display = 'none';
-        document.getElementById('emptySinLogin').style.display = 'block';
-        document.getElementById('emptySinLogin').textContent = '❌ Error al cargar datos.';
+        var empty = document.getElementById('emptySinLogin');
+        empty.style.display = 'block';
+        empty.textContent   = '❌ Error al cargar datos.';
       });
   }
 
