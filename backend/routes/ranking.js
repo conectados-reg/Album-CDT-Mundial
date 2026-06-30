@@ -61,6 +61,65 @@ function rankSort(a, b) {
   return b.fichas_desbloqueadas - a.fichas_desbloqueadas;
 }
 
+// GET /api/ranking/publico — sin auth, para la página pública compartible
+router.get('/publico', async (req, res) => {
+  try {
+    const { data: tiendas, error: tErr } = await supabase
+      .from('tiendas')
+      .select('id, nombre, region, codigo, total_empleados')
+      .eq('activa', true)
+      .order('nombre');
+    if (tErr) throw tErr;
+    if (!tiendas || tiendas.length === 0)
+      return res.json({ ranking: [], paises: [], total: 0 });
+
+    // Resultados en lotes
+    const todosResultados = [];
+    let desde = 0;
+    while (true) {
+      const { data: lote, error: lErr } = await supabase
+        .from('resultados_tienda')
+        .select('tienda_id, porcentaje_cumplido')
+        .range(desde, desde + 999);
+      if (lErr || !lote || lote.length === 0) break;
+      todosResultados.push(...lote);
+      if (lote.length < 1000) break;
+      desde += 1000;
+    }
+
+    const resPorTienda = {};
+    for (const r of todosResultados) {
+      if (!resPorTienda[r.tienda_id]) resPorTienda[r.tienda_id] = [];
+      resPorTienda[r.tienda_id].push(r.porcentaje_cumplido);
+    }
+
+    const ranking = tiendas
+      .map(t => {
+        const semanas = resPorTienda[t.id] || [];
+        const suma = semanas.reduce((a, b) => a + (b || 0), 0);
+        const pct_acumulado = Math.round((suma / 6) * 10) / 10;
+        return {
+          codigo: t.codigo,
+          nombre: t.nombre,
+          region: t.region || 'General',
+          total_empleados: t.total_empleados || 0,
+          pct_acumulado,
+          semanas_con_data: semanas.length,
+        };
+      })
+      .filter(t => t.semanas_con_data > 0)
+      .sort((a, b) => b.pct_acumulado - a.pct_acumulado);
+
+    const paises = [...new Set(ranking.map(t => t.region))].sort();
+
+    res.setHeader('Cache-Control', 'public, max-age=120');
+    res.json({ ranking, paises, total: ranking.length, actualizado: new Date().toISOString() });
+  } catch (err) {
+    console.error('[Ranking Público]', err.message);
+    res.status(500).json({ error: 'Error al cargar el ranking.' });
+  }
+});
+
 // GET /api/ranking/nacional
 router.get('/nacional', verificarToken, async (req, res) => {
   if (req.usuario.rol !== 'tienda')

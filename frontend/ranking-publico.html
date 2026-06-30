@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ranking CDT Mundial · SLA Corp</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root {
+      --gold:   #f7a800;
+      --silver: #b0b8c8;
+      --bronze: #cd7f32;
+      --green:  #00c853;
+      --bg:     #050e1f;
+      --card:   #0a1628;
+      --border: rgba(247,168,0,.18);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: #fff;
+      font-family: 'Barlow', sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      background: linear-gradient(135deg, #060f22 0%, #0a1a3a 100%);
+      border-bottom: 2px solid var(--border);
+      padding: 1.5rem 1rem 1.2rem;
+      text-align: center;
+    }
+    .header-logo {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.35);
+      margin-bottom: .4rem;
+    }
+    .header h1 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: clamp(1.8rem, 6vw, 3rem);
+      font-weight: 900;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      line-height: 1;
+    }
+    .header h1 span { color: var(--gold); }
+    .header-sub {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .85rem;
+      font-weight: 600;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.45);
+      margin-top: .4rem;
+    }
+    .header-updated {
+      font-size: .75rem;
+      color: rgba(255,255,255,.25);
+      margin-top: .6rem;
+    }
+
+    /* ── FILTROS ── */
+    .filtros-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+      justify-content: center;
+      padding: 1rem 1rem .5rem;
+    }
+    .filtro-btn {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      padding: .4rem 1rem;
+      border-radius: 20px;
+      cursor: pointer;
+      border: 1.5px solid rgba(255,255,255,.1);
+      background: transparent;
+      color: rgba(255,255,255,.45);
+      transition: all .15s;
+      display: flex;
+      align-items: center;
+      gap: .35rem;
+    }
+    .filtro-btn.active {
+      border-color: rgba(247,168,0,.5);
+      background: rgba(247,168,0,.15);
+      color: var(--gold);
+    }
+    .filtro-btn img { width: 16px; height: auto; border-radius: 2px; }
+
+    /* ── CONTENIDO ── */
+    .content { max-width: 900px; margin: 0 auto; padding: .5rem 1rem 3rem; }
+
+    /* ── PODIO (top 3) ── */
+    .podio {
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      gap: 1rem;
+      padding: 1.5rem 0 .5rem;
+    }
+    .podio-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .4rem;
+      flex: 1;
+      max-width: 200px;
+    }
+    .podio-item.pos-1 { order: 2; }
+    .podio-item.pos-2 { order: 1; }
+    .podio-item.pos-3 { order: 3; }
+    .podio-medal {
+      font-size: 2rem;
+      line-height: 1;
+    }
+    .podio-box {
+      width: 100%;
+      border-radius: 12px 12px 0 0;
+      padding: .9rem .7rem .6rem;
+      text-align: center;
+      border: 1.5px solid;
+    }
+    .pos-1 .podio-box { background: rgba(247,168,0,.12); border-color: rgba(247,168,0,.4); height: 130px; }
+    .pos-2 .podio-box { background: rgba(176,184,200,.08); border-color: rgba(176,184,200,.3); height: 100px; }
+    .pos-3 .podio-box { background: rgba(205,127,50,.08); border-color: rgba(205,127,50,.3); height: 80px; }
+    .podio-pos {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 1.4rem;
+    }
+    .pos-1 .podio-pos { color: var(--gold); }
+    .pos-2 .podio-pos { color: var(--silver); }
+    .pos-3 .podio-pos { color: var(--bronze); }
+    .podio-nombre {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: .8rem;
+      letter-spacing: .03em;
+      color: rgba(255,255,255,.85);
+      margin-top: .15rem;
+      line-height: 1.2;
+    }
+    .podio-pct {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 800;
+      font-size: 1.1rem;
+      margin-top: .2rem;
+    }
+    .pos-1 .podio-pct { color: var(--gold); }
+    .pos-2 .podio-pct { color: var(--silver); }
+    .pos-3 .podio-pct { color: var(--bronze); }
+    .podio-flag { margin-bottom: .1rem; }
+    .podio-flag img { width: 20px; height: auto; border-radius: 2px; }
+
+    /* ── TABLA ── */
+    .tabla-card {
+      background: var(--card);
+      border: 1.5px solid rgba(255,255,255,.06);
+      border-radius: 14px;
+      overflow: hidden;
+      margin-top: 1.2rem;
+    }
+    .tabla-header {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      padding: .9rem 1.2rem;
+      border-bottom: 1px solid rgba(255,255,255,.05);
+    }
+    .tabla-header h2 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.7);
+    }
+    .tabla-badge {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .7rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      padding: .15rem .55rem;
+      border-radius: 20px;
+      background: rgba(247,168,0,.12);
+      border: 1px solid rgba(247,168,0,.3);
+      color: var(--gold);
+    }
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .7rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.3);
+      padding: .55rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,.05);
+    }
+    tbody tr {
+      border-bottom: 1px solid rgba(255,255,255,.03);
+      transition: background .12s;
+    }
+    tbody tr:hover { background: rgba(255,255,255,.03); }
+    tbody tr:last-child { border-bottom: none; }
+    td {
+      padding: .65rem 1rem;
+      font-size: .875rem;
+      vertical-align: middle;
+    }
+    .td-pos {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 1rem;
+      text-align: center;
+      width: 44px;
+      color: rgba(255,255,255,.3);
+    }
+    .td-pos.p1 { color: var(--gold); }
+    .td-pos.p2 { color: var(--silver); }
+    .td-pos.p3 { color: var(--bronze); }
+    .td-pais { white-space: nowrap; }
+    .td-pais img { width: 18px; height: auto; border-radius: 2px; vertical-align: middle; margin-right: .35rem; }
+    .td-codigo {
+      font-family: monospace;
+      font-size: .8rem;
+      color: var(--gold);
+      font-weight: 700;
+    }
+    .td-pct {
+      text-align: right;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 800;
+      font-size: 1rem;
+    }
+    .pct-green  { color: var(--green); }
+    .pct-orange { color: var(--gold); }
+    .pct-dim    { color: rgba(255,255,255,.55); }
+
+    /* barra de progreso inline */
+    .pct-bar-wrap { display: flex; align-items: center; gap: .5rem; }
+    .pct-bar {
+      flex: 1;
+      height: 4px;
+      background: rgba(255,255,255,.07);
+      border-radius: 2px;
+      overflow: hidden;
+      min-width: 40px;
+    }
+    .pct-bar-fill { height: 100%; border-radius: 2px; transition: width .4s; }
+
+    /* ── LOADING / EMPTY ── */
+    .state-msg {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: rgba(255,255,255,.3);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .95rem;
+      letter-spacing: .05em;
+    }
+    .state-msg i { font-size: 1.6rem; margin-bottom: .6rem; display: block; }
+
+    /* ── FOOTER ── */
+    .footer {
+      text-align: center;
+      padding: 1.5rem 1rem;
+      font-size: .7rem;
+      color: rgba(255,255,255,.2);
+      font-family: 'Barlow Condensed', sans-serif;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      border-top: 1px solid rgba(255,255,255,.04);
+    }
+
+    @media (max-width: 600px) {
+      .podio { gap: .5rem; }
+      td, thead th { padding: .55rem .6rem; }
+      .td-codigo { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">SLA Corp · Álbum Estrellas</div>
+  <h1>Ranking <span>CDT Mundial</span></h1>
+  <div class="header-sub">Clasificación por cumplimiento acumulativo</div>
+  <div class="header-updated" id="headerActualizado">Cargando...</div>
+</div>
+
+<div class="filtros-wrap" id="filtrosWrap" style="display:none;"></div>
+
+<div class="content">
+  <div id="loadingState" class="state-msg">
+    <i class="fa-solid fa-circle-notch fa-spin" style="color:var(--gold);"></i>
+    Cargando ranking...
+  </div>
+
+  <div id="podioWrap" style="display:none;"></div>
+
+  <div id="tablaWrap" style="display:none;" class="tabla-card">
+    <div class="tabla-header">
+      <i class="fa-solid fa-list-ol" style="color:var(--gold);font-size:.9rem;"></i>
+      <h2>Clasificación completa</h2>
+      <span class="tabla-badge" id="tablaBadge"></span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align:center;">#</th>
+          <th>País</th>
+          <th>Código</th>
+          <th>Tienda</th>
+          <th style="text-align:right;">% Acumulado</th>
+        </tr>
+      </thead>
+      <tbody id="tablaBody"></tbody>
+    </table>
+  </div>
+
+  <div id="emptyState" class="state-msg" style="display:none;">
+    <i class="fa-solid fa-trophy"></i>
+    Aún no hay datos de ranking disponibles.
+  </div>
+</div>
+
+<div class="footer">© SLA Corp · Álbum CDT Mundial · Actualización automática cada 2 min</div>
+
+<script>
+(function () {
+  var API = 'https://album-cdt-mundial.onrender.com/api';
+  var ISO = [
+    ['costa rica','cr'],['el salvador','sv'],['guatemala','gt'],
+    ['honduras','hn'],['nicaragua','ni'],['panama','pa'],['panamá','pa'],
+    ['domini','do'],['urugu','uy'],['colombia','co']
+  ];
+
+  function getIso(region) {
+    var r = (region + '').toLowerCase().trim();
+    for (var i = 0; i < ISO.length; i++) {
+      if (r.indexOf(ISO[i][0]) !== -1) return ISO[i][1];
+    }
+    return null;
+  }
+  function getFlag(region) {
+    var code = getIso(region);
+    if (!code) return '<i class="fa-solid fa-globe" style="font-size:.8rem;color:rgba(255,255,255,.25);vertical-align:middle;margin-right:.3rem;"></i>';
+    return '<img src="https://flagcdn.com/w20/' + code + '.png" alt="' + code + '">';
+  }
+
+  var _data   = [];
+  var _filtro = 'todos';
+
+  function pctColor(pct) {
+    if (pct >= 100) return 'pct-green';
+    if (pct >= 80)  return 'pct-orange';
+    return 'pct-dim';
+  }
+
+  function render() {
+    var lista = _filtro === 'todos'
+      ? _data.slice()
+      : _data.filter(function (t) { return t.region === _filtro; });
+
+    var podioWrap  = document.getElementById('podioWrap');
+    var tablaWrap  = document.getElementById('tablaWrap');
+    var emptyState = document.getElementById('emptyState');
+    var badge      = document.getElementById('tablaBadge');
+    var body       = document.getElementById('tablaBody');
+
+    if (!lista.length) {
+      podioWrap.style.display  = 'none';
+      tablaWrap.style.display  = 'none';
+      emptyState.style.display = 'block';
+      return;
+    }
+    emptyState.style.display = 'none';
+
+    // — Podio top 3 —
+    var top3 = lista.slice(0, 3);
+    var medals = ['🥇','🥈','🥉'];
+    var posOrders = ['pos-1','pos-2','pos-3'];
+    podioWrap.style.display = '';
+    podioWrap.innerHTML = '<div class="podio">' + top3.map(function (t, i) {
+      var fl = getIso(t.region)
+        ? '<div class="podio-flag"><img src="https://flagcdn.com/w20/' + getIso(t.region) + '.png"></div>'
+        : '';
+      return '<div class="podio-item ' + posOrders[i] + '">'
+        + '<div class="podio-medal">' + medals[i] + '</div>'
+        + '<div class="podio-box">'
+        + fl
+        + '<div class="podio-pos">' + (i+1) + '</div>'
+        + '<div class="podio-nombre">' + t.nombre + '</div>'
+        + '<div class="podio-pct">' + t.pct_acumulado.toFixed(1) + '%</div>'
+        + '</div></div>';
+    }).join('') + '</div>';
+
+    // — Tabla completa —
+    tablaWrap.style.display = '';
+    badge.textContent = lista.length + ' tiendas';
+    var maxPct = lista[0] ? lista[0].pct_acumulado : 100;
+    body.innerHTML = lista.map(function (t, i) {
+      var pos = i + 1;
+      var posClass = pos === 1 ? 'p1' : pos === 2 ? 'p2' : pos === 3 ? 'p3' : '';
+      var barW = maxPct > 0 ? Math.round((t.pct_acumulado / maxPct) * 100) : 0;
+      var barColor = t.pct_acumulado >= 100 ? '#00c853' : t.pct_acumulado >= 80 ? '#f7a800' : 'rgba(255,255,255,.25)';
+      return '<tr>'
+        + '<td class="td-pos ' + posClass + '">' + pos + '</td>'
+        + '<td class="td-pais">' + getFlag(t.region) + (t.region || '—') + '</td>'
+        + '<td class="td-codigo">' + (t.codigo || '—') + '</td>'
+        + '<td style="font-size:.875rem;">' + (t.nombre || '—') + '</td>'
+        + '<td class="td-pct ' + pctColor(t.pct_acumulado) + '">'
+        + '<div class="pct-bar-wrap">'
+        + '<div class="pct-bar"><div class="pct-bar-fill" style="width:' + barW + '%;background:' + barColor + ';"></div></div>'
+        + t.pct_acumulado.toFixed(1) + '%'
+        + '</div>'
+        + '</td>'
+        + '</tr>';
+    }).join('');
+
+    // — Filtros por país —
+    var paises = [];
+    _data.forEach(function (t) { if (t.region && paises.indexOf(t.region) === -1) paises.push(t.region); });
+    paises.sort();
+    var fw = document.getElementById('filtrosWrap');
+    fw.style.display = 'flex';
+    fw.innerHTML = '';
+
+    function mkBtn(label, key, html) {
+      var b = document.createElement('button');
+      b.className = 'filtro-btn' + (key === _filtro ? ' active' : '');
+      b.innerHTML = (html || '') + label;
+      b.addEventListener('click', function () { _filtro = key; render(); });
+      fw.appendChild(b);
+    }
+    mkBtn('Todos', 'todos', '<i class="fa-solid fa-globe" style="font-size:.75rem;"></i>');
+    paises.forEach(function (p) {
+      var code = getIso(p);
+      var flagHtml = code ? '<img src="https://flagcdn.com/w20/' + code + '.png">' : '';
+      mkBtn(p, p, flagHtml);
+    });
+  }
+
+  function cargar() {
+    fetch(API + '/ranking/publico')
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        document.getElementById('loadingState').style.display = 'none';
+        _data = (data.ranking || []);
+
+        if (data.actualizado) {
+          var d = new Date(data.actualizado);
+          document.getElementById('headerActualizado').textContent =
+            'Actualizado: ' + d.toLocaleDateString('es', { day:'2-digit', month:'short', year:'numeric' })
+            + ' ' + d.toLocaleTimeString('es', { hour:'2-digit', minute:'2-digit' });
+        }
+
+        render();
+      })
+      .catch(function () {
+        document.getElementById('loadingState').innerHTML =
+          '<i class="fa-solid fa-triangle-exclamation" style="color:#ff6b6b;"></i>Error al cargar el ranking. Intenta de nuevo.';
+      });
+  }
+
+  cargar();
+  // Auto-refresh cada 2 minutos
+  setInterval(cargar, 120000);
+})();
+</script>
+</body>
+</html>
