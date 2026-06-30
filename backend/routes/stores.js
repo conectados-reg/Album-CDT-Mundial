@@ -120,6 +120,36 @@ router.get('/historial-claves', verificarToken, async (req, res) => {
   }
 });
 
+// GET /api/tiendas/debug-ranking/:codigo — diagnóstico temporal de datos de una tienda
+router.get('/debug-ranking/:codigo', verificarToken, async (req, res) => {
+  if (req.usuario.rol !== 'admin') return res.status(403).json({ error: 'No eres administrador.' });
+  try {
+    const { data: tienda } = await supabase
+      .from('tiendas').select('id, nombre, region, codigo, total_empleados')
+      .eq('codigo', req.params.codigo).maybeSingle();
+    if (!tienda) return res.status(404).json({ error: 'Tienda no encontrada.' });
+
+    const { data: resultados } = await supabase
+      .from('resultados_tienda')
+      .select('semana_id, porcentaje_cumplido')
+      .eq('tienda_id', tienda.id)
+      .order('semana_id');
+
+    const { data: semanas } = await supabase.from('semanas').select('id, numero').order('numero');
+    const semanaMap = {};
+    (semanas || []).forEach(s => { semanaMap[s.id] = s.numero; });
+
+    const filas = (resultados || []).map(r => ({
+      semana: semanaMap[r.semana_id] || r.semana_id,
+      porcentaje_cumplido: r.porcentaje_cumplido
+    }));
+
+    const suma = filas.reduce((a, r) => a + r.porcentaje_cumplido, 0);
+    res.json({ tienda: tienda.nombre, codigo: tienda.codigo, region: tienda.region,
+      total_filas: filas.length, filas, suma_total: suma, pct_acumulado_calculado: Math.round((suma/6)*10)/10 });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 // GET /api/tiendas/sin-login — admin: tiendas que nunca cambiaron la clave genérica
 router.get('/sin-login', verificarToken, async (req, res) => {
   if (req.usuario.rol !== 'admin') return res.status(403).json({ error: 'No eres administrador.' });
