@@ -408,6 +408,34 @@ router.post('/:id/recalcular-fichas', verificarToken, async (req, res) => {
   }
 });
 
+// POST /api/tiendas/reactivar — admin: reactiva una tienda por código
+router.post('/reactivar', verificarToken, async (req, res) => {
+  if (req.usuario.rol !== 'admin') return res.status(403).json({ error: 'No eres administrador.' });
+
+  const { codigo } = req.body;
+  if (!codigo) return res.status(400).json({ error: 'Envía el campo codigo.' });
+
+  try {
+    const { data: tienda, error: tErr } = await supabase
+      .from('tiendas')
+      .select('id, nombre, activa')
+      .eq('codigo', codigo.toString().trim())
+      .maybeSingle();
+
+    if (tErr) throw tErr;
+    if (!tienda) return res.status(404).json({ error: `No existe ninguna tienda con código "${codigo}".` });
+    if (tienda.activa) return res.json({ ok: true, ya_activa: true, tienda: tienda.nombre, mensaje: 'La tienda ya estaba activa.' });
+
+    const { error } = await supabase.from('tiendas').update({ activa: true }).eq('id', tienda.id);
+    if (error) throw error;
+
+    res.json({ ok: true, ya_activa: false, tienda: tienda.nombre, mensaje: 'Tienda reactivada correctamente.' });
+  } catch (err) {
+    console.error('[Reactivar]', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // POST /api/tiendas/desactivar-lista — admin: desactiva tiendas por lista de códigos o región
 router.post('/desactivar-lista', verificarToken, async (req, res) => {
   if (req.usuario.rol !== 'admin') return res.status(403).json({ error: 'No eres administrador.' });

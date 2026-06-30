@@ -766,6 +766,9 @@ const _0x112f37=_0xaee3;(function(_0x47ad25,_0x2be53d){const _0x43b698=_0xaee3,_
     + '<span style="color:rgba(255,255,255,.2);font-size:.8rem;">|</span>'
     + '<input id="inputCodigoDesactivar" type="text" placeholder="Código" style="font-family:\'Barlow Condensed\',sans-serif;font-size:.85rem;padding:.35rem .7rem;border-radius:8px;border:1.5px solid rgba(255,255,255,.15);background:rgba(255,255,255,.07);color:#fff;width:90px;outline:none;">'
     + '<button id="btnConfirmarDesactivar" style="' + BTN_DES + '">Desactivar una</button>'
+    + '<span style="color:rgba(255,255,255,.2);font-size:.8rem;">|</span>'
+    + '<input id="inputCodigoReactivar" type="text" placeholder="Código" style="font-family:\'Barlow Condensed\',sans-serif;font-size:.85rem;padding:.35rem .7rem;border-radius:8px;border:1.5px solid rgba(0,200,83,.25);background:rgba(0,200,83,.06);color:#fff;width:90px;outline:none;">'
+    + '<button id="btnConfirmarReactivar" style="font-family:\'Barlow Condensed\',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:.35rem .9rem;border-radius:20px;border:1.5px solid rgba(0,200,83,.4);background:rgba(0,200,83,.1);color:#00c853;cursor:pointer;">Reactivar</button>'
     + '<span id="msgDesactivar" style="font-family:\'Barlow Condensed\',sans-serif;font-size:.8rem;color:rgba(255,255,255,.4);"></span>'
     + '</div>';
 
@@ -815,6 +818,30 @@ const _0x112f37=_0xaee3;(function(_0x47ad25,_0x2be53d){const _0x43b698=_0xaee3,_
         if (d.ok) {
           msg.textContent = '✅ ' + d.tienda + ' desactivada';
           document.getElementById('inputCodigoDesactivar').value = '';
+        } else {
+          msg.textContent = '❌ ' + (d.error || 'Error');
+        }
+      })
+      .catch(function () { msg.textContent = '❌ Error de conexión'; });
+  });
+
+  document.getElementById('btnConfirmarReactivar').addEventListener('click', function () {
+    var codigo = (document.getElementById('inputCodigoReactivar').value || '').trim();
+    if (!codigo) return;
+    if (!confirm('¿Reactivar la tienda con código "' + codigo + '"? Volverá a aparecer en el login y en el panel.')) return;
+    var token = localStorage.getItem('token');
+    var msg = document.getElementById('msgDesactivar');
+    msg.textContent = '⏳ Reactivando...';
+    fetch(API_DES + '/tiendas/reactivar', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ codigo: codigo })
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d.ok) {
+          msg.textContent = '✅ ' + d.tienda + ' — ' + d.mensaje;
+          document.getElementById('inputCodigoReactivar').value = '';
         } else {
           msg.textContent = '❌ ' + (d.error || 'Error');
         }
