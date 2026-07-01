@@ -150,6 +150,90 @@ router.get('/debug-ranking/:codigo', verificarToken, async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// GET /api/tiendas/debug-all — admin: datos crudos de TODAS las tiendas para verificar rankings
+router.get('/debug-all', verificarToken, async (req, res) => {
+  if (req.usuario.rol !== 'admin') return res.status(403).json({ error: 'No eres administrador.' });
+  try {
+    const [
+      { data: tiendas, error: tErr },
+      { data: semanas, error: sErr },
+    ] = await Promise.all([
+      supabase.from('tiendas').select('id, codigo, nombre, region').eq('activa', true).order('region').order('nombre'),
+      supabase.from('semanas').select('id, numero').order('numero'),
+    ]);
+    if (tErr) throw tErr;
+    if (sErr) throw sErr;
+
+    const semanaMap = {};
+    (semanas || []).forEach(s => { semanaMap[s.id] = s.numero; });
+
+    const todosResultados = [];
+    let desde = 0;
+    while (true) {
+      const { data: lote, error: lErr } = await supabase
+        .from('resultados_tienda').select('tienda_id, semana_id, porcentaje_cumplido')
+        .range(desde, desde + 999);
+      if (lErr || !lote || lote.length === 0) break;
+      todosResultados.push(...lote);
+      if (lote.length < 1000) break;
+      desde += 1000;
+    }
+
+    // Contar filas por clave y quedarse con el mayor valor (dedup)
+    const conteoRaw = {};
+    const mejorPorSemana = {};
+    for (const r of todosResultados) {
+      const key = r.tienda_id + '|' + r.semana_id;
+      conteoRaw[key] = (conteoRaw[key] || 0) + 1;
+      if (mejorPorSemana[key] == null || r.porcentaje_cumplido > mejorPorSemana[key]) {
+        mejorPorSemana[key] = r.porcentaje_cumplido;
+      }
+    }
+
+    // Agrupar por tienda
+    const resPorTienda = {};
+    for (const [key, pct] of Object.entries(mejorPorSemana)) {
+      const [tienda_id, semana_id] = key.split('|');
+      if (!resPorTienda[tienda_id]) resPorTienda[tienda_id] = { semanas: {}, duplicados: {} };
+      const num = semanaMap[semana_id] || semana_id;
+      resPorTienda[tienda_id].semanas[num] = Math.round(pct * 100) / 100;
+      if (conteoRaw[key] > 1) resPorTienda[tienda_id].duplicados[num] = conteoRaw[key];
+    }
+
+    const resultado = (tiendas || [])
+      .map(t => {
+        const datos = resPorTienda[t.id] || { semanas: {}, duplicados: {} };
+        const valores = Object.values(datos.semanas);
+        const suma = valores.reduce((a, b) => a + b, 0);
+        const semanas_con_data = valores.length;
+        return {
+          codigo: t.codigo,
+          nombre: t.nombre,
+          region: t.region || 'General',
+          semanas: datos.semanas,
+          duplicados: datos.duplicados,
+          semanas_con_data,
+          suma_total: Math.round(suma * 10) / 10,
+          pct_sobre_6: Math.round((suma / 6) * 10) / 10,
+          pct_promedio: semanas_con_data ? Math.round((suma / semanas_con_data) * 10) / 10 : 0,
+          tiene_duplicados: Object.keys(datos.duplicados).length > 0,
+        };
+      })
+      .filter(t => t.semanas_con_data > 0);
+
+    res.setHeader('Cache-Control', 'no-store');
+    res.json({
+      total_tiendas: resultado.length,
+      tiendas_con_duplicados: resultado.filter(t => t.tiene_duplicados).length,
+      total_semanas_disponibles: semanas ? semanas.length : 0,
+      tiendas: resultado,
+    });
+  } catch (err) {
+    console.error('[Debug All]', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/tiendas/sin-login — admin: tiendas que nunca cambiaron la clave genérica
 router.get('/sin-login', verificarToken, async (req, res) => {
   if (req.usuario.rol !== 'admin') return res.status(403).json({ error: 'No eres administrador.' });

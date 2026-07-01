@@ -678,6 +678,7 @@
           <h3><i class="fa-solid fa-trophy" style="color:var(--p-orange);margin-right:.4rem;font-size:.9rem;"></i>Clasificación Global</h3>
           <span class="table-count" id="badgeRankings"></span>
           <button id="btnRecargarRankings" style="font-family:'Barlow Condensed',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:.35rem .9rem;border-radius:20px;border:1.5px solid rgba(255,255,255,.18);background:transparent;color:rgba(255,255,255,.6);cursor:pointer;">↺ Recargar</button>
+          <button id="btnDiagnosticoRankings" style="font-family:'Barlow Condensed',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:.35rem .9rem;border-radius:20px;border:1.5px solid rgba(255,255,255,.18);background:transparent;color:rgba(255,255,255,.6);cursor:pointer;">🔍 Diagnóstico</button>
         </div>
         <div id="filtrosPaisRankings" style="display:none;flex-wrap:wrap;gap:.5rem;padding:.8rem 1rem .2rem;"></div>
         <div id="loadingRankings" class="state-msg">
@@ -1121,6 +1122,103 @@ const _0x112f37=_0xaee3;(function(_0x47ad25,_0x2be53d){const _0x43b698=_0xaee3,_
   document.getElementById('btnRecargarSinLogin').addEventListener('click', function () {
     _slLoaded = false;
     cargarSinLogin();
+  });
+})();
+</script>
+
+<!-- ══════════════════════ MODAL DIAGNÓSTICO RANKINGS ══════════════════════ -->
+<div id="modalDiagnostico" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;overflow:auto;padding:1.5rem;">
+  <div style="max-width:1200px;margin:0 auto;background:#1a1a2e;border-radius:12px;padding:1.5rem;border:1px solid rgba(255,255,255,.1);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+      <h2 style="margin:0;font-size:1.1rem;color:#fff;">🔍 Diagnóstico de Datos — Valores por Semana</h2>
+      <button id="btnCerrarDiag" style="background:transparent;border:none;color:#fff;font-size:1.4rem;cursor:pointer;line-height:1;">✕</button>
+    </div>
+    <p style="color:rgba(255,255,255,.5);font-size:.82rem;margin:.3rem 0 1rem;">
+      Muestra los valores exactos almacenados en la base de datos por cada tienda y semana. <b style="color:#f7a800;">%/6</b> es el que aparece en el ranking público. <b style="color:#00c853;">%Prom</b> es el promedio real por semanas con datos.
+    </p>
+    <div id="diagCargando" style="text-align:center;padding:2rem;color:rgba(255,255,255,.5);">Cargando datos...</div>
+    <div id="diagContenido" style="display:none;">
+      <div id="diagResumen" style="margin-bottom:1rem;padding:.8rem 1rem;background:rgba(255,255,255,.05);border-radius:8px;font-size:.85rem;color:rgba(255,255,255,.7);"></div>
+      <div style="overflow-x:auto;">
+        <table id="diagTabla" style="width:100%;border-collapse:collapse;font-size:.78rem;">
+          <thead id="diagCabecera"></thead>
+          <tbody id="diagCuerpo"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var API_DIAG = (typeof API_BASE !== 'undefined' ? API_BASE : (window.location.hostname === 'localhost' ? 'http://localhost:3000/api' : 'https://album-cdt-mundial.onrender.com/api'));
+  var TH = 'padding:.5rem .6rem;text-align:center;border-bottom:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.5);font-size:.73rem;white-space:nowrap;';
+  var TD = 'padding:.4rem .6rem;border-bottom:1px solid rgba(255,255,255,.05);';
+
+  document.getElementById('btnDiagnosticoRankings').addEventListener('click', function () {
+    document.getElementById('modalDiagnostico').style.display = 'block';
+    document.getElementById('diagCargando').style.display = 'block';
+    document.getElementById('diagContenido').style.display = 'none';
+
+    var token = localStorage.getItem('token');
+    fetch(API_DIAG + '/tiendas/debug-all', { headers: { 'Authorization': 'Bearer ' + token } })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        document.getElementById('diagCargando').style.display = 'none';
+        document.getElementById('diagContenido').style.display = 'block';
+
+        var tiendas = data.tiendas || [];
+        var maxSem = 0;
+        tiendas.forEach(function (t) {
+          Object.keys(t.semanas).forEach(function (k) { if (parseInt(k) > maxSem) maxSem = parseInt(k); });
+        });
+        if (maxSem === 0) maxSem = 6;
+
+        var conDup = data.tiendas_con_duplicados || 0;
+        var resHTML = '📊 <b>' + tiendas.length + '</b> tiendas con datos';
+        if (conDup > 0) resHTML += ' &nbsp;|&nbsp; ⚠️ <b style="color:#f7a800;">' + conDup + '</b> tiendas con registros duplicados detectados';
+        document.getElementById('diagResumen').innerHTML = resHTML;
+
+        // Cabecera
+        var cabHTML = '<tr><th style="' + TH + 'text-align:left;">País</th><th style="' + TH + 'text-align:left;">Código</th><th style="' + TH + 'text-align:left;">Nombre</th>';
+        for (var s = 1; s <= maxSem; s++) cabHTML += '<th style="' + TH + '">S' + s + '</th>';
+        cabHTML += '<th style="' + TH + '">Suma</th><th style="' + TH + 'color:#f7a800;">%/6</th><th style="' + TH + 'color:#00c853;">%Prom</th></tr>';
+        document.getElementById('diagCabecera').innerHTML = cabHTML;
+
+        // Filas
+        tiendas.sort(function (a, b) { return b.pct_sobre_6 - a.pct_sobre_6; });
+        var filas = tiendas.map(function (t, i) {
+          var rowBg = t.tiene_duplicados ? 'background:rgba(247,168,0,.07);' : (i % 2 === 0 ? '' : 'background:rgba(255,255,255,.02);');
+          var row = '<tr style="' + rowBg + '">'
+            + '<td style="' + TD + 'color:rgba(255,255,255,.6);">' + (t.region || '—') + '</td>'
+            + '<td style="' + TD + 'color:#f7a800;font-weight:700;">' + (t.codigo || '—') + '</td>'
+            + '<td style="' + TD + '">' + (t.nombre || '—') + (t.tiene_duplicados ? ' <span title="Duplicados en BD" style="color:#f7a800;">⚠️</span>' : '') + '</td>';
+          for (var s = 1; s <= maxSem; s++) {
+            var v = t.semanas[s];
+            var dupMark = t.duplicados && t.duplicados[s] ? '<sup style="color:#f7a800;font-size:.65rem;">' + t.duplicados[s] + 'x</sup>' : '';
+            var color = v == null ? 'color:rgba(255,255,255,.2);' : (v >= 100 ? 'color:#00c853;font-weight:700;' : (v >= 80 ? 'color:#f7a800;font-weight:700;' : 'color:rgba(255,255,255,.8);'));
+            row += '<td style="' + TD + 'text-align:center;' + color + '">' + (v != null ? v.toFixed(1) + dupMark : '—') + '</td>';
+          }
+          var pct6Color = t.pct_sobre_6 >= 100 ? 'color:#00c853;font-weight:800;' : (t.pct_sobre_6 >= 80 ? 'color:#f7a800;font-weight:700;' : 'color:rgba(255,255,255,.8);');
+          var pctPColor = t.pct_promedio >= 100 ? 'color:#00c853;font-weight:800;' : (t.pct_promedio >= 80 ? 'color:#00c853;font-weight:700;' : 'color:rgba(255,255,255,.8);');
+          row += '<td style="' + TD + 'text-align:center;color:rgba(255,255,255,.6);">' + t.suma_total + '</td>'
+            + '<td style="' + TD + 'text-align:center;' + pct6Color + '">' + t.pct_sobre_6.toFixed(1) + '%</td>'
+            + '<td style="' + TD + 'text-align:center;' + pctPColor + '">' + t.pct_promedio.toFixed(1) + '%</td>'
+            + '</tr>';
+          return row;
+        });
+        document.getElementById('diagCuerpo').innerHTML = filas.join('');
+      })
+      .catch(function (err) {
+        document.getElementById('diagCargando').textContent = '❌ Error al cargar datos.';
+      });
+  });
+
+  document.getElementById('btnCerrarDiag').addEventListener('click', function () {
+    document.getElementById('modalDiagnostico').style.display = 'none';
+  });
+  document.getElementById('modalDiagnostico').addEventListener('click', function (e) {
+    if (e.target === this) this.style.display = 'none';
   });
 })();
 </script>
