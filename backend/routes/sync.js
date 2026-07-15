@@ -170,4 +170,113 @@ router.post('/resultados', verificarSyncKey, async (req, res) => {
   }
 });
 
+/**
+ * POST /api/sync/resultados-batch
+ * Recibe TODOS los resultados en una sola petición para evitar timeouts del GAS.
+ * Body: { resultados: [{ tienda_codigo, semana, porcentaje, nombre, pais, total_empleados, promedio? }] }
+ */
+router.post('/resultados-batch', verificarSyncKey, async (req, res) => {
+  const { resultados } = req.body;
+  if (!Array.isArray(resultados) || resultados.length === 0) {
+    return res.status(400).json({ error: 'Envía un array "resultados" con al menos un elemento.' });
+  }
+
+  try {
+    // Traer semanas y tiendas necesarias en paralelo
+    const codigos = [...new Set(resultados.map(r => r.tienda_codigo?.toString().trim()).filter(Boolean))];
+    const [
+      { data: semanas, error: sErr },
+      { data: tiendas, error: tErr },
+    ] = await Promise.all([
+      supabase.from('semanas').select('id, numero').order('numero'),
+      supabase.from('tiendas').select('id, codigo, nombre, total_empleados').in('codigo', codigos),
+    ]);
+    if (sErr) throw sErr;
+    if (tErr) throw tErr;
+
+    const semanaByNum = {};
+    for (const s of (semanas || [])) semanaByNum[s.numero] = s.id;
+
+    const tiendaByCode = {};
+    for (const t of (tiendas || [])) tiendaByCode[t.codigo] = t;
+
+    // Parsear y validar registros
+    const errores = [];
+    const validRows = [];
+    const hcUpdates = {};
+    const promedioUpdates = {};
+
+    for (const r of resultados) {
+      const codigo   = r.tienda_codigo?.toString().trim();
+      const tienda   = tiendaByCode[codigo];
+      if (!tienda) { errores.push('Tienda "' + codigo + '" no encontrada.'); continue; }
+
+      const semanaNum = parseInt(r.semana);
+      const semanaId  = semanaByNum[semanaNum];
+      if (!semanaId) { errores.push('Semana ' + semanaNum + ' no existe.'); continue; }
+
+      const pct = parseFloat(r.porcentaje) || 0;
+      validRows.push({ tienda_id: tienda.id, semana_id: semanaId, porcentaje_cumplido: pct });
+
+      const nuevoHC = parseInt(r.total_empleados);
+      if (!isNaN(nuevoHC) && nuevoHC > 0 && nuevoHC !== tienda.total_empleados) {
+        hcUpdates[tienda.id] = nuevoHC;
+      }
+      const nuevoPromedio = parseFloat(r.promedio);
+      if (!isNaN(nuevoPromedio)) {
+        promedioUpdates[tienda.id] = nuevoPromedio;
+      }
+    }
+
+    // Procesar por semana: DELETE masivo → INSERT masivo → desbloquear fichas
+    const bySemana = {};
+    for (const row of validRows) {
+      if (!bySemana[row.semana_id]) bySemana[row.semana_id] = [];
+      bySemana[row.semana_id].push(row);
+    }
+
+    let fichasDesbloqueadas = 0;
+    for (const [semanaId, rows] of Object.entries(bySemana)) {
+      const tiendaIds = rows.map(r => r.tienda_id);
+
+      await supabase.from('resultados_tienda')
+        .delete().eq('semana_id', semanaId).in('tienda_id', tiendaIds);
+
+      await supabase.from('resultados_tienda').insert(rows);
+
+      const ids100 = rows.filter(r => r.porcentaje_cumplido >= 100).map(r => r.tienda_id);
+      if (ids100.length > 0) {
+        const { data: desbloqueadas } = await supabase.from('fichas_tienda')
+          .update({ desbloqueado: true, fecha_desbloqueo: new Date().toISOString() })
+          .eq('semana_id', semanaId).in('tienda_id', ids100).eq('desbloqueado', false)
+          .select('id');
+        fichasDesbloqueadas += desbloqueadas?.length || 0;
+      }
+    }
+
+    // Actualizar HC y promedio en lotes de 20 paralelos
+    const tiendaUpdateIds = [...new Set([...Object.keys(hcUpdates), ...Object.keys(promedioUpdates)])];
+    for (let i = 0; i < tiendaUpdateIds.length; i += 20) {
+      await Promise.all(tiendaUpdateIds.slice(i, i + 20).map(id => {
+        const upd = {};
+        if (hcUpdates[id] != null)       upd.total_empleados = hcUpdates[id];
+        if (promedioUpdates[id] != null) upd.promedio_ranking = promedioUpdates[id];
+        return supabase.from('tiendas').update(upd).eq('id', id);
+      }));
+    }
+
+    res.json({
+      ok: true,
+      procesadas: validRows.length,
+      errores: errores.length,
+      fichas_desbloqueadas: fichasDesbloqueadas,
+      detalle_errores: errores.slice(0, 20),
+    });
+
+  } catch (err) {
+    console.error('[Sync Batch]', err.message);
+    res.status(500).json({ error: 'Error en sincronización batch: ' + err.message });
+  }
+});
+
 module.exports = router;
