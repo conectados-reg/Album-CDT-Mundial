@@ -182,14 +182,13 @@ router.post('/resultados-batch', verificarSyncKey, async (req, res) => {
   }
 
   try {
-    // Traer semanas y tiendas necesarias en paralelo
-    const codigos = [...new Set(resultados.map(r => r.tienda_codigo?.toString().trim()).filter(Boolean))];
+    // Traer semanas y TODAS las tiendas (no usar .in() con 250+ codigos — puede truncarse)
     const [
       { data: semanas, error: sErr },
       { data: tiendas, error: tErr },
     ] = await Promise.all([
       supabase.from('semanas').select('id, numero').order('numero'),
-      supabase.from('tiendas').select('id, codigo, nombre, total_empleados').in('codigo', codigos),
+      supabase.from('tiendas').select('id, codigo, nombre, total_empleados'),
     ]);
     if (sErr) throw sErr;
     if (tErr) throw tErr;
