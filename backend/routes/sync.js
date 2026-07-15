@@ -227,9 +227,19 @@ router.post('/resultados-batch', verificarSyncKey, async (req, res) => {
       }
     }
 
+    // Deduplicar: si la hoja tiene el mismo código dos veces, queda el mayor porcentaje
+    const dedupMap = {};
+    for (const row of validRows) {
+      const key = row.tienda_id + '|' + row.semana_id;
+      if (!dedupMap[key] || row.porcentaje_cumplido > dedupMap[key].porcentaje_cumplido) {
+        dedupMap[key] = row;
+      }
+    }
+    const uniqueRows = Object.values(dedupMap);
+
     // Procesar por semana: DELETE masivo → INSERT masivo → desbloquear fichas
     const bySemana = {};
-    for (const row of validRows) {
+    for (const row of uniqueRows) {
       if (!bySemana[row.semana_id]) bySemana[row.semana_id] = [];
       bySemana[row.semana_id].push(row);
     }
@@ -266,7 +276,8 @@ router.post('/resultados-batch', verificarSyncKey, async (req, res) => {
 
     res.json({
       ok: true,
-      procesadas: validRows.length,
+      procesadas: uniqueRows.length,
+      duplicados_ignorados: validRows.length - uniqueRows.length,
       errores: errores.length,
       fichas_desbloqueadas: fichasDesbloqueadas,
       detalle_errores: errores.slice(0, 20),
