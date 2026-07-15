@@ -263,7 +263,7 @@ router.get('/rankings', verificarToken, async (req, res) => {
   try {
     const { data: tiendas, error: tErr } = await supabase
       .from('tiendas')
-      .select('id, codigo, nombre, region, total_empleados')
+      .select('id, codigo, nombre, region, total_empleados, promedio_ranking')
       .eq('activa', true);
     if (tErr) throw tErr;
 
@@ -320,7 +320,9 @@ router.get('/rankings', verificarToken, async (req, res) => {
       .map(t => {
         const semanas = resPorTienda[t.id] || [];
         const sumaTotal = semanas.reduce((a, b) => a + (b || 0), 0);
-        const pct_acumulado = Math.round((sumaTotal / 6) * 10) / 10;
+        const pct_acumulado = t.promedio_ranking != null
+          ? Math.round(t.promedio_ranking * 10) / 10
+          : Math.round((sumaTotal / 6) * 10) / 10;
         const pct_promedio  = semanas.length
           ? Math.round((sumaTotal / semanas.length) * 10) / 10
           : 0;

@@ -124,6 +124,11 @@ router.post('/resultados', verificarSyncKey, async (req, res) => {
         .eq('id', tienda.id);
     }
 
+    const nuevoPromedio = parseFloat(req.body.promedio);
+    if (!isNaN(nuevoPromedio)) {
+      await supabase.from('tiendas').update({ promedio_ranking: nuevoPromedio }).eq('id', tienda.id);
+    }
+
     const { data: semana, error: sErr } = await supabase
       .from('semanas')
       .select('id, numero')

@@ -75,7 +75,7 @@ router.get('/publico', async (req, res) => {
   try {
     const { data: tiendas, error: tErr } = await supabase
       .from('tiendas')
-      .select('id, nombre, region, codigo, total_empleados')
+      .select('id, nombre, region, codigo, total_empleados, promedio_ranking')
       .eq('activa', true)
       .order('nombre');
     if (tErr) throw tErr;
@@ -115,7 +115,9 @@ router.get('/publico', async (req, res) => {
       .map(t => {
         const semanas = resPorTienda[t.id] || [];
         const suma = semanas.reduce((a, b) => a + (b || 0), 0);
-        const pct_acumulado = Math.round((suma / 6) * 10) / 10;
+        const pct_acumulado = t.promedio_ranking != null
+          ? Math.round(t.promedio_ranking * 10) / 10
+          : Math.round((suma / 6) * 10) / 10;
         return {
           codigo: t.codigo,
           nombre: t.nombre,
@@ -158,7 +160,7 @@ router.get('/nacional', verificarToken, async (req, res) => {
 
     const { data: tiendas, error: tdErr } = await supabase
       .from('tiendas')
-      .select('id, nombre, region, codigo')
+      .select('id, nombre, region, codigo, promedio_ranking')
       .eq('region', tiendaPropia.region)
       .eq('activa', true)
       .order('nombre');
@@ -176,7 +178,7 @@ router.get('/nacional', verificarToken, async (req, res) => {
         nombre: t.nombre,
         region: t.region,
         codigo: t.codigo,
-        cumplimiento_acumulado: calcCumplimiento(acumulado[t.id]),
+        cumplimiento_acumulado: t.promedio_ranking != null ? Math.round(t.promedio_ranking * 10) / 10 : calcCumplimiento(acumulado[t.id]),
         fichas_desbloqueadas: fichasDesbCount[t.id] || 0,
         fotos_count: fotosCount[t.id] || 0,
         semanas_registradas: acumulado[t.id]?.semanas || 0,
@@ -198,7 +200,7 @@ router.get('/mundial', verificarToken, async (req, res) => {
   try {
     const { data: tiendas, error: tErr } = await supabase
       .from('tiendas')
-      .select('id, nombre, region, codigo')
+      .select('id, nombre, region, codigo, promedio_ranking')
       .eq('activa', true)
       .order('nombre');
     if (tErr) throw tErr;
@@ -215,7 +217,7 @@ router.get('/mundial', verificarToken, async (req, res) => {
         nombre: t.nombre,
         region: t.region,
         codigo: t.codigo,
-        cumplimiento_acumulado: calcCumplimiento(acumulado[t.id]),
+        cumplimiento_acumulado: t.promedio_ranking != null ? Math.round(t.promedio_ranking * 10) / 10 : calcCumplimiento(acumulado[t.id]),
         fichas_desbloqueadas: fichasDesbCount[t.id] || 0,
         fotos_count: fotosCount[t.id] || 0,
         semanas_registradas: acumulado[t.id]?.semanas || 0,
@@ -239,7 +241,7 @@ router.get('/tienda/:id', verificarToken, async (req, res) => {
 
     const { data: todasTiendas, error: tErr } = await supabase
       .from('tiendas')
-      .select('id, nombre, region, codigo')
+      .select('id, nombre, region, codigo, promedio_ranking')
       .eq('activa', true);
     if (tErr) throw tErr;
 
@@ -251,7 +253,7 @@ router.get('/tienda/:id', verificarToken, async (req, res) => {
 
     const enrich = t => ({
       id: t.id,
-      cumplimiento_acumulado: calcCumplimiento(acumulado[t.id]),
+      cumplimiento_acumulado: t.promedio_ranking != null ? Math.round(t.promedio_ranking * 10) / 10 : calcCumplimiento(acumulado[t.id]),
       fichas_desbloqueadas: fichasDesbCount[t.id] || 0,
       fotos_count: fotosCount[t.id] || 0,
     });
@@ -278,7 +280,7 @@ router.get('/tienda/:id', verificarToken, async (req, res) => {
       nombre: tiendaInfo.nombre,
       region: tiendaInfo.region,
       codigo: tiendaInfo.codigo,
-      cumplimiento_acumulado: calcCumplimiento(acumulado[tiendaId]),
+      cumplimiento_acumulado: tiendaInfo.promedio_ranking != null ? Math.round(tiendaInfo.promedio_ranking * 10) / 10 : calcCumplimiento(acumulado[tiendaId]),
       fichas_desbloqueadas: fichasDesbCount[tiendaId] || 0,
       fotos_count: fotosCount[tiendaId] || 0,
       total_fichas: fichasTotCount[tiendaId] || 0,
