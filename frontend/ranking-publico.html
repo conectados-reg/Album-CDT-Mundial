@@ -185,45 +185,51 @@
     .podio-box {
       width: 100%;
       border-radius: 12px 12px 0 0;
-      padding: .9rem .8rem .7rem;
+      padding: .75rem .7rem .6rem;
       text-align: center;
       border: 1.5px solid;
       position: relative;
-      overflow: hidden;
+      overflow: visible;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: .15rem;
     }
     .podio-box::before {
       content: '';
       position: absolute;
       top: 0; left: 0; right: 0;
       height: 3px;
+      border-radius: 12px 12px 0 0;
     }
     .pos-1 .podio-box {
       background: linear-gradient(160deg, rgba(247,168,0,.14), rgba(247,168,0,.05));
       border-color: rgba(247,168,0,.45);
-      height: 148px;
+      min-height: 148px;
       box-shadow: 0 0 40px rgba(247,168,0,.12), inset 0 1px 0 rgba(247,168,0,.2);
     }
     .pos-1 .podio-box::before { background: linear-gradient(90deg, transparent, var(--gold), transparent); }
     .pos-2 .podio-box {
       background: linear-gradient(160deg, rgba(176,184,200,.1), rgba(176,184,200,.03));
       border-color: rgba(176,184,200,.3);
-      height: 112px;
+      min-height: 118px;
     }
     .pos-2 .podio-box::before { background: linear-gradient(90deg, transparent, var(--silver), transparent); }
     .pos-3 .podio-box {
       background: linear-gradient(160deg, rgba(205,127,50,.1), rgba(205,127,50,.03));
       border-color: rgba(205,127,50,.3);
-      height: 88px;
+      min-height: 98px;
     }
     .pos-3 .podio-box::before { background: linear-gradient(90deg, transparent, var(--bronze), transparent); }
 
-    .podio-flag { margin-bottom: .25rem; }
-    .podio-flag img { width: 20px; height: auto; border-radius: 2px; }
+    .podio-flag { line-height: 1; }
+    .podio-flag img { width: 18px; height: auto; border-radius: 2px; }
 
     .podio-pos {
       font-family: 'Barlow Condensed', sans-serif;
       font-weight: 900;
-      font-size: 1.5rem;
+      font-size: 1.4rem;
       line-height: 1;
     }
     .pos-1 .podio-pos { color: var(--gold); }
