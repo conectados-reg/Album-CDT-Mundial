@@ -236,12 +236,12 @@ router.post('/resultados-batch', verificarSyncKey, async (req, res) => {
 
     let fichasDesbloqueadas = 0;
     for (const [semanaId, rows] of Object.entries(bySemana)) {
-      const tiendaIds = rows.map(r => r.tienda_id);
+      // Borrar TODOS los resultados de la semana antes de reinsertar.
+      // No usar .in(tiendaIds) — con 248+ UUIDs supera el límite de URL de PostgREST.
+      await supabase.from('resultados_tienda').delete().eq('semana_id', semanaId);
 
-      await supabase.from('resultados_tienda')
-        .delete().eq('semana_id', semanaId).in('tienda_id', tiendaIds);
-
-      await supabase.from('resultados_tienda').insert(rows);
+      const { error: insertErr } = await supabase.from('resultados_tienda').insert(rows);
+      if (insertErr) throw new Error('Error insertando resultados semana ' + semanaId + ': ' + insertErr.message);
 
       const ids100 = rows.filter(r => r.porcentaje_cumplido >= 100).map(r => r.tienda_id);
       if (ids100.length > 0) {
