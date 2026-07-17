@@ -220,6 +220,61 @@ router.post('/simulacro/foto', verificarToken, async (req, res) => {
   }
 });
 
+// GET /api/album/libro — admin: todas las fotos de todas las tiendas para el libro conmemorativo
+router.get('/libro', verificarToken, async (req, res) => {
+  if (req.usuario.rol !== 'admin') return res.status(403).json({ error: 'Solo para administradores.' });
+  try {
+    const [
+      { data: tiendas, error: tErr },
+      { data: fichas, error: fErr },
+      { data: semanas, error: sErr },
+    ] = await Promise.all([
+      supabase.from('tiendas').select('id, codigo, nombre, region, total_empleados').eq('activa', true).order('region').order('nombre'),
+      supabase.from('fichas_tienda').select('id, tienda_id, semana_id, numero_ficha, foto_url').not('foto_url', 'is', null).order('tienda_id').order('semana_id'),
+      supabase.from('semanas').select('id, numero, nombre').order('numero'),
+    ]);
+    if (tErr) throw tErr;
+    if (fErr) throw fErr;
+    if (sErr) throw sErr;
+
+    const semanaMap = {};
+    for (const s of (semanas || [])) semanaMap[s.id] = s;
+
+    const fichasByTienda = {};
+    for (const f of (fichas || [])) {
+      if (!fichasByTienda[f.tienda_id]) fichasByTienda[f.tienda_id] = [];
+      fichasByTienda[f.tienda_id].push({
+        foto_url: f.foto_url,
+        semana_numero: (semanaMap[f.semana_id] || {}).numero || null,
+        semana_nombre: (semanaMap[f.semana_id] || {}).nombre || null,
+        numero_ficha: f.numero_ficha,
+      });
+    }
+
+    const resultado = (tiendas || [])
+      .filter(t => fichasByTienda[t.id]?.length > 0)
+      .map(t => ({
+        id: t.id,
+        codigo: t.codigo,
+        nombre: t.nombre,
+        region: t.region || 'General',
+        total_empleados: t.total_empleados || 0,
+        fotos: fichasByTienda[t.id] || [],
+      }));
+
+    const totalFotos = resultado.reduce((sum, t) => sum + t.fotos.length, 0);
+
+    res.json({
+      tiendas: resultado,
+      total_tiendas: resultado.length,
+      total_fotos: totalFotos,
+    });
+  } catch (err) {
+    console.error('[Album Libro]', err.message);
+    res.status(500).json({ error: 'Error al cargar el libro.' });
+  }
+});
+
 // POST /api/album/foto — subir foto a una ficha desbloqueada
 router.post('/foto', verificarToken, async (req, res) => {
   if (req.usuario.rol !== 'tienda') return res.status(403).json({ error: 'Solo para sucursales.' });
