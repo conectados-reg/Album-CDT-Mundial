@@ -275,6 +275,80 @@ router.get('/libro', verificarToken, async (req, res) => {
   }
 });
 
+// GET /api/album/libro-publico?pais=gt — página pública compartible, sin login, solo un país
+const ISO_MAP_PAISES = [
+  ['costa rica', 'cr'], ['el salvador', 'sv'], ['guatemala', 'gt'],
+  ['honduras', 'hn'], ['nicaragua', 'ni'], ['panama', 'pa'], ['panamá', 'pa'],
+  ['domini', 'do'], ['repúbli', 'do'], ['urugu', 'uy'], ['colombia', 'co'],
+];
+function isoDeRegion(region) {
+  const r = (region || '').toLowerCase().trim();
+  for (const [nombre, codigo] of ISO_MAP_PAISES) {
+    if (r.indexOf(nombre) !== -1) return codigo;
+  }
+  return null;
+}
+
+router.get('/libro-publico', async (req, res) => {
+  const pais = (req.query.pais || '').toLowerCase().trim();
+  if (!pais) return res.status(400).json({ error: 'Falta el parámetro pais.' });
+
+  try {
+    const { data: tiendas, error: tErr } = await supabase
+      .from('tiendas').select('id, codigo, nombre, region, total_empleados').eq('activa', true);
+    if (tErr) throw tErr;
+
+    const tiendasPais = (tiendas || []).filter(t => isoDeRegion(t.region) === pais);
+    if (tiendasPais.length === 0) return res.status(404).json({ error: 'País no encontrado.' });
+
+    const ids = tiendasPais.map(t => t.id);
+    const [{ data: fichas, error: fErr }, { data: semanas, error: sErr }] = await Promise.all([
+      supabase.from('fichas_tienda').select('id, tienda_id, semana_id, numero_ficha, foto_url')
+        .in('tienda_id', ids).not('foto_url', 'is', null),
+      supabase.from('semanas').select('id, numero, nombre'),
+    ]);
+    if (fErr) throw fErr;
+    if (sErr) throw sErr;
+
+    const semanaMap = {};
+    for (const s of (semanas || [])) semanaMap[s.id] = s;
+
+    const fichasByTienda = {};
+    for (const f of (fichas || [])) {
+      if (!fichasByTienda[f.tienda_id]) fichasByTienda[f.tienda_id] = [];
+      fichasByTienda[f.tienda_id].push({
+        foto_url: f.foto_url,
+        semana_numero: (semanaMap[f.semana_id] || {}).numero || null,
+        semana_nombre: (semanaMap[f.semana_id] || {}).nombre || null,
+        numero_ficha: f.numero_ficha,
+      });
+    }
+
+    const resultado = tiendasPais
+      .filter(t => fichasByTienda[t.id]?.length > 0)
+      .map(t => ({
+        id: t.id,
+        codigo: t.codigo,
+        nombre: t.nombre,
+        region: t.region || 'General',
+        total_empleados: t.total_empleados || 0,
+        fotos: fichasByTienda[t.id] || [],
+      }));
+
+    const totalFotos = resultado.reduce((sum, t) => sum + t.fotos.length, 0);
+
+    res.json({
+      tiendas: resultado,
+      total_tiendas: resultado.length,
+      total_fotos: totalFotos,
+      region: tiendasPais[0].region || null,
+    });
+  } catch (err) {
+    console.error('[Album Libro Publico]', err.message);
+    res.status(500).json({ error: 'Error al cargar el álbum del país.' });
+  }
+});
+
 // POST /api/album/foto — subir foto a una ficha desbloqueada
 router.post('/foto', verificarToken, async (req, res) => {
   if (req.usuario.rol !== 'tienda') return res.status(403).json({ error: 'Solo para sucursales.' });
