@@ -182,67 +182,146 @@
       text-transform: uppercase; color: rgba(0,0,0,.3);
       text-align: center; margin-bottom: .7rem;
     }
-    .page-region-label {
-      font-family: 'Bebas Neue', sans-serif; font-size: .85rem; letter-spacing: .15em;
-      color: rgba(0,0,60,.35); text-align: center; text-transform: uppercase;
-      margin-bottom: .5rem;
+    /* ── REGION HEADER (estilo section-header de FanSLA) ── */
+    .region-header {
+      display: flex; align-items: flex-end; justify-content: space-between;
+      flex-wrap: wrap; gap: .6rem; margin-bottom: 1rem;
+    }
+    .region-header-title {
+      font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; line-height: 1;
+      color: #fff; text-shadow: 2px 2px 0 rgba(0,0,0,.3);
+      display: flex; align-items: center; gap: .5rem;
+    }
+    .region-header-title img { width: 22px; height: auto; border-radius: 2px; }
+    .region-header-pill {
+      font-family: 'Barlow Condensed', sans-serif; font-size: .62rem; font-weight: 700;
+      letter-spacing: .1em; text-transform: uppercase; color: #fff;
+      background: rgba(255,255,255,.2); border: 2px solid rgba(255,255,255,.4);
+      border-radius: 20px; padding: .25rem .75rem; white-space: nowrap;
+    }
+    .region-header-sub {
+      width: 100%;
+      font-family: 'Barlow Condensed', sans-serif; font-size: .65rem; letter-spacing: .1em;
+      text-transform: uppercase; color: rgba(255,255,255,.5);
     }
 
-    /* ── STICKER GRID ── */
+    /* ── FIGURITA GRID (estilo sticker de FanSLA) ── */
     .sticker-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: .75rem;
+      gap: .6rem;
       flex: 1;
       align-content: start;
     }
     .sticker {
-      background: #fff;
-      border-radius: 4px;
-      overflow: hidden;
-      box-shadow: 2px 3px 8px rgba(0,0,0,.2), 0 0 0 1px rgba(0,0,0,.06);
-      transition: transform .2s, box-shadow .2s;
-      cursor: default;
       position: relative;
+      aspect-ratio: 9 / 13;
+      border-radius: 10px;
+      overflow: hidden;
+      display: flex; flex-direction: column;
+      background: #fff; border: 3px solid #fff;
+      box-shadow: 4px 6px 20px rgba(0,0,0,.45);
+      transition: transform .22s cubic-bezier(.34,1.56,.64,1), box-shadow .22s;
+      cursor: default;
     }
-    .sticker:hover { transform: scale(1.04) rotate(-1deg); box-shadow: 4px 6px 16px rgba(0,0,0,.3); z-index: 2; }
+    .sticker:hover { transform: translateY(-5px) scale(1.03) rotate(-1deg); box-shadow: 0 14px 32px rgba(0,0,0,.5); z-index: 2; }
+    .sticker-band {
+      height: 22px; width: 100%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 6px; position: relative; z-index: 3;
+    }
+    .sticker-band-num {
+      background: rgba(0,0,0,.35); color: #fff;
+      font-family: 'Bebas Neue', sans-serif; font-size: .6rem;
+      padding: 1px 5px; border-radius: 4px; letter-spacing: .05em;
+    }
+    .sticker-band img { width: 14px; height: auto; border-radius: 2px; display: block; }
+    .sticker-num-watermark {
+      position: absolute; right: -4px; top: 16px;
+      font-family: 'Bebas Neue', sans-serif; font-size: 3.6rem; line-height: 1;
+      color: rgba(0,0,0,.07); z-index: 0; pointer-events: none; user-select: none;
+    }
     .sticker-photo {
-      width: 100%; aspect-ratio: 1 / 1.1;
-      object-fit: cover; display: block;
-      background: #e8e8e8;
-    }
-    .sticker-photo-placeholder {
-      width: 100%; aspect-ratio: 1 / 1.1;
-      background: linear-gradient(135deg, #e0e8f0 0%, #c8d8e8 100%);
+      height: 58%; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
-      font-size: 2rem; color: rgba(0,30,100,.25);
+      position: relative; overflow: hidden; z-index: 1;
+      background: linear-gradient(180deg, #c8daf5 0%, #e8f0fb 100%);
     }
-    .sticker-label {
-      background: var(--navy);
-      padding: .18rem .3rem;
-      text-align: center;
+    .sticker-img {
+      width: 100%; height: 100%; object-fit: cover; object-position: center;
+      position: absolute; inset: 0; z-index: 1;
+    }
+    .sticker-avatar {
+      width: 46px; height: 46px; border-radius: 50%;
+      border: 2px solid rgba(0,70,173,.3);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Bebas Neue', sans-serif; font-size: 1rem; color: var(--blue);
+      background: #fff; position: relative; z-index: 1;
+    }
+    .sticker-nueva {
+      position: absolute; top: 26px; left: 5px; z-index: 10;
+      font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: .44rem;
+      letter-spacing: .1em; text-transform: uppercase; color: #fff;
+      background: var(--red); border-radius: 3px; padding: .1rem .3rem;
+    }
+    .sticker-info {
+      background: #0d2460;
+      padding: .3rem .4rem .3rem;
+      flex: 1; display: flex; flex-direction: column; justify-content: center; gap: .05rem;
+      position: relative; z-index: 3;
+      border-top: 3px solid var(--orange);
     }
     .sticker-label-name {
-      font-family: 'Barlow Condensed', sans-serif; font-size: .6rem; font-weight: 700;
-      letter-spacing: .06em; text-transform: uppercase; color: #fff;
+      font-family: 'Bebas Neue', sans-serif; font-size: .68rem; line-height: 1.1;
+      color: #fff; text-transform: uppercase; letter-spacing: .02em;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      display: block; line-height: 1.3;
     }
     .sticker-label-week {
-      font-family: 'Barlow Condensed', sans-serif; font-size: .5rem;
-      letter-spacing: .06em; color: var(--orange);
-      display: block; line-height: 1;
+      font-family: 'Barlow Condensed', sans-serif; font-size: .44rem;
+      color: rgba(255,255,255,.6); text-transform: uppercase; letter-spacing: .07em;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    /* Shiny overlay on sticker */
-    .sticker::before {
-      content: '';
-      position: absolute; top: 0; left: -60%;
-      width: 40%; height: 100%; z-index: 1;
-      background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,.18) 50%, transparent 60%);
-      transition: left .5s ease;
-      pointer-events: none;
+    .sticker-label-country {
+      display: flex; align-items: center; gap: .2rem;
+      font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: .48rem;
+      letter-spacing: .07em; text-transform: uppercase; color: var(--orange);
+      margin-top: .1rem;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .sticker:hover::before { left: 120%; }
+    .sticker-label-country img { width: 10px; height: auto; border-radius: 1px; flex-shrink: 0; }
+
+    /* ── Gradientes reales por país (tomados del Álbum FanSLA) ── */
+    .band-do { background: linear-gradient(135deg,#002D62 0%,#CE1126 100%); }
+    .band-sv { background: linear-gradient(135deg,#0F47AF 0%,#0F47AF 100%); }
+    .band-gt { background: linear-gradient(135deg,#4997D0 0%,#1a5fa0 100%); }
+    .band-hn { background: linear-gradient(135deg,#0073CF 0%,#00509a 100%); }
+    .band-ni { background: linear-gradient(135deg,#3D6BE5 0%,#CE1126 100%); }
+    .band-cr { background: linear-gradient(135deg,#002B7F 0%,#CE1126 100%); }
+    .band-co { background: linear-gradient(135deg,#FCD116 0%,#003087 100%); }
+    .band-pa { background: linear-gradient(135deg,#005293 0%,#D21034 100%); }
+    .band-uy { background: linear-gradient(135deg,#75AADB 0%,#003087 100%); }
+    .band-default { background: linear-gradient(90deg, var(--navy) 0%, var(--blue) 100%); }
+
+    .av-do { background: linear-gradient(135deg,#002D62,#111); }
+    .av-sv { background: linear-gradient(135deg,#0F47AF,#111); }
+    .av-gt { background: linear-gradient(135deg,#4997D0,#111); }
+    .av-hn { background: linear-gradient(135deg,#0073CF,#111); }
+    .av-ni { background: linear-gradient(135deg,#3D6BE5,#CE1126); }
+    .av-cr { background: linear-gradient(135deg,#002B7F,#CE1126); }
+    .av-co { background: linear-gradient(135deg,#FCD116,#003087); }
+    .av-pa { background: linear-gradient(135deg,#005293,#D21034); }
+    .av-uy { background: linear-gradient(135deg,#75AADB,#222); }
+
+    .country-page-do { background: linear-gradient(135deg,#002D62 0%,#1a3a80 50%,#CE1126 100%); }
+    .country-page-sv { background: linear-gradient(135deg,#0F47AF 0%,#1260cc 100%); }
+    .country-page-gt { background: linear-gradient(135deg,#4997D0 0%,#1e6fa8 100%); }
+    .country-page-hn { background: linear-gradient(135deg,#0073CF 0%,#005599 100%); }
+    .country-page-ni { background: linear-gradient(135deg,#3D6BE5 0%,#CE1126 100%); }
+    .country-page-cr { background: linear-gradient(135deg,#002B7F 0%,#CE1126 100%); }
+    .country-page-co { background: linear-gradient(135deg,#FCD116 0%,#003087 100%); }
+    .country-page-pa { background: linear-gradient(135deg,#005293 0%,#D21034 100%); }
+    .country-page-uy { background: linear-gradient(135deg,#003087 0%,#75AADB 100%); }
+    .country-page-default { background: linear-gradient(150deg,#0a2d6e 0%,#1c5fc4 100%); }
 
     /* ── SPECIAL PAGES ── */
     .page-cover-left {
@@ -294,7 +373,8 @@
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       text-align: center; padding: 2rem; gap: .8rem;
     }
-    .page-section .sec-icon { font-size: 2.4rem; opacity: .7; }
+    .page-section .sec-icon { font-size: 2.4rem; opacity: .85; }
+    .page-section .sec-icon img { width: 60px; height: auto; border-radius: 5px; box-shadow: 0 4px 14px rgba(0,0,0,.35); }
     .page-section .sec-region {
       font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: .15em;
       color: var(--orange);
@@ -430,6 +510,7 @@
     <button class="nav-btn" id="btnPrev" disabled title="Anterior"><i class="fa-solid fa-chevron-left"></i></button>
     <div class="page-counter" id="pageCounter">—</div>
     <button class="nav-btn" id="btnNext" title="Siguiente"><i class="fa-solid fa-chevron-right"></i></button>
+    <button class="nav-btn" id="btnFullscreen" title="Pantalla completa"><i class="fa-solid fa-expand"></i></button>
   </div>
 </div>
 
@@ -438,6 +519,36 @@
   var API = 'https://album-cdt-mundial.onrender.com/api';
   var FOTOS_POR_PAGINA = 6;
   var isMobile = window.innerWidth <= 700;
+
+  /* ── FLAGS (país por región) ── */
+  var ISO_MAP = [
+    ['costa rica','cr'],['el salvador','sv'],['guatemala','gt'],
+    ['honduras','hn'],['nicaragua','ni'],['panama','pa'],['panamá','pa'],
+    ['domini','do'],['repúbli','do'],['urugu','uy'],['colombia','co'],
+    ['perú','pe'],['peru','pe'],['chile','cl'],['méxico','mx'],['mexico','mx'],
+    ['argentina','ar'],['bolivia','bo'],['ecuador','ec'],['venezuela','ve'],
+  ];
+  function getIso(region) {
+    var r = (region + '').toLowerCase().trim();
+    for (var i = 0; i < ISO_MAP.length; i++) {
+      if (r.indexOf(ISO_MAP[i][0]) !== -1) return ISO_MAP[i][1];
+    }
+    return null;
+  }
+  function flagImg(region, w) {
+    var code = getIso(region);
+    if (!code) return '<i class="fa-solid fa-globe" style="font-size:.7rem;color:rgba(255,255,255,.35);"></i>';
+    return '<img src="https://flagcdn.com/w' + (w || 20) + '/' + code + '.png" alt="' + code + '">';
+  }
+
+  /* ── Clases de país (gradientes reales estilo Álbum FanSLA, con ISO_MAP) ── */
+  var ISO_CLASSES = ['do', 'sv', 'gt', 'hn', 'ni', 'cr', 'co', 'pa', 'uy'];
+  function isoClass(region, prefix) {
+    var code = getIso(region);
+    return (code && ISO_CLASSES.indexOf(code) !== -1) ? (prefix + '-' + code) : (prefix + '-default');
+  }
+
+  function pad3(n) { n = String(n); return n.length >= 3 ? n : ('000' + n).slice(-3); }
 
   /* ── AUTH CHECK ── */
   var token  = localStorage.getItem('token');
@@ -502,26 +613,40 @@
       regions[r].push(t);
     });
 
-    Object.keys(regions).sort().forEach(function (region) {
+    var regionNames = Object.keys(regions).sort();
+    var globalNum = 0;
+
+    regionNames.forEach(function (region, regionIdx) {
       var tiendas = regions[region];
 
+      // Orden cronológico por semana dentro de cada tienda + marca de "más reciente"
+      var regionTotalFotos = 0;
+      tiendas.forEach(function (tienda) {
+        var fotos = tienda.fotos || [];
+        fotos.sort(function (a, b) { return (a.semana_numero || 0) - (b.semana_numero || 0); });
+        if (fotos.length) fotos[fotos.length - 1].esNueva = true;
+        regionTotalFotos += fotos.length;
+      });
+
       // Region divider page pair
-      pages.push({ type: 'section', region: region, count: tiendas.length });
+      pages.push({ type: 'section', region: region, count: tiendas.length, totalFotos: regionTotalFotos });
       pages.push({ type: 'blank', region: region });
 
       tiendas.forEach(function (tienda) {
         var fotos = tienda.fotos;
         if (!fotos || fotos.length === 0) return;
 
-        // Tienda info page (half-page style — just include it as a sticker page with header)
         // Slice photos into groups of FOTOS_POR_PAGINA
         for (var i = 0; i < fotos.length; i += FOTOS_POR_PAGINA) {
+          var slice = fotos.slice(i, i + FOTOS_POR_PAGINA);
+          slice.forEach(function (f) { globalNum++; f.numeroGlobal = globalNum; });
           pages.push({
             type: 'photos',
             tienda: tienda.nombre,
             region: tienda.region,
             codigo: tienda.codigo,
-            fotos: fotos.slice(i, i + FOTOS_POR_PAGINA),
+            fotos: slice,
+            regionTotalFotos: regionTotalFotos,
             pageInTienda: Math.floor(i / FOTOS_POR_PAGINA) + 1,
             totalPagesInTienda: Math.ceil(fotos.length / FOTOS_POR_PAGINA),
           });
@@ -549,9 +674,9 @@
 
     var spread = document.getElementById('spread');
     spread.innerHTML =
-      '<div class="page page-left">'  + renderPageContent(leftPage,  leftIdx + 1)  + '</div>' +
+      '<div class="page page-left ' + pageBgClass(leftPage) + '">'  + renderPageContent(leftPage,  leftIdx + 1)  + '</div>' +
       '<div class="spine"></div>' +
-      '<div class="page page-right">' + renderPageContent(rightPage, rightIdx + 1) + '</div>';
+      '<div class="page page-right ' + pageBgClass(rightPage) + '">' + renderPageContent(rightPage, rightIdx + 1) + '</div>';
 
     // Update nav
     document.getElementById('btnPrev').disabled = currentSpread === 0;
@@ -565,6 +690,16 @@
 
     document.getElementById('libroMeta').textContent =
       'Spread ' + (currentSpread + 1) + ' / ' + totalSpreads;
+  }
+
+  function pageBgClass(page) {
+    return (page.type === 'photos' || page.type === 'section') ? isoClass(page.region, 'country-page') : '';
+  }
+
+  function initials(name) {
+    var parts = String(name || '').trim().split(/\s+/);
+    var ini = (parts[0] ? parts[0][0] : '') + (parts[1] ? parts[1][0] : '');
+    return ini.toUpperCase() || '?';
   }
 
   function renderPageContent(page, num) {
@@ -586,9 +721,9 @@
     }
     if (page.type === 'section') {
       return '<div class="page-section">' +
-        '<div class="sec-icon">🌎</div>' +
+        '<div class="sec-icon">' + flagImg(page.region, 60) + '</div>' +
         '<div class="sec-region">' + esc(page.region) + '</div>' +
-        '<div class="sec-count">' + page.count + ' tienda' + (page.count !== 1 ? 's' : '') + ' con fotos</div>' +
+        '<div class="sec-count">' + page.totalFotos + ' / ' + page.totalFotos + ' figuritas</div>' +
         '</div>';
     }
     if (page.type === 'end') {
@@ -606,19 +741,33 @@
       var subLabel = page.totalPagesInTienda > 1
         ? 'Pág. ' + page.pageInTienda + '/' + page.totalPagesInTienda
         : '';
+      var bandCls = isoClass(page.region, 'band');
+      var avCls = isoClass(page.region, 'av');
       var stickersHtml = page.fotos.map(function (f) {
         return '<div class="sticker">' +
-          '<img class="sticker-photo" src="' + esc(f.foto_url) + '" loading="lazy" alt="" ' +
+          (f.esNueva ? '<div class="sticker-nueva">¡Nueva!</div>' : '') +
+          '<div class="sticker-band ' + bandCls + '">' +
+          '<span class="sticker-band-num">' + pad3(f.numeroGlobal) + '</span>' +
+          flagImg(page.region, 20) +
+          '</div>' +
+          '<div class="sticker-num-watermark">' + f.numeroGlobal + '</div>' +
+          '<div class="sticker-photo">' +
+          '<img class="sticker-img" src="' + esc(f.foto_url) + '" loading="lazy" alt="" ' +
           'onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'">' +
-          '<div class="sticker-photo-placeholder" style="display:none"><i class="fa-solid fa-image"></i></div>' +
-          '<div class="sticker-label">' +
-          '<span class="sticker-label-name">' + tiendaLabel + '</span>' +
-          (f.semana_nombre ? '<span class="sticker-label-week">' + esc(f.semana_nombre) + '</span>' : '') +
+          '<div class="sticker-avatar ' + avCls + '" style="display:none">' + initials(page.tienda) + '</div>' +
+          '</div>' +
+          '<div class="sticker-info">' +
+          '<div class="sticker-label-name">' + tiendaLabel + '</div>' +
+          (f.semana_nombre ? '<div class="sticker-label-week">' + esc(f.semana_nombre) + '</div>' : '') +
+          '<div class="sticker-label-country">' + flagImg(page.region, 20) + esc(page.region || '') + '</div>' +
           '</div>' +
           '</div>';
       }).join('');
-      return '<div class="page-num">' + tiendaLabel + (subLabel ? ' · ' + subLabel : '') + '</div>' +
-        '<div class="page-region-label">' + esc(page.region || '') + '</div>' +
+      return '<div class="region-header">' +
+        '<span class="region-header-title">' + flagImg(page.region, 30) + esc(page.region || '') + '</span>' +
+        '<span class="region-header-pill">' + page.regionTotalFotos + ' / ' + page.regionTotalFotos + ' figuritas</span>' +
+        '<span class="region-header-sub">' + tiendaLabel + (subLabel ? ' · ' + subLabel : '') + '</span>' +
+        '</div>' +
         '<div class="sticker-grid">' + stickersHtml + '</div>';
     }
     return '';
@@ -634,6 +783,26 @@
   });
   document.getElementById('btnNext').addEventListener('click', function () {
     if (currentSpread < totalSpreads - 1) { currentSpread++; renderSpread(); }
+  });
+
+  /* ── FULLSCREEN ── */
+  var btnFullscreen = document.getElementById('btnFullscreen');
+  btnFullscreen.addEventListener('click', function () {
+    if (!document.fullscreenElement) {
+      document.getElementById('libro').requestFullscreen().catch(function () {});
+    } else {
+      document.exitFullscreen();
+    }
+  });
+  document.addEventListener('fullscreenchange', function () {
+    var icon = btnFullscreen.querySelector('i');
+    if (document.fullscreenElement) {
+      icon.className = 'fa-solid fa-compress';
+      btnFullscreen.title = 'Salir de pantalla completa';
+    } else {
+      icon.className = 'fa-solid fa-expand';
+      btnFullscreen.title = 'Pantalla completa';
+    }
   });
 
   document.addEventListener('keydown', function (e) {
