@@ -222,7 +222,6 @@
       background: rgba(255,255,255,.08);
       box-shadow: 0 3px 10px rgba(0,0,0,.5), 0 0 0 2px rgba(255,255,255,.55);
     }
-    .flag-emoji { line-height: 1; display: inline-block; vertical-align: middle; }
     .region-banner-text { flex: 1; min-width: 0; }
     .region-banner-title {
       font-family: 'Bebas Neue', sans-serif; font-size: 1.55rem; line-height: 1;
@@ -633,15 +632,36 @@
     }
     return null;
   }
-  function isoToEmoji(code) {
-    var cc = code.toUpperCase();
-    return String.fromCodePoint(0x1F1E6 + cc.charCodeAt(0) - 65, 0x1F1E6 + cc.charCodeAt(1) - 65);
+  /* ── Banderas dibujadas en SVG (no dependen de fuente de emoji ni de red) ── */
+  var FLAG_SVGS = {
+    sv: '<rect width="30" height="20" fill="#0047AB"/><rect y="6.66" width="30" height="6.66" fill="#fff"/><circle cx="15" cy="10" r="2" fill="#0047AB"/>',
+    gt: '<rect width="30" height="20" fill="#4997D0"/><rect x="10" width="10" height="20" fill="#fff"/>',
+    hn: '<rect width="30" height="20" fill="#0073CF"/><rect y="6.66" width="30" height="6.66" fill="#fff"/>' +
+      '<circle cx="12" cy="10" r="1" fill="#0073CF"/><circle cx="15" cy="8.6" r="1" fill="#0073CF"/><circle cx="18" cy="10" r="1" fill="#0073CF"/>' +
+      '<circle cx="13.3" cy="11.4" r="1" fill="#0073CF"/><circle cx="16.7" cy="11.4" r="1" fill="#0073CF"/>',
+    ni: '<rect width="30" height="20" fill="#3D6BE5"/><rect y="6.66" width="30" height="6.66" fill="#fff"/><polygon points="15,7.5 17,11.5 13,11.5" fill="#f0a500"/>',
+    cr: '<rect width="30" height="20" fill="#002B7F"/><rect y="4" width="30" height="12" fill="#fff"/><rect y="6" width="30" height="8" fill="#CE1126"/>',
+    do: '<rect width="30" height="20" fill="#fff"/>' +
+      '<rect width="13" height="8" fill="#002D62"/><rect x="17" width="13" height="8" fill="#CE1126"/>' +
+      '<rect y="12" width="13" height="8" fill="#CE1126"/><rect x="17" y="12" width="13" height="8" fill="#002D62"/>' +
+      '<circle cx="15" cy="10" r="1.8" fill="#fff" stroke="#002D62" stroke-width=".4"/>',
+    pa: '<rect width="30" height="20" fill="#fff"/><rect x="15" width="15" height="10" fill="#D21034"/><rect y="10" width="15" height="10" fill="#005293"/>' +
+      '<circle cx="7.5" cy="5" r="2" fill="#005293"/><circle cx="22.5" cy="15" r="2" fill="#D21034"/>',
+    co: '<rect width="30" height="20" fill="#FCD116"/><rect y="10" width="30" height="10" fill="#003087"/><rect y="15" width="30" height="5" fill="#CE1126"/>',
+    uy: '<rect width="30" height="20" fill="#fff"/>' +
+      '<rect y="2.2" width="30" height="2.2" fill="#3D6BE5"/><rect y="6.6" width="30" height="2.2" fill="#3D6BE5"/>' +
+      '<rect y="11" width="30" height="2.2" fill="#3D6BE5"/><rect y="15.4" width="30" height="2.2" fill="#3D6BE5"/>' +
+      '<rect width="12" height="11" fill="#fff"/><circle cx="6" cy="5.5" r="2.3" fill="#FCD116"/>',
+  };
+  function flagSvg(code, w) {
+    var width = w || 20, height = Math.round(width * 2 / 3);
+    var inner = FLAG_SVGS[code] || '<rect width="30" height="20" fill="#666"/><rect width="15" height="20" fill="#999"/>';
+    return '<svg width="' + width + '" height="' + height + '" viewBox="0 0 30 20" xmlns="http://www.w3.org/2000/svg" ' +
+      'style="display:block;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,.4);flex-shrink:0;">' + inner + '</svg>';
   }
   function flagImg(region, w) {
     var code = getIso(region);
-    var size = Math.round((w || 20) * .85);
-    if (!code) return '<span class="flag-emoji" style="font-size:' + size + 'px">🏳️</span>';
-    return '<span class="flag-emoji" style="font-size:' + size + 'px">' + isoToEmoji(code) + '</span>';
+    return flagSvg(code, w);
   }
 
   /* ── Clases de país (gradientes reales estilo Álbum FanSLA, con ISO_MAP) ── */
