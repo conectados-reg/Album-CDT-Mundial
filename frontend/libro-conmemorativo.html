@@ -634,24 +634,48 @@
   }
   /* ── Banderas dibujadas en SVG (no dependen de fuente de emoji ni de red) ── */
   var FLAG_SVGS = {
-    sv: '<rect width="30" height="20" fill="#0047AB"/><rect y="6.66" width="30" height="6.66" fill="#fff"/><circle cx="15" cy="10" r="2" fill="#0047AB"/>',
+    // El Salvador: tres franjas horizontales iguales azul-blanco-azul (proporción oficial)
+    sv: '<rect width="30" height="20" fill="#0F47AF"/><rect y="6.667" width="30" height="6.667" fill="#fff"/>' +
+      '<polygon points="15,8.1 15.8,10.4 15,10.9 14.2,10.4" fill="none" stroke="#0F47AF" stroke-width=".4"/>',
+    // Guatemala: tres franjas verticales iguales azul-blanco-azul
     gt: '<rect width="30" height="20" fill="#4997D0"/><rect x="10" width="10" height="20" fill="#fff"/>',
-    hn: '<rect width="30" height="20" fill="#0073CF"/><rect y="6.66" width="30" height="6.66" fill="#fff"/>' +
-      '<circle cx="12" cy="10" r="1" fill="#0073CF"/><circle cx="15" cy="8.6" r="1" fill="#0073CF"/><circle cx="18" cy="10" r="1" fill="#0073CF"/>' +
-      '<circle cx="13.3" cy="11.4" r="1" fill="#0073CF"/><circle cx="16.7" cy="11.4" r="1" fill="#0073CF"/>',
-    ni: '<rect width="30" height="20" fill="#3D6BE5"/><rect y="6.66" width="30" height="6.66" fill="#fff"/><polygon points="15,7.5 17,11.5 13,11.5" fill="#f0a500"/>',
-    cr: '<rect width="30" height="20" fill="#002B7F"/><rect y="4" width="30" height="12" fill="#fff"/><rect y="6" width="30" height="8" fill="#CE1126"/>',
+    // Honduras: azul-blanco-azul con 5 estrellas de 5 puntas en la franja blanca
+    hn: '<rect width="30" height="20" fill="#0073CF"/><rect y="6.667" width="30" height="6.667" fill="#fff"/>' +
+      '<g fill="#0073CF">' +
+      '<polygon points="10.50,7.10 10.76,7.84 11.55,7.86 10.93,8.34 11.15,9.09 10.50,8.65 9.85,9.09 10.07,8.34 9.45,7.86 10.24,7.84"/>' +
+      '<polygon points="15.00,6.10 15.26,6.84 16.05,6.86 15.43,7.34 15.65,8.09 15.00,7.65 14.35,8.09 14.57,7.34 13.95,6.86 14.74,6.84"/>' +
+      '<polygon points="19.50,7.10 19.76,7.84 20.55,7.86 19.93,8.34 20.15,9.09 19.50,8.65 18.85,9.09 19.07,8.34 18.45,7.86 19.24,7.84"/>' +
+      '<polygon points="12.70,10.50 12.96,11.24 13.75,11.26 13.13,11.74 13.35,12.49 12.70,12.05 12.05,12.49 12.27,11.74 11.65,11.26 12.44,11.24"/>' +
+      '<polygon points="17.30,10.50 17.56,11.24 18.35,11.26 17.73,11.74 17.95,12.49 17.30,12.05 16.65,12.49 16.87,11.74 16.25,11.26 17.04,11.24"/>' +
+      '</g>',
+    // Nicaragua: azul-blanco-azul con triángulo (simplificación del escudo) en el centro
+    ni: '<rect width="30" height="20" fill="#3D6BE5"/><rect y="6.667" width="30" height="6.667" fill="#fff"/>' +
+      '<polygon points="15,7.4 17.1,11.6 12.9,11.6" fill="none" stroke="#f0a500" stroke-width=".5"/>',
+    // Costa Rica: azul-blanco-rojo(doble ancho)-blanco-azul, proporción oficial 1:1:2:1:1
+    cr: '<rect width="30" height="3.333" fill="#002B7F"/>' +
+      '<rect y="3.333" width="30" height="3.333" fill="#fff"/>' +
+      '<rect y="6.667" width="30" height="6.667" fill="#CE1126"/>' +
+      '<rect y="13.333" width="30" height="3.333" fill="#fff"/>' +
+      '<rect y="16.667" width="30" height="3.333" fill="#002B7F"/>',
+    // República Dominicana: cruz blanca, cuadrantes azul/rojo alternados
     do: '<rect width="30" height="20" fill="#fff"/>' +
       '<rect width="13" height="8" fill="#002D62"/><rect x="17" width="13" height="8" fill="#CE1126"/>' +
       '<rect y="12" width="13" height="8" fill="#CE1126"/><rect x="17" y="12" width="13" height="8" fill="#002D62"/>' +
       '<circle cx="15" cy="10" r="1.8" fill="#fff" stroke="#002D62" stroke-width=".4"/>',
+    // Panamá: 4 cuadrantes con estrellas reales de 5 puntas
     pa: '<rect width="30" height="20" fill="#fff"/><rect x="15" width="15" height="10" fill="#D21034"/><rect y="10" width="15" height="10" fill="#005293"/>' +
-      '<circle cx="7.5" cy="5" r="2" fill="#005293"/><circle cx="22.5" cy="15" r="2" fill="#D21034"/>',
+      '<polygon points="7.50,2.90 8.00,4.31 9.50,4.35 8.31,5.26 8.73,6.70 7.50,5.85 6.27,6.70 6.69,5.26 5.50,4.35 7.00,4.31" fill="#005293"/>' +
+      '<polygon points="22.50,12.90 23.00,14.31 24.50,14.35 23.31,15.26 23.73,16.70 22.50,15.85 21.27,16.70 21.69,15.26 20.50,14.35 22.00,14.31" fill="#D21034"/>',
+    // Colombia: amarillo (mitad), azul (cuarto), rojo (cuarto)
     co: '<rect width="30" height="20" fill="#FCD116"/><rect y="10" width="30" height="10" fill="#003087"/><rect y="15" width="30" height="5" fill="#CE1126"/>',
+    // Uruguay: 9 franjas alternadas blanco/azul + sol en el cantón blanco
     uy: '<rect width="30" height="20" fill="#fff"/>' +
-      '<rect y="2.2" width="30" height="2.2" fill="#3D6BE5"/><rect y="6.6" width="30" height="2.2" fill="#3D6BE5"/>' +
-      '<rect y="11" width="30" height="2.2" fill="#3D6BE5"/><rect y="15.4" width="30" height="2.2" fill="#3D6BE5"/>' +
-      '<rect width="12" height="11" fill="#fff"/><circle cx="6" cy="5.5" r="2.3" fill="#FCD116"/>',
+      '<g fill="#3D6BE5">' +
+      '<rect y="2.222" width="30" height="2.222"/><rect y="6.667" width="30" height="2.222"/>' +
+      '<rect y="11.111" width="30" height="2.222"/><rect y="15.556" width="30" height="2.222"/>' +
+      '</g>' +
+      '<rect width="12" height="11.111" fill="#fff"/>' +
+      '<circle cx="6" cy="5.5" r="2" fill="#FCD116" stroke="#c9a227" stroke-width=".2"/>',
   };
   function flagSvg(code, w) {
     var width = w || 20, height = Math.round(width * 2 / 3);
