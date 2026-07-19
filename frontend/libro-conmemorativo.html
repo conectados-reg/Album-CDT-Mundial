@@ -193,6 +193,19 @@
       text-transform: uppercase; color: rgba(0,0,0,.3);
       text-align: center; margin-bottom: .7rem;
     }
+    /* ── Página crema vacía: collage sutil en blanco y negro ── */
+    .blank-page {
+      position: relative; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    .blank-collage {
+      position: absolute; inset: 0; z-index: 0;
+      display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 1fr;
+      filter: grayscale(1) contrast(1.05);
+      opacity: .16;
+    }
+    .blank-page .page-num { position: relative; z-index: 1; margin-bottom: 0; }
     /* ── REGION BANNER (marcador deportivo premium) ── */
     .region-banner {
       position: relative; z-index: 1;
@@ -727,16 +740,18 @@
 
       // Orden cronológico por semana dentro de cada tienda + marca de "más reciente"
       var regionTotalFotos = 0;
+      var regionFotoUrls = [];
       tiendas.forEach(function (tienda) {
         var fotos = tienda.fotos || [];
         fotos.sort(function (a, b) { return (a.semana_numero || 0) - (b.semana_numero || 0); });
         if (fotos.length) fotos[fotos.length - 1].esNueva = true;
         regionTotalFotos += fotos.length;
+        fotos.forEach(function (f) { if (f.foto_url) regionFotoUrls.push(f.foto_url); });
       });
 
       // Region divider page pair
       pages.push({ type: 'section', region: region, count: tiendas.length, totalFotos: regionTotalFotos });
-      pages.push({ type: 'blank', region: region });
+      pages.push({ type: 'blank', region: region, fotos: regionFotoUrls.slice(0, 12) });
 
       tiendas.forEach(function (tienda) {
         var fotos = tienda.fotos;
@@ -761,7 +776,7 @@
     });
 
     // Pad para que el contenido central empareje bien (la portada y la contraportada quedan solas, como tapas duras)
-    if (pages.length % 2 === 0) pages.push({ type: 'blank-end' });
+    if (pages.length % 2 === 0) pages.push({ type: 'blank-end', fotos: samplePhotos(12, 2) });
 
     // Contraportada — siempre la última página, sola
     pages.push({ type: 'end', total_fotos: data.total_fotos, total_tiendas: data.total_tiendas, fotos: samplePhotos(14, 5), paises: paisesList });
@@ -875,7 +890,13 @@
         '</div>';
     }
     if (page.type === 'blank' || page.type === 'blank-end' || page.type === 'end-right') {
-      return '<div class="page-num">· · ·</div>';
+      var blankCollage = (page.fotos && page.fotos.length)
+        ? '<div class="blank-collage">' + page.fotos.map(function (url) {
+            return '<div class="cover-cell"><img src="' + esc(url) + '" loading="lazy" alt="" ' +
+              'onerror="this.parentElement.style.visibility=\'hidden\'"></div>';
+          }).join('') + '</div>'
+        : '';
+      return '<div class="blank-page">' + blankCollage + '<div class="page-num">· · ·</div></div>';
     }
     if (page.type === 'photos') {
       var tiendaLabel = esc(page.tienda);
