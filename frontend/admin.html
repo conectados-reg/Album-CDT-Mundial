@@ -671,7 +671,7 @@
         <span class="info-card-icon"><i class="fa-solid fa-trophy"></i></span>
         <div class="info-card-text">
           <h2>Ranking de Tiendas</h2>
-          <p>Clasificación por porcentaje de cumplimiento acumulativo (suma de todas las semanas / 6). Solo tiendas con al menos una semana sincronizada.</p>
+          <p>Clasificación por porcentaje de cumplimiento acumulativo (suma de todas las semanas / 5). Solo tiendas con al menos una semana sincronizada.</p>
         </div>
       </div>
       <div class="table-card">
@@ -680,6 +680,7 @@
           <span class="table-count" id="badgeRankings"></span>
           <button id="btnRecargarRankings" style="font-family:'Barlow Condensed',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:.35rem .9rem;border-radius:20px;border:1.5px solid rgba(255,255,255,.18);background:transparent;color:rgba(255,255,255,.6);cursor:pointer;">↺ Recargar</button>
           <button id="btnDiagnosticoRankings" style="font-family:'Barlow Condensed',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:.35rem .9rem;border-radius:20px;border:1.5px solid rgba(255,255,255,.18);background:transparent;color:rgba(255,255,255,.6);cursor:pointer;">🔍 Diagnóstico</button>
+          <button id="btnDescargarRankings" style="font-family:'Barlow Condensed',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:.35rem .9rem;border-radius:20px;border:1.5px solid rgba(0,200,83,.35);background:rgba(0,200,83,.12);color:#00c853;cursor:pointer;">⬇ Descargar</button>
         </div>
         <div id="filtrosPaisRankings" style="display:none;flex-wrap:wrap;gap:.5rem;padding:.8rem 1rem .2rem;"></div>
         <div id="loadingRankings" class="state-msg">
@@ -941,7 +942,7 @@ const _0x112f37=_0xaee3;(function(_0x47ad25,_0x2be53d){const _0x43b698=_0xaee3,_
         + '<td style="color:var(--p-orange);font-weight:700;">' + (t.codigo || '—') + '</td>'
         + '<td>' + (t.nombre || '—') + '</td>'
         + '<td style="text-align:center;">' + (t.total_empleados || 0) + '</td>'
-        + '<td style="text-align:center;">' + (t.semanas_con_data || 0) + '/6</td>'
+        + '<td style="text-align:center;">' + (t.semanas_con_data || 0) + '/5</td>'
         + '<td style="text-align:center;font-weight:700;color:' + pctColor + ';">' + pct + '%</td>'
         + '<td style="text-align:center;">' + (t.fotos_count || 0) + '</td>'
         + '</tr>';
@@ -1004,6 +1005,55 @@ const _0x112f37=_0xaee3;(function(_0x47ad25,_0x2be53d){const _0x43b698=_0xaee3,_
     _rankFiltro = 'todas';
     cargarRankings();
   });
+
+  function csvEscape(val) {
+    var s = String(val == null ? '' : val);
+    if (/[",\n]/.test(s)) s = '"' + s.replace(/"/g, '""') + '"';
+    return s;
+  }
+
+  function descargarRankingsCSV() {
+    var lista = _rankFiltro === 'todas'
+      ? _rankData.slice()
+      : _rankData.filter(function (t) { return t.region === _rankFiltro; });
+
+    if (!lista.length) { alert('No hay datos para descargar.'); return; }
+
+    lista.sort(function (a, b) {
+      if (b.pct_acumulado !== a.pct_acumulado) return b.pct_acumulado - a.pct_acumulado;
+      return b.fotos_count - a.fotos_count;
+    });
+
+    var encabezados = ['Posición', 'País', 'Código', 'Tienda', 'HC', 'Semanas', '% Acumulado', 'Fotos'];
+    var filas = [encabezados.join(',')];
+    lista.forEach(function (t, i) {
+      filas.push([
+        i + 1,
+        csvEscape(t.region || 'General'),
+        csvEscape(t.codigo || ''),
+        csvEscape(t.nombre || ''),
+        t.total_empleados || 0,
+        (t.semanas_con_data || 0) + '/5',
+        (t.pct_acumulado || 0).toFixed(1) + '%',
+        t.fotos_count || 0,
+      ].join(','));
+    });
+
+    var csvContent = '﻿' + filas.join('\r\n');
+    var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    var url = URL.createObjectURL(blob);
+    var nombreArchivo = 'ranking_' + (_rankFiltro === 'todas' ? 'todos_los_paises' : _rankFiltro.toLowerCase().replace(/\s+/g, '_')) + '.csv';
+
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = nombreArchivo;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  document.getElementById('btnDescargarRankings').addEventListener('click', descargarRankingsCSV);
 })();
 </script>
 
