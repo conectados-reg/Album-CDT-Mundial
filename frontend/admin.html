@@ -1711,5 +1711,120 @@ const _0x112f37=_0xaee3;(function(_0x47ad25,_0x2be53d){const _0x43b698=_0xaee3,_
   });
 })();
 </script>
+
+<!-- ══════ Herramienta: Desbloqueo manual de fichas ══════ -->
+<button id="btnAbrirDesbloqueo" title="Desbloqueo manual de fichas" style="position:fixed;bottom:1.2rem;right:1.2rem;z-index:9500;background:#f7a800;color:#1a1a2e;border:none;border-radius:30px;padding:.7rem 1.2rem;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:.05em;text-transform:uppercase;font-size:.85rem;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.4);">🔓 Desbloqueo manual</button>
+
+<div id="modalDesbloqueo" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;overflow:auto;padding:1.5rem;">
+  <div style="max-width:640px;margin:0 auto;background:#1a1a2e;border-radius:12px;padding:1.5rem;border:1px solid rgba(255,255,255,.1);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem;">
+      <h2 style="margin:0;font-size:1.1rem;color:#fff;">🔓 Desbloqueo manual de fichas</h2>
+      <button id="btnCerrarDesbloqueo" style="background:transparent;border:none;color:#fff;font-size:1.4rem;cursor:pointer;line-height:1;">✕</button>
+    </div>
+    <p style="color:rgba(255,255,255,.5);font-size:.8rem;margin:.3rem 0 1rem;">
+      Úsala cuando una tienda ya llegó a 100% en una semana pero sus fichas no se desbloquearon solas (por ejemplo, si la sincronización masiva falló silenciosamente para esa tienda). No borra fotos ya subidas.
+    </p>
+    <div style="display:flex;gap:.5rem;margin-bottom:1rem;">
+      <input id="deskCodigo" type="text" placeholder="Código de tienda (ej. 4013)" style="flex:1;padding:.55rem .7rem;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:#fff;font-size:.9rem;">
+      <button id="btnBuscarDesk" style="padding:.55rem 1rem;border-radius:8px;border:none;background:#0046ad;color:#fff;font-weight:700;cursor:pointer;">Buscar</button>
+    </div>
+    <div id="deskEstado" style="color:rgba(255,255,255,.5);font-size:.85rem;"></div>
+    <div id="deskResultado"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var API_DESK = (typeof API_BASE !== 'undefined' ? API_BASE : (window.location.hostname === 'localhost' ? 'http://localhost:3000/api' : 'https://album-cdt-mundial.onrender.com/api'));
+  var TDk = 'padding:.45rem .5rem;border-bottom:1px solid rgba(255,255,255,.06);font-size:.82rem;';
+
+  function authHeaders() {
+    return { 'Authorization': 'Bearer ' + localStorage.getItem('token') };
+  }
+
+  function renderSemanas(tienda) {
+    var headers = Object.assign({ 'Content-Type': 'application/json' }, authHeaders());
+    return fetch(API_DESK + '/album/admin/' + tienda.id, { headers: authHeaders() })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        var semanas = (data.semanas || []).sort(function (a, b) { return a.semana_numero - b.semana_numero; });
+        var rows = semanas.map(function (s) {
+          var pendiente = s.porcentaje != null && s.porcentaje >= 100 && s.desbloqueadas < s.total;
+          var pctTxt = s.porcentaje != null ? s.porcentaje.toFixed(1) + '%' : '—';
+          var estadoTxt = pendiente
+            ? '<span style="color:#f7a800;font-weight:700;">⚠️ ' + s.desbloqueadas + '/' + s.total + ' — pendiente</span>'
+            : '<span style="color:rgba(255,255,255,.6);">' + s.desbloqueadas + '/' + s.total + '</span>';
+          var btn = pendiente
+            ? '<button class="btnDesk" data-semana="' + s.semana_numero + '" style="padding:.3rem .7rem;border-radius:6px;border:none;background:#00c853;color:#04210f;font-weight:700;cursor:pointer;font-size:.78rem;">Desbloquear</button>'
+            : '';
+          return '<tr>'
+            + '<td style="' + TDk + '">S' + s.semana_numero + ' ' + (s.semana_nombre || '') + '</td>'
+            + '<td style="' + TDk + 'text-align:center;">' + pctTxt + '</td>'
+            + '<td style="' + TDk + 'text-align:center;">' + estadoTxt + '</td>'
+            + '<td style="' + TDk + 'text-align:center;">' + btn + '</td>'
+            + '</tr>';
+        }).join('');
+
+        document.getElementById('deskResultado').innerHTML =
+          '<div style="margin:.6rem 0;color:rgba(255,255,255,.8);font-size:.9rem;"><b>' + tienda.nombre + '</b> · código ' + tienda.codigo + ' · ' + (tienda.region || 'General') + '</div>'
+          + '<table style="width:100%;border-collapse:collapse;">'
+          + '<thead><tr><th style="' + TDk + 'text-align:left;color:rgba(255,255,255,.5);">Semana</th><th style="' + TDk + 'color:rgba(255,255,255,.5);">%</th><th style="' + TDk + 'color:rgba(255,255,255,.5);">Fichas</th><th style="' + TDk + 'color:rgba(255,255,255,.5);"></th></tr></thead>'
+          + '<tbody>' + rows + '</tbody></table>';
+
+        Array.prototype.forEach.call(document.querySelectorAll('.btnDesk'), function (btn) {
+          btn.addEventListener('click', function () {
+            var semanaNum = parseInt(btn.getAttribute('data-semana'));
+            if (!confirm('¿Desbloquear manualmente la Semana ' + semanaNum + ' de ' + tienda.nombre + ' (código ' + tienda.codigo + ')?\n\nEsto solo marca sus fichas como desbloqueadas; no borra ninguna foto ya subida.')) return;
+            btn.disabled = true;
+            btn.textContent = 'Aplicando...';
+            fetch(API_DESK + '/album/simulacro/toggle', {
+              method: 'POST', headers: headers,
+              body: JSON.stringify({ tienda_id: tienda.id, semana_numero: semanaNum, desbloquear: true })
+            })
+              .then(function (r) { return r.json(); })
+              .then(function (res) {
+                if (res.ok) { renderSemanas(tienda); }
+                else { alert('Error: ' + (res.error || 'No se pudo desbloquear.')); btn.disabled = false; btn.textContent = 'Desbloquear'; }
+              })
+              .catch(function () { alert('Error de conexión al desbloquear.'); btn.disabled = false; btn.textContent = 'Desbloquear'; });
+          });
+        });
+      });
+  }
+
+  function buscarTienda() {
+    var codigo = document.getElementById('deskCodigo').value.trim();
+    if (!codigo) return;
+    document.getElementById('deskEstado').textContent = 'Buscando...';
+    document.getElementById('deskResultado').innerHTML = '';
+    fetch(API_DESK + '/tiendas', { headers: authHeaders() })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        var tienda = (data.tiendas || []).find(function (t) { return String(t.codigo).trim() === codigo; });
+        if (!tienda) {
+          document.getElementById('deskEstado').textContent = '❌ No se encontró ninguna tienda activa con código "' + codigo + '".';
+          return;
+        }
+        document.getElementById('deskEstado').textContent = '';
+        return renderSemanas(tienda);
+      })
+      .catch(function () { document.getElementById('deskEstado').textContent = '❌ Error al buscar la tienda.'; });
+  }
+
+  document.getElementById('btnAbrirDesbloqueo').addEventListener('click', function () {
+    document.getElementById('modalDesbloqueo').style.display = 'block';
+  });
+  document.getElementById('btnCerrarDesbloqueo').addEventListener('click', function () {
+    document.getElementById('modalDesbloqueo').style.display = 'none';
+  });
+  document.getElementById('modalDesbloqueo').addEventListener('click', function (e) {
+    if (e.target === this) this.style.display = 'none';
+  });
+  document.getElementById('btnBuscarDesk').addEventListener('click', buscarTienda);
+  document.getElementById('deskCodigo').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') buscarTienda();
+  });
+})();
+</script>
 </body>
 </html>

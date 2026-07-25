@@ -254,11 +254,18 @@ router.post('/resultados-batch', verificarSyncKey, async (req, res) => {
       if (insertErr) throw new Error('Error insertando resultados semana ' + semanaId + ': ' + insertErr.message);
 
       const ids100 = rows.filter(r => r.porcentaje_cumplido >= 100).map(r => r.tienda_id);
-      if (ids100.length > 0) {
-        const { data: desbloqueadas } = await supabase.from('fichas_tienda')
+      // Igual que el DELETE de arriba: no usar .in() con la lista completa de IDs,
+      // supera el límite de URL de PostgREST cuando hay muchas tiendas al 100%. Se procesa en lotes.
+      for (let i = 0; i < ids100.length; i += 100) {
+        const lote = ids100.slice(i, i + 100);
+        const { data: desbloqueadas, error: unlockErr } = await supabase.from('fichas_tienda')
           .update({ desbloqueado: true, fecha_desbloqueo: new Date().toISOString() })
-          .eq('semana_id', semanaId).in('tienda_id', ids100).eq('desbloqueado', false)
+          .eq('semana_id', semanaId).in('tienda_id', lote).eq('desbloqueado', false)
           .select('id');
+        if (unlockErr) {
+          console.error('[Sync Batch] Error desbloqueando fichas semana', semanaId, unlockErr.message);
+          continue;
+        }
         fichasDesbloqueadas += desbloqueadas?.length || 0;
       }
     }
