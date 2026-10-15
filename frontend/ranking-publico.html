@@ -656,7 +656,12 @@
 
   function cargar() {
     fetch(API + '/ranking/publico')
-      .then(function (r) { return r.json(); })
+      .then(function (r) {
+        return r.json().then(function (data) {
+          if (!r.ok || data.error) throw new Error(data.error || ('HTTP ' + r.status));
+          return data;
+        });
+      })
       .then(function (data) {
         document.getElementById('loadingState').style.display = 'none';
         _all = (data.ranking || []);
@@ -673,8 +678,14 @@
         render();
       })
       .catch(function () {
-        document.getElementById('loadingState').innerHTML =
-          '<i class="fa-solid fa-triangle-exclamation" style="color:#ff6b6b;"></i>Error al cargar el ranking.';
+        // Si ya hay datos en pantalla, se conservan; si no, se avisa y se reintenta pronto
+        // (el servidor puede tardar en despertar).
+        if (_all.length) return;
+        var ls = document.getElementById('loadingState');
+        ls.style.display = '';
+        ls.innerHTML =
+          '<i class="fa-solid fa-triangle-exclamation" style="color:#ff6b6b;"></i>Error al cargar el ranking. Reintentando…';
+        setTimeout(cargar, 15000);
       });
   }
 
