@@ -90,7 +90,8 @@ router.get('/publico', async (req, res) => {
         .from('resultados_tienda')
         .select('tienda_id, semana_id, porcentaje_cumplido')
         .range(desde, desde + 999);
-      if (lErr || !lote || lote.length === 0) break;
+      if (lErr) throw lErr;
+      if (!lote || lote.length === 0) break;
       todosResultados.push(...lote);
       if (lote.length < 1000) break;
       desde += 1000;
@@ -125,9 +126,11 @@ router.get('/publico', async (req, res) => {
           total_empleados: t.total_empleados || 0,
           pct_acumulado,
           semanas_con_data: semanas.length,
+          tiene_promedio: t.promedio_ranking != null,
         };
       })
-      .filter(t => t.semanas_con_data > 0)
+      .filter(t => t.semanas_con_data > 0 || t.tiene_promedio)
+      .map(({ tiene_promedio, ...t }) => t)
       .sort((a, b) => b.pct_acumulado - a.pct_acumulado);
 
     const paises = [...new Set(ranking.map(t => t.region))].sort();
